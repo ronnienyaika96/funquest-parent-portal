@@ -12,13 +12,21 @@ import SubscriptionCard from '../components/SubscriptionCard';
 import NotificationsPanel from '../components/NotificationsPanel';
 import AccountSettings from '../components/AccountSettings';
 import GamingInterface from '../components/gaming/GamingInterface';
+import AdminDashboard from '../components/admin/AdminDashboard';
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState('overview');
   const [isGamingMode, setIsGamingMode] = useState(false);
+  const [isAdminMode, setIsAdminMode] = useState(false);
 
+  // Gaming mode interface
   if (isGamingMode) {
     return <GamingInterface onExitGaming={() => setIsGamingMode(false)} />;
+  }
+
+  // Admin mode interface
+  if (isAdminMode) {
+    return <AdminDashboard onExitAdmin={() => setIsAdminMode(false)} />;
   }
 
   const renderContent = () => {
@@ -50,7 +58,7 @@ const Index = () => {
       case 'notifications':
         return <NotificationsPanel preview={false} />;
       case 'settings':
-        return <AccountSettings />;
+        return <AccountSettings onEnterAdminMode={() => setIsAdminMode(true)} />;
       default:
         return <div>Select a section from the sidebar</div>;
     }

@@ -1,132 +1,162 @@
 
-import React from 'react';
-import { User, Mail, Phone, Lock, CreditCard, Shield } from 'lucide-react';
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Shield, User, Bell, CreditCard, Lock, Settings } from 'lucide-react';
 
-const AccountSettings = () => {
+interface AccountSettingsProps {
+  onEnterAdminMode: () => void;
+}
+
+const AccountSettings = ({ onEnterAdminMode }: AccountSettingsProps) => {
+  const [notifications, setNotifications] = useState({
+    email: true,
+    push: false,
+    newsletter: true
+  });
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-2xl font-bold text-slate-900 mb-2">Account Settings</h2>
+        <p className="text-slate-600">Manage your account preferences and settings</p>
+      </div>
+
+      {/* Profile Settings */}
       <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center">
-          <User className="w-6 h-6 mr-3 text-blue-600" />
-          Account Settings
-        </h2>
+        <div className="flex items-center space-x-3 mb-6">
+          <User className="w-6 h-6 text-blue-600" />
+          <h3 className="text-lg font-semibold text-slate-900">Profile Information</h3>
+        </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Profile Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-slate-900">Profile Information</h3>
-            
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Full Name</label>
-              <input 
-                type="text" 
-                defaultValue="Sarah Johnson"
-                className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Email Address</label>
-              <div className="flex">
-                <Mail className="w-5 h-5 text-slate-400 mt-3 mr-3" />
-                <input 
-                  type="email" 
-                  defaultValue="sarah.johnson@email.com"
-                  className="flex-1 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Phone Number</label>
-              <div className="flex">
-                <Phone className="w-5 h-5 text-slate-400 mt-3 mr-3" />
-                <input 
-                  type="tel" 
-                  defaultValue="+1 (555) 123-4567"
-                  className="flex-1 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Full Name</label>
+            <input 
+              type="text" 
+              defaultValue="Sarah Johnson"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
           </div>
-
-          {/* Security Settings */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-slate-900">Security</h3>
-            
-            <div className="p-4 border border-slate-200 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center">
-                  <Lock className="w-5 h-5 text-slate-600 mr-2" />
-                  <span className="font-medium text-slate-900">Password</span>
-                </div>
-                <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                  Change
-                </button>
-              </div>
-              <p className="text-sm text-slate-600">Last updated 3 months ago</p>
-            </div>
-            
-            <div className="p-4 border border-slate-200 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center">
-                  <Shield className="w-5 h-5 text-slate-600 mr-2" />
-                  <span className="font-medium text-slate-900">Two-Factor Authentication</span>
-                </div>
-                <span className="bg-red-100 text-red-700 px-2 py-1 rounded text-xs">Disabled</span>
-              </div>
-              <p className="text-sm text-slate-600 mb-2">Add an extra layer of security to your account</p>
-              <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                Enable 2FA
-              </button>
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Email Address</label>
+            <input 
+              type="email" 
+              defaultValue="sarah.johnson@email.com"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
           </div>
         </div>
+        
+        <Button className="mt-4 bg-blue-600 hover:bg-blue-700">Save Changes</Button>
+      </div>
 
-        {/* Subscription Management */}
-        <div className="mt-8 pt-6 border-t border-slate-200">
-          <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
-            <CreditCard className="w-5 h-5 mr-2" />
-            Subscription Management
-          </h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 border border-slate-200 rounded-lg">
-              <h4 className="font-medium text-slate-900 mb-2">Current Plan</h4>
-              <p className="text-2xl font-bold text-blue-600 mb-1">Premium</p>
-              <p className="text-sm text-slate-600">$19.99/month</p>
+      {/* Subscription Management */}
+      <div className="bg-white rounded-xl border border-slate-200 p-6">
+        <div className="flex items-center space-x-3 mb-6">
+          <CreditCard className="w-6 h-6 text-green-600" />
+          <h3 className="text-lg font-semibold text-slate-900">Subscription Management</h3>
+        </div>
+        
+        <div className="space-y-4">
+          <div className="flex justify-between items-center p-4 bg-green-50 rounded-lg border border-green-200">
+            <div>
+              <h4 className="font-medium text-green-900">Premium Monthly Plan</h4>
+              <p className="text-sm text-green-700">Next billing: June 15, 2024</p>
             </div>
-            
-            <div className="p-4 border border-slate-200 rounded-lg">
-              <h4 className="font-medium text-slate-900 mb-2">Next Billing</h4>
-              <p className="text-lg font-bold text-slate-900 mb-1">June 15, 2024</p>
-              <p className="text-sm text-slate-600">Auto-renewal enabled</p>
-            </div>
-            
-            <div className="p-4 border border-slate-200 rounded-lg">
-              <h4 className="font-medium text-slate-900 mb-2">Payment Method</h4>
-              <p className="text-lg font-bold text-slate-900 mb-1">•••• 4321</p>
-              <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                Update Card
-              </button>
+            <div className="text-right">
+              <p className="font-semibold text-green-900">$9.99/month</p>
+              <Button variant="outline" size="sm" className="mt-1">Manage</Button>
             </div>
           </div>
           
-          <div className="flex space-x-4 mt-6">
-            <button className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">
-              Upgrade to Yearly
-            </button>
-            <button className="border border-slate-300 text-slate-700 px-6 py-2 rounded-lg font-medium hover:bg-slate-50 transition-colors">
-              Cancel Subscription
-            </button>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Button variant="outline" className="w-full">Change Plan</Button>
+            <Button variant="outline" className="w-full text-red-600 border-red-200 hover:bg-red-50">Cancel Subscription</Button>
           </div>
         </div>
+      </div>
 
-        {/* Save Button */}
-        <div className="mt-8 pt-6 border-t border-slate-200">
-          <button className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
-            Save Changes
-          </button>
+      {/* Notification Preferences */}
+      <div className="bg-white rounded-xl border border-slate-200 p-6">
+        <div className="flex items-center space-x-3 mb-6">
+          <Bell className="w-6 h-6 text-orange-600" />
+          <h3 className="text-lg font-semibold text-slate-900">Notification Preferences</h3>
+        </div>
+        
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="font-medium text-slate-900">Email Notifications</h4>
+              <p className="text-sm text-slate-600">Receive updates about your child's progress</p>
+            </div>
+            <Button 
+              variant={notifications.email ? "default" : "outline"}
+              size="sm"
+              onClick={() => setNotifications({...notifications, email: !notifications.email})}
+            >
+              {notifications.email ? 'Enabled' : 'Disabled'}
+            </Button>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="font-medium text-slate-900">Push Notifications</h4>
+              <p className="text-sm text-slate-600">Get notified about new content and milestones</p>
+            </div>
+            <Button 
+              variant={notifications.push ? "default" : "outline"}
+              size="sm"
+              onClick={() => setNotifications({...notifications, push: !notifications.push})}
+            >
+              {notifications.push ? 'Enabled' : 'Disabled'}
+            </Button>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="font-medium text-slate-900">Newsletter</h4>
+              <p className="text-sm text-slate-600">Receive our weekly newsletter with tips and updates</p>
+            </div>
+            <Button 
+              variant={notifications.newsletter ? "default" : "outline"}
+              size="sm"
+              onClick={() => setNotifications({...notifications, newsletter: !notifications.newsletter})}
+            >
+              {notifications.newsletter ? 'Enabled' : 'Disabled'}
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Security Settings */}
+      <div className="bg-white rounded-xl border border-slate-200 p-6">
+        <div className="flex items-center space-x-3 mb-6">
+          <Lock className="w-6 h-6 text-purple-600" />
+          <h3 className="text-lg font-semibold text-slate-900">Security</h3>
+        </div>
+        
+        <div className="space-y-4">
+          <Button variant="outline" className="w-full">Change Password</Button>
+          <Button variant="outline" className="w-full">Enable Two-Factor Authentication</Button>
+        </div>
+      </div>
+
+      {/* Admin Access */}
+      <div className="bg-white rounded-xl border border-slate-200 p-6">
+        <div className="flex items-center space-x-3 mb-6">
+          <Shield className="w-6 h-6 text-red-600" />
+          <h3 className="text-lg font-semibold text-slate-900">Admin Access</h3>
+        </div>
+        
+        <div className="space-y-4">
+          <p className="text-sm text-slate-600">Access administrative dashboard for platform management</p>
+          <Button 
+            onClick={onEnterAdminMode}
+            className="bg-red-600 hover:bg-red-700 text-white"
+          >
+            <Shield className="w-4 h-4 mr-2" />
+            Enter Admin Mode
+          </Button>
         </div>
       </div>
     </div>

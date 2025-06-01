@@ -1,14 +1,14 @@
 
 import React from 'react';
 import { 
-  Home, 
-  Users, 
   BarChart3, 
+  Users, 
   Package, 
+  Gamepad2, 
   FileText, 
-  Bell, 
   Settings,
-  Star
+  Upload,
+  DollarSign
 } from 'lucide-react';
 import {
   Sidebar,
@@ -22,54 +22,54 @@ import {
   SidebarHeader,
 } from '@/components/ui/sidebar';
 
-interface AppSidebarProps {
+interface AdminSidebarProps {
   activeSection: string;
   setActiveSection: (section: string) => void;
 }
 
-const AppSidebar = ({ activeSection, setActiveSection }: AppSidebarProps) => {
+const AdminSidebar = ({ activeSection, setActiveSection }: AdminSidebarProps) => {
   const menuItems = [
     {
       id: 'overview',
       label: 'Dashboard Overview',
-      icon: Home,
+      icon: BarChart3,
       color: 'text-blue-600'
     },
     {
-      id: 'children',
-      label: 'My Children',
+      id: 'users',
+      label: 'User Management',
       icon: Users,
       color: 'text-purple-600'
     },
     {
-      id: 'progress',
-      label: 'Learning Progress',
-      icon: BarChart3,
+      id: 'games',
+      label: 'Games Manager',
+      icon: Gamepad2,
       color: 'text-green-600'
     },
     {
-      id: 'orders',
-      label: 'Orders & Subscriptions',
+      id: 'books',
+      label: 'Book Management',
       icon: Package,
       color: 'text-orange-600'
     },
     {
-      id: 'printables',
-      label: 'Printables',
-      icon: FileText,
+      id: 'subscriptions',
+      label: 'Subscriptions',
+      icon: DollarSign,
       color: 'text-red-600'
     },
     {
-      id: 'notifications',
-      label: 'Notifications',
-      icon: Bell,
+      id: 'content',
+      label: 'Content Upload',
+      icon: Upload,
       color: 'text-yellow-600'
     },
     {
-      id: 'settings',
-      label: 'Account Settings',
-      icon: Settings,
-      color: 'text-gray-600'
+      id: 'analytics',
+      label: 'Analytics',
+      icon: BarChart3,
+      color: 'text-indigo-600'
     }
   ];
 
@@ -77,19 +77,19 @@ const AppSidebar = ({ activeSection, setActiveSection }: AppSidebarProps) => {
     <Sidebar className="border-r border-slate-200">
       <SidebarHeader className="border-b border-slate-200 p-6">
         <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white text-xl font-bold">
-            F
+          <div className="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center text-white text-xl font-bold">
+            A
           </div>
           <div>
             <h2 className="text-xl font-bold text-slate-900">FunQuest</h2>
-            <p className="text-sm text-slate-500">Parent Dashboard</p>
+            <p className="text-sm text-slate-500">Admin Dashboard</p>
           </div>
         </div>
       </SidebarHeader>
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-slate-600 font-medium text-lg">Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-slate-600 font-medium text-lg">Admin Tools</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
@@ -99,7 +99,7 @@ const AppSidebar = ({ activeSection, setActiveSection }: AppSidebarProps) => {
                     isActive={activeSection === item.id}
                     className={`w-full justify-start p-4 rounded-xl transition-colors mb-2 ${
                       activeSection === item.id 
-                        ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600' 
+                        ? 'bg-red-50 text-red-700 border-l-4 border-red-600' 
                         : 'text-slate-700 hover:bg-slate-100'
                     }`}
                   >
@@ -113,25 +113,9 @@ const AppSidebar = ({ activeSection, setActiveSection }: AppSidebarProps) => {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
-        <SidebarGroup className="mt-8">
-          <SidebarGroupLabel className="text-slate-600 font-medium flex items-center text-lg">
-            <Star className="w-5 h-5 mr-2 text-yellow-500" />
-            Quick Actions
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <div className="p-4 bg-orange-50 rounded-xl border border-orange-200">
-              <h4 className="font-semibold text-orange-900 mb-2 text-lg">Need Help?</h4>
-              <p className="text-sm text-orange-700 mb-3">Get support for your account</p>
-              <button className="w-full bg-orange-600 text-white py-3 px-4 rounded-xl text-sm font-medium hover:bg-orange-700 transition-colors">
-                Contact Support
-              </button>
-            </div>
-          </SidebarGroupContent>
-        </SidebarGroup>
       </SidebarContent>
     </Sidebar>
   );
 };
 
-export default AppSidebar;
+export default AdminSidebar;
