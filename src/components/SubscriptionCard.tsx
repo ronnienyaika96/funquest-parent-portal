@@ -1,38 +1,62 @@
 
 import React from 'react';
+import { CreditCard, Calendar, Users, Download } from 'lucide-react';
 
 const SubscriptionCard = () => {
   return (
-    <div className="bg-gradient-to-br from-sky-500 to-yellow-400 rounded-2xl shadow-lg p-6 text-white">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold">Premium Plan</h2>
-        <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-medium">
+    <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-lg font-bold text-slate-900">Subscription Plan</h2>
+        <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
           Active
         </span>
       </div>
       
-      <div className="space-y-3 mb-6">
-        <div className="flex justify-between items-center">
-          <span className="text-sm opacity-90">Monthly Subscription</span>
-          <span className="font-bold">$19.99/mo</span>
+      <div className="space-y-4 mb-6">
+        <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+          <div className="flex items-center">
+            <CreditCard className="w-5 h-5 text-blue-600 mr-3" />
+            <span className="font-medium text-slate-900">Premium Plan</span>
+          </div>
+          <span className="font-bold text-blue-600">$19.99/mo</span>
         </div>
-        <div className="flex justify-between items-center">
-          <span className="text-sm opacity-90">Next Billing</span>
-          <span className="font-medium">June 15, 2024</span>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-center">
+            <Calendar className="w-4 h-4 text-slate-500 mr-2" />
+            <div>
+              <p className="text-xs text-slate-500">Next Billing</p>
+              <p className="font-medium text-slate-900">June 15, 2024</p>
+            </div>
+          </div>
+          <div className="flex items-center">
+            <Users className="w-4 h-4 text-slate-500 mr-2" />
+            <div>
+              <p className="text-xs text-slate-500">Children</p>
+              <p className="font-medium text-slate-900">3 of 5 allowed</p>
+            </div>
+          </div>
         </div>
-        <div className="flex justify-between items-center">
-          <span className="text-sm opacity-90">Children</span>
-          <span className="font-medium">3 of 5 allowed</span>
+
+        <div className="p-3 bg-slate-50 rounded-lg">
+          <p className="text-xs text-slate-500 mb-1">Payment Method</p>
+          <p className="font-medium text-slate-900">•••• •••• •••• 4321</p>
+          <p className="text-xs text-slate-500">Expires 12/25</p>
         </div>
       </div>
 
       <div className="space-y-2">
-        <button className="w-full bg-white text-sky-600 py-2 rounded-xl font-medium hover:bg-gray-50 transition-colors duration-200">
+        <button className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">
           Manage Subscription
         </button>
-        <button className="w-full bg-white bg-opacity-20 text-white py-2 rounded-xl font-medium hover:bg-opacity-30 transition-all duration-200">
-          Upgrade to Yearly
-        </button>
+        <div className="grid grid-cols-2 gap-2">
+          <button className="bg-slate-100 text-slate-700 py-2 rounded-lg text-sm font-medium hover:bg-slate-200 transition-colors">
+            Upgrade Plan
+          </button>
+          <button className="bg-slate-100 text-slate-700 py-2 rounded-lg text-sm font-medium hover:bg-slate-200 transition-colors">
+            Update Payment
+          </button>
+        </div>
       </div>
     </div>
   );

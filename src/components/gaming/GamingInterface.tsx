@@ -1,10 +1,11 @@
 
 import React, { useState } from 'react';
-import { X, Home, Palette, PenTool, Puzzle } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AlphabetMenu from './AlphabetMenu';
 import LetterTracing from './LetterTracing';
 import ColoringPages from './ColoringPages';
+import PuzzleGames from './PuzzleGames';
 
 interface GamingInterfaceProps {
   onExitGaming: () => void;
@@ -20,43 +21,11 @@ const GamingInterface = ({ onExitGaming }: GamingInterfaceProps) => {
   };
 
   const handleParentExit = () => {
-    // Simple parent verification - in real app, this could be a PIN or pattern
     const confirmed = window.confirm("Parent Mode: Are you sure you want to exit child mode?");
     if (confirmed) {
       onExitGaming();
     }
   };
-
-  const games = [
-    {
-      id: 'alphabet',
-      title: 'ABC Learning',
-      icon: '🔤',
-      color: 'from-pink-400 to-pink-500',
-      description: 'Learn letters A-Z!'
-    },
-    {
-      id: 'tracing',
-      title: 'Letter Tracing',
-      icon: '✏️',
-      color: 'from-blue-400 to-blue-500',
-      description: 'Trace letters with your finger!'
-    },
-    {
-      id: 'coloring',
-      title: 'Coloring Fun',
-      icon: '🎨',
-      color: 'from-purple-400 to-purple-500',
-      description: 'Color beautiful pictures!'
-    },
-    {
-      id: 'puzzles',
-      title: 'Puzzles',
-      icon: '🧩',
-      color: 'from-green-400 to-green-500',
-      description: 'Coming Soon!'
-    }
-  ];
 
   if (activeGame === 'alphabet') {
     return <AlphabetMenu onLetterSelect={handleLetterSelect} onBack={() => setActiveGame('home')} />;
@@ -70,58 +39,109 @@ const GamingInterface = ({ onExitGaming }: GamingInterfaceProps) => {
     return <ColoringPages onBack={() => setActiveGame('home')} />;
   }
 
+  if (activeGame === 'puzzles') {
+    return <PuzzleGames onBack={() => setActiveGame('home')} />;
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-200 via-pink-200 to-blue-200">
-      {/* Header with parent exit */}
-      <div className="flex justify-between items-center p-4">
-        <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 bg-gradient-to-r from-orange-400 to-red-400 rounded-full flex items-center justify-center text-2xl">
+    <div className="min-h-screen bg-gradient-to-br from-blue-300 via-blue-400 to-green-300">
+      {/* Header */}
+      <div className="flex justify-between items-center p-6">
+        <div className="flex items-center space-x-4">
+          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-3xl shadow-lg">
             🎮
           </div>
-          <h1 className="text-3xl font-bold text-gray-800">Fun Learning Games!</h1>
+          <div>
+            <h1 className="text-4xl font-bold text-white drop-shadow-lg">ABC Tracing Game</h1>
+            <p className="text-xl text-white/90">Learn and have fun!</p>
+          </div>
         </div>
         
         <Button
           onClick={handleParentExit}
+          className="bg-white/20 hover:bg-white/30 border-2 border-white/40 text-white p-3 rounded-full"
           variant="outline"
-          className="bg-white/80 hover:bg-white border-2 border-gray-300 p-3"
         >
-          <X className="w-5 h-5" />
+          <X className="w-6 h-6" />
         </Button>
       </div>
 
       {/* Game Selection Grid */}
-      <div className="max-w-4xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {games.map((game) => (
-            <button
-              key={game.id}
-              onClick={() => setActiveGame(game.id as any)}
-              disabled={game.id === 'puzzles'}
-              className={`group relative overflow-hidden rounded-3xl p-8 text-left transform transition-all duration-300 hover:scale-105 shadow-2xl ${
-                game.id === 'puzzles' ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-3xl'
-              }`}
-            >
-              <div className={`absolute inset-0 bg-gradient-to-br ${game.color} opacity-90`}></div>
-              <div className="relative z-10">
-                <div className="text-6xl mb-4">{game.icon}</div>
-                <h2 className="text-3xl font-bold text-white mb-2">{game.title}</h2>
-                <p className="text-xl text-white/90">{game.description}</p>
-              </div>
-              <div className="absolute bottom-4 right-4 text-white/70 group-hover:text-white transition-colors">
-                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                  →
-                </div>
-              </div>
-            </button>
-          ))}
+      <div className="max-w-5xl mx-auto px-6 py-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {/* Alphabet Learning */}
+          <button
+            onClick={() => setActiveGame('alphabet')}
+            className="group relative bg-white rounded-3xl p-8 shadow-xl transform transition-all duration-300 hover:scale-105 hover:shadow-2xl"
+          >
+            <div className="text-6xl mb-4">🔤</div>
+            <h2 className="text-2xl font-bold text-blue-800 mb-2">ABC</h2>
+            <p className="text-blue-600">Learn Letters</p>
+            
+            {/* Decorative elements */}
+            <div className="absolute top-2 right-2 text-yellow-400 opacity-0 group-hover:opacity-100 transition-opacity animate-bounce">
+              ⭐
+            </div>
+          </button>
+
+          {/* Letter Tracing */}
+          <button
+            onClick={() => setActiveGame('tracing')}
+            className="group relative bg-white rounded-3xl p-8 shadow-xl transform transition-all duration-300 hover:scale-105 hover:shadow-2xl"
+          >
+            <div className="text-6xl mb-4">✏️</div>
+            <h2 className="text-2xl font-bold text-green-800 mb-2">Trace</h2>
+            <p className="text-green-600">Practice Writing</p>
+            
+            <div className="absolute top-2 right-2 text-yellow-400 opacity-0 group-hover:opacity-100 transition-opacity animate-bounce">
+              ⭐
+            </div>
+          </button>
+
+          {/* Coloring */}
+          <button
+            onClick={() => setActiveGame('coloring')}
+            className="group relative bg-white rounded-3xl p-8 shadow-xl transform transition-all duration-300 hover:scale-105 hover:shadow-2xl"
+          >
+            <div className="text-6xl mb-4">🎨</div>
+            <h2 className="text-2xl font-bold text-purple-800 mb-2">Color</h2>
+            <p className="text-purple-600">Paint Pictures</p>
+            
+            <div className="absolute top-2 right-2 text-yellow-400 opacity-0 group-hover:opacity-100 transition-opacity animate-bounce">
+              ⭐
+            </div>
+          </button>
+
+          {/* Puzzles */}
+          <button
+            onClick={() => setActiveGame('puzzles')}
+            className="group relative bg-white rounded-3xl p-8 shadow-xl transform transition-all duration-300 hover:scale-105 hover:shadow-2xl"
+          >
+            <div className="text-6xl mb-4">🧩</div>
+            <h2 className="text-2xl font-bold text-orange-800 mb-2">Puzzles</h2>
+            <p className="text-orange-600">Play Games</p>
+            
+            <div className="absolute top-2 right-2 text-yellow-400 opacity-0 group-hover:opacity-100 transition-opacity animate-bounce">
+              ⭐
+            </div>
+          </button>
         </div>
       </div>
 
-      {/* Decorative elements */}
-      <div className="fixed bottom-4 left-4 text-6xl animate-bounce">🌟</div>
-      <div className="fixed top-1/4 right-8 text-4xl animate-pulse">🎈</div>
-      <div className="fixed bottom-1/4 right-1/4 text-5xl animate-bounce delay-1000">🦋</div>
+      {/* Bottom decorative elements matching the uploaded image */}
+      <div className="fixed bottom-0 left-0 w-full h-32 bg-gradient-to-t from-green-400 to-transparent pointer-events-none">
+        <div className="absolute bottom-4 left-8 text-8xl animate-bounce">
+          🐊
+        </div>
+        <div className="absolute bottom-2 right-12 w-16 h-16 bg-green-500 rounded-full flex items-center justify-center text-white text-2xl">
+          ⭐
+        </div>
+      </div>
+
+      {/* Floating decorations */}
+      <div className="fixed top-1/4 left-8 text-4xl animate-bounce delay-1000">🎈</div>
+      <div className="fixed top-1/3 right-16 text-5xl animate-pulse">⭐</div>
+      <div className="fixed bottom-1/3 left-1/4 text-3xl animate-bounce delay-500">🌟</div>
     </div>
   );
 };
