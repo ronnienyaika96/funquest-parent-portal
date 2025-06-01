@@ -1,8 +1,13 @@
 
 import React from 'react';
-import { User } from 'lucide-react';
+import { User, Gamepad2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-const DashboardHeader = () => {
+interface DashboardHeaderProps {
+  onEnterGamingMode?: () => void;
+}
+
+const DashboardHeader = ({ onEnterGamingMode }: DashboardHeaderProps) => {
   return (
     <header className="bg-white shadow-lg border-b-4 border-yellow-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -18,6 +23,14 @@ const DashboardHeader = () => {
           </div>
           
           <div className="flex items-center space-x-4">
+            <Button
+              onClick={onEnterGamingMode}
+              className="bg-gradient-to-r from-green-400 to-green-500 hover:from-green-500 hover:to-green-600 text-white font-bold py-3 px-6 rounded-2xl shadow-lg transform transition-all hover:scale-105"
+            >
+              <Gamepad2 className="w-5 h-5 mr-2" />
+              Child Mode
+            </Button>
+            
             <div className="hidden sm:block text-right">
               <p className="text-sm font-medium text-gray-900">Welcome back!</p>
               <p className="text-sm text-gray-600">Sarah Johnson</p>

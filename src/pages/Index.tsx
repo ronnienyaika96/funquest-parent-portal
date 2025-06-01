@@ -8,13 +8,19 @@ import OrdersSection from '../components/OrdersSection';
 import PrintablesSection from '../components/PrintablesSection';
 import SubscriptionCard from '../components/SubscriptionCard';
 import NotificationsPanel from '../components/NotificationsPanel';
+import GamingInterface from '../components/gaming/GamingInterface';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [isGamingMode, setIsGamingMode] = useState(false);
+
+  if (isGamingMode) {
+    return <GamingInterface onExitGaming={() => setIsGamingMode(false)} />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-sky-50 via-yellow-50 to-sky-100">
-      <DashboardHeader />
+      <DashboardHeader onEnterGamingMode={() => setIsGamingMode(true)} />
       
       {/* Navigation Tabs */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
