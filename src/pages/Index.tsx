@@ -52,7 +52,7 @@ const Index = () => {
       case '/orders':
         return <OrdersSection />;
       case '/subscriptions':
-        return <SubscriptionCard />;
+        return <EnhancedSubscriptionCard />;
       case '/printables':
         return <PrintablesSection />;
       case '/notifications':

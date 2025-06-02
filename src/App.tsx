@@ -26,6 +26,18 @@ const App = () => (
           <Route path="/printables" element={<Index />} />
           <Route path="/notifications" element={<Index />} />
           <Route path="/settings" element={<Index />} />
+          
+          {/* Admin Dashboard Routes */}
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/users" element={<AdminDashboard />} />
+          <Route path="/admin/games" element={<AdminDashboard />} />
+          <Route path="/admin/books" element={<AdminDashboard />} />
+          <Route path="/admin/subscriptions" element={<AdminDashboard />} />
+          <Route path="/admin/content" element={<AdminDashboard />} />
+          <Route path="/admin/newsletter" element={<AdminDashboard />} />
+          <Route path="/admin/analytics" element={<AdminDashboard />} />
+          
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

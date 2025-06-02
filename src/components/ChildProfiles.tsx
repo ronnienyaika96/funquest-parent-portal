@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Plus, Edit2, Star, Trophy, Clock, BookOpen } from 'lucide-react';
 
@@ -69,10 +68,7 @@ const ChildProfiles = ({ preview = false }: ChildProfilesProps) => {
           <p className="text-gray-600 mt-1">Manage your children's learning profiles</p>
         </div>
         {!preview && (
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
-            <Plus className="w-4 h-4" />
-            <span>Add Child</span>
-          </button>
+          <AddChildForm />
         )}
       </div>
 
