@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Download } from 'lucide-react';
+import { Download, FileText } from 'lucide-react';
 
 const OrdersSection = () => {
   const orders = [
@@ -11,7 +11,8 @@ const OrdersSection = () => {
       total: '$24.99',
       status: 'Shipped',
       tracking: 'TRK123456789',
-      statusColor: 'bg-green-100 text-green-700'
+      statusColor: 'bg-green-100 text-green-700',
+      hasInvoice: true
     },
     {
       id: 'ORD-2024-002',
@@ -20,7 +21,8 @@ const OrdersSection = () => {
       total: '$18.50',
       status: 'Delivered',
       tracking: 'TRK987654321',
-      statusColor: 'bg-blue-100 text-blue-700'
+      statusColor: 'bg-blue-100 text-blue-700',
+      hasInvoice: true
     },
     {
       id: 'ORD-2024-003',
@@ -29,9 +31,20 @@ const OrdersSection = () => {
       total: '$12.99',
       status: 'Processing',
       tracking: null,
-      statusColor: 'bg-yellow-100 text-yellow-700'
+      statusColor: 'bg-yellow-100 text-yellow-700',
+      hasInvoice: false
     }
   ];
+
+  const downloadInvoice = (orderId) => {
+    // Mock invoice download
+    alert(`Downloading invoice for ${orderId}...`);
+  };
+
+  const downloadReceipt = (orderId) => {
+    // Mock receipt download
+    alert(`Downloading receipt for ${orderId}...`);
+  };
 
   return (
     <div className="space-y-6">
@@ -72,15 +85,32 @@ const OrdersSection = () => {
                   </div>
                 )}
                 <div className="flex space-x-2">
-                  <button className="flex items-center space-x-2 text-sky-600 hover:text-sky-700 font-medium text-sm">
-                    <Download className="w-4 h-4" />
-                    <span>Invoice</span>
-                  </button>
+                  {order.hasInvoice && (
+                    <>
+                      <button 
+                        onClick={() => downloadInvoice(order.id)}
+                        className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 font-medium text-sm bg-blue-50 px-3 py-2 rounded-lg"
+                      >
+                        <FileText className="w-4 h-4" />
+                        <span>Invoice</span>
+                      </button>
+                      <button 
+                        onClick={() => downloadReceipt(order.id)}
+                        className="flex items-center space-x-2 text-green-600 hover:text-green-700 font-medium text-sm bg-green-50 px-3 py-2 rounded-lg"
+                      >
+                        <Download className="w-4 h-4" />
+                        <span>Receipt</span>
+                      </button>
+                    </>
+                  )}
                   {order.tracking && (
-                    <button className="text-sky-600 hover:text-sky-700 font-medium text-sm">
+                    <button className="text-blue-600 hover:text-blue-700 font-medium text-sm bg-blue-50 px-3 py-2 rounded-lg">
                       Track Order
                     </button>
                   )}
+                  <button className="text-purple-600 hover:text-purple-700 font-medium text-sm bg-purple-50 px-3 py-2 rounded-lg">
+                    Reorder
+                  </button>
                 </div>
               </div>
             </div>

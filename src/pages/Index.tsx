@@ -1,5 +1,7 @@
 
 import React, { useState } from 'react';
+import { SidebarProvider } from '@/components/ui/sidebar';
+import { AppSidebar } from '../components/AppSidebar';
 import DashboardHeader from '../components/DashboardHeader';
 import QuickStats from '../components/QuickStats';
 import ChildProfiles from '../components/ChildProfiles';
@@ -8,47 +10,25 @@ import OrdersSection from '../components/OrdersSection';
 import PrintablesSection from '../components/PrintablesSection';
 import SubscriptionCard from '../components/SubscriptionCard';
 import NotificationsPanel from '../components/NotificationsPanel';
+import AccountSettings from '../components/AccountSettings';
+import ShopInterface from '../components/shop/ShopInterface';
 import GamingInterface from '../components/gaming/GamingInterface';
+import { useLocation } from 'react-router-dom';
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState('overview');
   const [isGamingMode, setIsGamingMode] = useState(false);
+  const location = useLocation();
+  const currentPath = location.pathname;
 
   if (isGamingMode) {
     return <GamingInterface onExitGaming={() => setIsGamingMode(false)} />;
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-yellow-50 to-sky-100">
-      <DashboardHeader onEnterGamingMode={() => setIsGamingMode(true)} />
-      
-      {/* Navigation Tabs */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        <div className="flex space-x-1 bg-white rounded-2xl p-2 shadow-lg mb-8">
-          {[
-            { id: 'overview', label: '🏠 Overview', icon: '🏠' },
-            { id: 'children', label: '👧👦 My Kids', icon: '👧👦' },
-            { id: 'progress', label: '📊 Progress', icon: '📊' },
-            { id: 'orders', label: '📦 Orders', icon: '📦' },
-            { id: 'printables', label: '🖨️ Printables', icon: '🖨️' }
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all duration-200 ${
-                activeTab === tab.id 
-                  ? 'bg-sky-500 text-white shadow-lg transform scale-105' 
-                  : 'text-gray-600 hover:bg-sky-50 hover:text-sky-600'
-              }`}
-            >
-              <span className="hidden sm:inline">{tab.label}</span>
-              <span className="sm:hidden text-2xl">{tab.icon}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* Tab Content */}
-        {activeTab === 'overview' && (
+  const renderContent = () => {
+    switch (currentPath) {
+      case '/':
+      case '/dashboard':
+        return (
           <div className="space-y-8">
             <QuickStats />
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -62,14 +42,54 @@ const Index = () => {
               </div>
             </div>
           </div>
-        )}
+        );
+      case '/children':
+        return <ChildProfiles preview={false} />;
+      case '/progress':
+        return <LearningProgress preview={false} />;
+      case '/shop':
+        return <ShopInterface />;
+      case '/orders':
+        return <OrdersSection />;
+      case '/subscriptions':
+        return <SubscriptionCard />;
+      case '/printables':
+        return <PrintablesSection />;
+      case '/notifications':
+        return <NotificationsPanel />;
+      case '/settings':
+        return <AccountSettings />;
+      default:
+        return (
+          <div className="space-y-8">
+            <QuickStats />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 space-y-8">
+                <ChildProfiles preview={true} />
+                <LearningProgress preview={true} />
+              </div>
+              <div className="space-y-8">
+                <SubscriptionCard />
+                <NotificationsPanel />
+              </div>
+            </div>
+          </div>
+        );
+    }
+  };
 
-        {activeTab === 'children' && <ChildProfiles preview={false} />}
-        {activeTab === 'progress' && <LearningProgress preview={false} />}
-        {activeTab === 'orders' && <OrdersSection />}
-        {activeTab === 'printables' && <PrintablesSection />}
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen bg-gray-50 flex w-full">
+        <AppSidebar />
+        <div className="flex-1">
+          <DashboardHeader onEnterGamingMode={() => setIsGamingMode(true)} />
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {renderContent()}
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
