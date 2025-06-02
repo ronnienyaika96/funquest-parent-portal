@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '../components/AppSidebar';
@@ -9,6 +8,7 @@ import LearningProgress from '../components/LearningProgress';
 import OrdersSection from '../components/OrdersSection';
 import PrintablesSection from '../components/PrintablesSection';
 import SubscriptionCard from '../components/SubscriptionCard';
+import { EnhancedSubscriptionCard } from '../components/enhanced/EnhancedSubscriptionCard';
 import NotificationsPanel from '../components/NotificationsPanel';
 import AccountSettings from '../components/AccountSettings';
 import ShopInterface from '../components/shop/ShopInterface';

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Edit2, Star, Trophy, Clock, BookOpen } from 'lucide-react';
+import { AddChildForm } from './forms/AddChildForm';
 
 interface Child {
   id: string;
