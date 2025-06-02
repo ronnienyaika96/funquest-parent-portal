@@ -1,107 +1,158 @@
 
 import React, { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Edit2, Star, Trophy, Clock, BookOpen } from 'lucide-react';
 
-interface ChildProfilesProps {
-  preview: boolean;
+interface Child {
+  id: string;
+  name: string;
+  age: number;
+  avatar: string;
+  level: number;
+  totalPoints: number;
+  favoriteActivity: string;
+  timeSpent: number;
+  achievements: number;
+  booksRead: number;
 }
 
-const ChildProfiles: React.FC<ChildProfilesProps> = ({ preview }) => {
-  const [children] = useState([
+interface ChildProfilesProps {
+  preview?: boolean;
+}
+
+const ChildProfiles = ({ preview = false }: ChildProfilesProps) => {
+  const [children] = useState<Child[]>([
     {
-      id: 1,
+      id: '1',
       name: 'Emma',
-      age: 6,
+      age: 5,
       avatar: '👧',
-      level: 'Beginner',
-      progress: 75,
-      lastActivity: 'Letter Tracing - A to M',
-      badges: ['🌟', '🎨', '📝']
+      level: 8,
+      totalPoints: 1240,
+      favoriteActivity: 'Letter Tracing',
+      timeSpent: 45,
+      achievements: 12,
+      booksRead: 8
     },
     {
-      id: 2,
+      id: '2',
       name: 'Lucas',
-      age: 4,
+      age: 7,
       avatar: '👦',
-      level: 'Explorer',
-      progress: 45,
-      lastActivity: 'Animal Coloring',
-      badges: ['🦁', '🎯']
+      level: 12,
+      totalPoints: 2100,
+      favoriteActivity: 'Math Games',
+      timeSpent: 60,
+      achievements: 18,
+      booksRead: 15
     },
     {
-      id: 3,
-      name: 'Sophia',
-      age: 7,
-      avatar: '👧',
-      level: 'Advanced',
-      progress: 90,
-      lastActivity: 'Bible Stories Puzzle',
-      badges: ['🌟', '📚', '🎨', '✨']
+      id: '3',
+      name: 'Sophie',
+      age: 4,
+      avatar: '👶',
+      level: 4,
+      totalPoints: 680,
+      favoriteActivity: 'Coloring',
+      timeSpent: 30,
+      achievements: 6,
+      booksRead: 4
     }
   ]);
 
   const displayChildren = preview ? children.slice(0, 2) : children;
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold text-gray-900 flex items-center">
-          👧👦 My Children
-        </h2>
-        <button className="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-xl font-medium transition-colors duration-200 flex items-center space-x-2">
-          <Plus className="w-4 h-4" />
-          <span>Add Child</span>
-        </button>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">My Children</h2>
+          <p className="text-gray-600 mt-1">Manage your children's learning profiles</p>
+        </div>
+        {!preview && (
+          <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
+            <Plus className="w-4 h-4" />
+            <span>Add Child</span>
+          </button>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {displayChildren.map((child) => (
-          <div key={child.id} className="bg-gradient-to-br from-sky-50 to-yellow-50 rounded-2xl p-6 hover:shadow-lg transition-shadow duration-200">
-            <div className="flex items-center space-x-4 mb-4">
-              <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-3xl shadow-md">
-                {child.avatar}
+          <div key={child.id} className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <div className="flex justify-between items-start mb-4">
+              <div className="flex items-center space-x-3">
+                <div className="text-4xl">{child.avatar}</div>
+                <div>
+                  <h3 className="font-bold text-lg text-gray-900">{child.name}</h3>
+                  <p className="text-gray-500">{child.age} years old</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-lg font-bold text-gray-900">{child.name}</h3>
-                <p className="text-sm text-gray-600">Age {child.age} • {child.level}</p>
-              </div>
+              {!preview && (
+                <button className="text-gray-400 hover:text-gray-600">
+                  <Edit2 className="w-4 h-4" />
+                </button>
+              )}
             </div>
 
-            <div className="mb-4">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-gray-700">Learning Progress</span>
-                <span className="text-sm font-bold text-sky-600">{child.progress}%</span>
+            <div className="space-y-4">
+              <div className="bg-blue-50 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-blue-700">Level {child.level}</span>
+                  <span className="text-sm font-bold text-blue-900">{child.totalPoints} pts</span>
+                </div>
+                <div className="w-full bg-blue-200 rounded-full h-2">
+                  <div 
+                    className="bg-blue-600 h-2 rounded-full" 
+                    style={{ width: `${(child.level / 20) * 100}%` }}
+                  ></div>
+                </div>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-3">
-                <div 
-                  className="bg-gradient-to-r from-sky-400 to-yellow-400 h-3 rounded-full transition-all duration-500"
-                  style={{ width: `${child.progress}%` }}
-                ></div>
-              </div>
-            </div>
 
-            <div className="mb-4">
-              <p className="text-sm text-gray-600 mb-2">Last Activity:</p>
-              <p className="text-sm font-medium text-gray-900">{child.lastActivity}</p>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex space-x-1">
-                {child.badges.map((badge, index) => (
-                  <span key={index} className="text-lg">{badge}</span>
-                ))}
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="flex items-center space-x-2">
+                  <Clock className="w-4 h-4 text-green-600" />
+                  <span className="text-gray-600">{child.timeSpent}h played</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Trophy className="w-4 h-4 text-yellow-600" />
+                  <span className="text-gray-600">{child.achievements} badges</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <BookOpen className="w-4 h-4 text-purple-600" />
+                  <span className="text-gray-600">{child.booksRead} books</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Star className="w-4 h-4 text-orange-600" />
+                  <span className="text-gray-600">Top activity</span>
+                </div>
               </div>
-              <button className="text-sky-600 hover:text-sky-700 font-medium text-sm">
-                Manage →
-              </button>
+
+              <div className="pt-2 border-t border-gray-100">
+                <p className="text-sm text-gray-600">
+                  <span className="font-medium">Favorite:</span> {child.favoriteActivity}
+                </p>
+              </div>
+
+              {!preview && (
+                <div className="flex space-x-2 pt-2">
+                  <button className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                    View Progress
+                  </button>
+                  <button className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium">
+                    Settings
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         ))}
       </div>
 
       {preview && children.length > 2 && (
-        <div className="mt-6 text-center">
-          <p className="text-gray-600">+{children.length - 2} more children</p>
+        <div className="text-center">
+          <p className="text-gray-500 text-sm">
+            Showing {displayChildren.length} of {children.length} children
+          </p>
         </div>
       )}
     </div>

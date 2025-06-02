@@ -33,24 +33,29 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className="w-64 border-r border-gray-200 bg-white">
-      <SidebarContent>
+    <Sidebar className="w-72 border-r border-gray-200 bg-white shadow-sm">
+      <SidebarContent className="p-6">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">FunQuest</h1>
+          <p className="text-sm text-gray-500">Learning Dashboard</p>
+        </div>
+        
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-3">
               {sidebarItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url === '/dashboard' ? '/' : item.url}
-                      className={`flex items-center space-x-4 px-4 py-3 rounded-xl transition-all duration-200 ${
+                      className={`flex items-center space-x-4 px-4 py-4 rounded-xl transition-all duration-200 font-medium text-base ${
                         isActive(item.url)
-                          ? 'bg-blue-50 text-blue-700 shadow-sm'
-                          : 'text-gray-700 hover:bg-gray-50'
+                          ? 'bg-blue-50 text-blue-700 shadow-sm border border-blue-100'
+                          : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                       }`}
                     >
-                      <span className={`text-3xl ${item.color}`}>{item.icon}</span>
-                      <span className="font-medium text-lg">{item.title}</span>
+                      <span className="text-2xl">{item.icon}</span>
+                      <span className="font-semibold">{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

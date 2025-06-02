@@ -1,64 +1,177 @@
 
-import React from 'react';
+import React, { useState } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
+import { Trophy, Star, Clock, BookOpen, Filter, Download } from 'lucide-react';
 
 interface LearningProgressProps {
-  preview: boolean;
+  preview?: boolean;
 }
 
-const LearningProgress: React.FC<LearningProgressProps> = ({ preview }) => {
-  const activities = [
-    { name: 'Letter Tracing', progress: 85, color: 'from-blue-400 to-blue-500', icon: '✏️' },
-    { name: 'Number Learning', progress: 60, color: 'from-green-400 to-green-500', icon: '🔢' },
-    { name: 'Bible Stories', progress: 45, color: 'from-purple-400 to-purple-500', icon: '📖' },
-    { name: 'Animal Facts', progress: 90, color: 'from-yellow-400 to-yellow-500', icon: '🦁' },
-    { name: 'Coloring Pages', progress: 75, color: 'from-pink-400 to-pink-500', icon: '🎨' }
+const LearningProgress = ({ preview = false }: LearningProgressProps) => {
+  const [selectedChild, setSelectedChild] = useState('all');
+  const [timeRange, setTimeRange] = useState('week');
+
+  const weeklyProgress = [
+    { day: 'Mon', minutes: 45, activities: 5 },
+    { day: 'Tue', minutes: 30, activities: 3 },
+    { day: 'Wed', minutes: 60, activities: 7 },
+    { day: 'Thu', minutes: 35, activities: 4 },
+    { day: 'Fri', minutes: 50, activities: 6 },
+    { day: 'Sat', minutes: 70, activities: 8 },
+    { day: 'Sun', minutes: 40, activities: 5 }
   ];
 
-  const displayActivities = preview ? activities.slice(0, 3) : activities;
+  const skillProgress = [
+    { name: 'Reading', value: 85, color: '#3B82F6' },
+    { name: 'Math', value: 72, color: '#10B981' },
+    { name: 'Writing', value: 68, color: '#F59E0B' },
+    { name: 'Science', value: 79, color: '#8B5CF6' }
+  ];
+
+  const achievements = [
+    { title: 'Reading Champion', description: 'Read 10 books this month', icon: '📚', earned: true },
+    { title: 'Math Wizard', description: 'Completed 50 math problems', icon: '🧮', earned: true },
+    { title: 'Creative Artist', description: 'Finished 20 coloring pages', icon: '🎨', earned: false },
+    { title: 'Story Teller', description: 'Created 5 stories', icon: '📖', earned: false }
+  ];
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6">
-      <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-        📊 Learning Progress
-      </h2>
-
-      <div className="space-y-4">
-        {displayActivities.map((activity, index) => (
-          <div key={index} className="bg-gray-50 rounded-xl p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center space-x-3">
-                <span className="text-2xl">{activity.icon}</span>
-                <span className="font-medium text-gray-900">{activity.name}</span>
-              </div>
-              <span className="text-sm font-bold text-gray-700">{activity.progress}%</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className={`bg-gradient-to-r ${activity.color} h-2 rounded-full transition-all duration-700`}
-                style={{ width: `${activity.progress}%` }}
-              ></div>
-            </div>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Learning Progress</h2>
+          <p className="text-gray-600 mt-1">Track your children's learning journey</p>
+        </div>
+        {!preview && (
+          <div className="flex space-x-3">
+            <select 
+              value={selectedChild} 
+              onChange={(e) => setSelectedChild(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="all">All Children</option>
+              <option value="emma">Emma</option>
+              <option value="lucas">Lucas</option>
+              <option value="sophie">Sophie</option>
+            </select>
+            <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center space-x-2">
+              <Download className="w-4 h-4" />
+              <span>Export</span>
+            </button>
           </div>
-        ))}
+        )}
       </div>
 
-      {!preview && (
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-gradient-to-br from-sky-50 to-blue-50 rounded-xl p-4">
-            <h3 className="font-bold text-gray-900 mb-2">🏆 This Week's Achievements</h3>
-            <ul className="space-y-2 text-sm text-gray-700">
-              <li>• Completed all A-M letter tracing</li>
-              <li>• Finished 5 animal coloring pages</li>
-              <li>• Learned about Noah's Ark</li>
-            </ul>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="bg-blue-50 rounded-2xl p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-blue-600 text-sm font-medium">Total Time</p>
+              <p className="text-2xl font-bold text-blue-900">24.5h</p>
+            </div>
+            <Clock className="w-8 h-8 text-blue-600" />
           </div>
-          <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-4">
-            <h3 className="font-bold text-gray-900 mb-2">🎯 Learning Goals</h3>
-            <ul className="space-y-2 text-sm text-gray-700">
-              <li>• Complete N-Z letter tracing</li>
-              <li>• Learn numbers 11-20</li>
-              <li>• Read 3 new Bible stories</li>
-            </ul>
+        </div>
+        <div className="bg-green-50 rounded-2xl p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-green-600 text-sm font-medium">Activities</p>
+              <p className="text-2xl font-bold text-green-900">156</p>
+            </div>
+            <Star className="w-8 h-8 text-green-600" />
+          </div>
+        </div>
+        <div className="bg-yellow-50 rounded-2xl p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-yellow-600 text-sm font-medium">Achievements</p>
+              <p className="text-2xl font-bold text-yellow-900">12</p>
+            </div>
+            <Trophy className="w-8 h-8 text-yellow-600" />
+          </div>
+        </div>
+        <div className="bg-purple-50 rounded-2xl p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-purple-600 text-sm font-medium">Books Read</p>
+              <p className="text-2xl font-bold text-purple-900">27</p>
+            </div>
+            <BookOpen className="w-8 h-8 text-purple-600" />
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Weekly Progress Chart */}
+        <div className="bg-white rounded-2xl shadow-lg p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Weekly Activity</h3>
+          <ResponsiveContainer width="100%" height={preview ? 200 : 300}>
+            <BarChart data={weeklyProgress}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="day" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="minutes" fill="#3B82F6" radius={4} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Skill Progress */}
+        <div className="bg-white rounded-2xl shadow-lg p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Skill Development</h3>
+          <div className="space-y-4">
+            {skillProgress.map((skill) => (
+              <div key={skill.name}>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="font-medium text-gray-700">{skill.name}</span>
+                  <span className="text-gray-600">{skill.value}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="h-2 rounded-full transition-all duration-300" 
+                    style={{ 
+                      width: `${skill.value}%`,
+                      backgroundColor: skill.color 
+                    }}
+                  ></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Achievements */}
+      {!preview && (
+        <div className="bg-white rounded-2xl shadow-lg p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Achievements</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {achievements.map((achievement, index) => (
+              <div 
+                key={index}
+                className={`border-2 rounded-xl p-4 transition-all ${
+                  achievement.earned 
+                    ? 'border-green-200 bg-green-50' 
+                    : 'border-gray-200 bg-gray-50'
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  <span className="text-2xl">{achievement.icon}</span>
+                  <div className="flex-1">
+                    <h4 className={`font-medium ${achievement.earned ? 'text-green-900' : 'text-gray-600'}`}>
+                      {achievement.title}
+                    </h4>
+                    <p className={`text-sm ${achievement.earned ? 'text-green-700' : 'text-gray-500'}`}>
+                      {achievement.description}
+                    </p>
+                  </div>
+                  {achievement.earned && (
+                    <Trophy className="w-5 h-5 text-green-600" />
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
