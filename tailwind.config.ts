@@ -104,6 +104,10 @@ export default {
 				'88': '22rem',
 				'128': '32rem'
 			},
+			scale: {
+				'98': '0.98',
+				'102': '1.02'
+			},
 			boxShadow: {
 				'soft': '0 2px 8px rgba(0, 0, 0, 0.08)',
 				'medium': '0 4px 16px rgba(0, 0, 0, 0.12)',
