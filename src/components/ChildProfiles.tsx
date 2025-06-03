@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Plus, Edit2, Star, Trophy, Clock, BookOpen } from 'lucide-react';
 import { AddChildForm } from './forms/AddChildForm';
+import { useIsMobile } from '../hooks/use-mobile';
+import MobileChildProfiles from './mobile/MobileChildProfiles';
+
 interface Child {
   id: string;
   name: string;
@@ -19,6 +22,7 @@ interface ChildProfilesProps {
 const ChildProfiles = ({
   preview = false
 }: ChildProfilesProps) => {
+  const isMobile = useIsMobile();
   const [children] = useState<Child[]>([{
     id: '1',
     name: 'Emma',
@@ -53,6 +57,11 @@ const ChildProfiles = ({
     achievements: 6,
     booksRead: 4
   }]);
+  // Use mobile version on mobile devices
+  if (isMobile && !preview) {
+    return <MobileChildProfiles />;
+  }
+
   const displayChildren = preview ? children.slice(0, 2) : children;
   return <div className="space-y-6">
       <div className="flex justify-between items-center">
