@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Plus, Baby, Calendar, Palette } from 'lucide-react';
+import { Plus, Baby, Calendar, Palette, School } from 'lucide-react';
 
 const avatars = ['👧', '👦', '👶', '🧒', '👧🏻', '👦🏻', '👧🏽', '👦🏽', '👧🏿', '👦🏿'];
 const ageRanges = [
@@ -21,6 +21,7 @@ export function AddChildForm() {
     name: '',
     age: '',
     avatar: '👧',
+    school: '',
     interests: []
   });
 
@@ -46,7 +47,7 @@ export function AddChildForm() {
           <span>Add Child</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Child Profile</DialogTitle>
           <DialogDescription>
@@ -83,6 +84,18 @@ export function AddChildForm() {
                   </option>
                 ))}
               </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <School className="w-4 h-4 inline mr-1" />
+                School (Optional)
+              </label>
+              <Input
+                placeholder="Enter your child's school"
+                value={formData.school}
+                onChange={(e) => setFormData({...formData, school: e.target.value})}
+              />
             </div>
           </div>
 

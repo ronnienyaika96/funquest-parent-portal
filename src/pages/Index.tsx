@@ -7,7 +7,6 @@ import ChildProfiles from '../components/ChildProfiles';
 import LearningProgress from '../components/LearningProgress';
 import OrdersSection from '../components/OrdersSection';
 import PrintablesSection from '../components/PrintablesSection';
-import SubscriptionCard from '../components/SubscriptionCard';
 import { EnhancedSubscriptionCard } from '../components/enhanced/EnhancedSubscriptionCard';
 import NotificationsPanel from '../components/NotificationsPanel';
 import AccountSettings from '../components/AccountSettings';
@@ -86,13 +85,8 @@ const Index = () => {
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="space-y-8">
-                <ChildProfiles preview={true} />
-                <LearningProgress preview={true} />
-              </div>
-              <div className="space-y-8">
-                {/* Removed NotificationsPanel */}
-              </div>
+              <ChildProfiles preview={true} />
+              <LearningProgress preview={true} />
             </div>
           </div>
         );
@@ -137,13 +131,8 @@ const Index = () => {
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="space-y-8">
-                <ChildProfiles preview={true} />
-                <LearningProgress preview={true} />
-              </div>
-              <div className="space-y-8">
-                {/* Removed NotificationsPanel */}
-              </div>
+              <ChildProfiles preview={true} />
+              <LearningProgress preview={true} />
             </div>
           </div>
         );
@@ -174,7 +163,7 @@ const Index = () => {
         <AppSidebar />
         <div className="flex-1">
           <DashboardHeader onEnterGamingMode={() => setIsGamingMode(true)} />
-          <main className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-8">
+          <main className="max-w-6xl mx-auto px-6 py-8">
             {renderDesktopContent()}
           </main>
         </div>
