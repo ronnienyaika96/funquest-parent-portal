@@ -91,7 +91,7 @@ const Index = () => {
                 <LearningProgress preview={true} />
               </div>
               <div className="space-y-8">
-                <NotificationsPanel />
+                {/* Removed NotificationsPanel */}
               </div>
             </div>
           </div>
@@ -142,7 +142,7 @@ const Index = () => {
                 <LearningProgress preview={true} />
               </div>
               <div className="space-y-8">
-                <NotificationsPanel />
+                {/* Removed NotificationsPanel */}
               </div>
             </div>
           </div>

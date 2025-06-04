@@ -19,12 +19,13 @@ const MobileGamesInterface = () => {
     { name: 'Shapes', emoji: '🔷', color: 'bg-orange-100', activeColor: 'from-orange-500 to-red-500' }
   ];
 
-  const featuredGames = [
+  // Using the same games as desktop version
+  const games = [
     {
       id: 1,
-      title: 'Letter Tracing Adventure',
-      description: 'Learn to write letters A-Z with magical animations',
-      emoji: '✨',
+      title: 'Letter Tracing A-Z',
+      description: 'Learn to write letters with guided tracing',
+      emoji: '✏️',
       difficulty: 'Easy',
       duration: '10-15 min',
       players: '1 Player',
@@ -39,8 +40,8 @@ const MobileGamesInterface = () => {
     },
     {
       id: 2,
-      title: 'Rainbow Coloring Magic',
-      description: 'Color magical creatures and learn about colors',
+      title: 'Rainbow Coloring',
+      description: 'Color beautiful pictures and learn about colors',
       emoji: '🌈',
       difficulty: 'Easy',
       duration: '15-20 min',
@@ -53,15 +54,12 @@ const MobileGamesInterface = () => {
       featured: true,
       completedLevels: 8,
       totalLevels: 15
-    }
-  ];
-
-  const games = [
+    },
     {
       id: 3,
-      title: 'Safari Number Hunt',
-      description: 'Count wild animals and discover numbers 1-20',
-      emoji: '🦁',
+      title: 'Number Matching',
+      description: 'Match numbers with quantities in fun games',
+      emoji: '🔢',
       difficulty: 'Medium',
       duration: '20-25 min',
       players: '1 Player',
@@ -73,31 +71,17 @@ const MobileGamesInterface = () => {
     },
     {
       id: 4,
-      title: 'Shape Detective',
-      description: 'Solve mysteries by finding hidden shapes',
-      emoji: '🔍',
+      title: 'Shape Recognition',
+      description: 'Identify and learn about different shapes',
+      emoji: '🔷',
       difficulty: 'Medium',
       duration: '15-20 min',
       players: '1 Player',
       rating: 4.6,
       category: 'Shapes',
-      ageGroup: '5-7 years',
+      ageGroup: '3-5 years',
       gradient: 'from-orange-400 to-red-500',
       bgGradient: 'from-orange-50 to-red-50'
-    },
-    {
-      id: 5,
-      title: 'Musical Phonics',
-      description: 'Dance with letters and learn sounds',
-      emoji: '🎵',
-      difficulty: 'Easy',
-      duration: '10-15 min',
-      players: '1 Player',
-      rating: 4.8,
-      category: 'Letters',
-      ageGroup: '3-5 years',
-      gradient: 'from-yellow-400 to-orange-500',
-      bgGradient: 'from-yellow-50 to-orange-50'
     }
   ];
 
@@ -121,6 +105,9 @@ const MobileGamesInterface = () => {
     // Here you would navigate to the actual game interface
   };
 
+  const featuredGames = games.filter(game => game.featured);
+  const regularGames = games.filter(game => !game.featured);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
       <div className="p-4 space-y-6 pb-24">
@@ -136,77 +123,79 @@ const MobileGamesInterface = () => {
         </div>
 
         {/* Featured Games */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-800 flex items-center">
-              <Trophy className="w-6 h-6 text-yellow-500 mr-2" />
-              Featured Adventures
-            </h2>
-          </div>
-          
-          {featuredGames.map((game) => (
-            <Card key={game.id} className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 transform transition-all duration-300 hover:scale-105 active:scale-95">
-              <CardContent className="p-0">
-                <div className={`bg-gradient-to-r ${game.gradient} p-4 text-white relative overflow-hidden`}>
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
-                  <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12"></div>
-                  
-                  <div className="relative z-10 flex justify-between items-start mb-3">
-                    <div className="flex-1">
-                      <div className="flex items-center mb-2">
-                        <span className="text-3xl mr-3">{game.emoji}</span>
-                        <Badge className="bg-white/20 text-white border-white/30">
-                          Featured
-                        </Badge>
+        {featuredGames.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-800 flex items-center">
+                <Trophy className="w-6 h-6 text-yellow-500 mr-2" />
+                Featured Adventures
+              </h2>
+            </div>
+            
+            {featuredGames.map((game) => (
+              <Card key={game.id} className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 transform transition-all duration-300 hover:scale-105 active:scale-95">
+                <CardContent className="p-0">
+                  <div className={`bg-gradient-to-r ${game.gradient} p-4 text-white relative overflow-hidden`}>
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12"></div>
+                    
+                    <div className="relative z-10 flex justify-between items-start mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center mb-2">
+                          <span className="text-3xl mr-3">{game.emoji}</span>
+                          <Badge className="bg-white/20 text-white border-white/30">
+                            Featured
+                          </Badge>
+                        </div>
+                        <h3 className="text-xl font-bold mb-1">{game.title}</h3>
+                        <p className="text-white/90 text-sm mb-3">{game.description}</p>
                       </div>
-                      <h3 className="text-xl font-bold mb-1">{game.title}</h3>
-                      <p className="text-white/90 text-sm mb-3">{game.description}</p>
-                    </div>
-                    <div className="flex items-center space-x-1 ml-4">
-                      <Star className="w-4 h-4 text-yellow-300 fill-current" />
-                      <span className="text-white font-medium">{game.rating}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="relative z-10 flex items-center justify-between">
-                    <div className="flex items-center space-x-4 text-sm text-white/80">
-                      <div className="flex items-center space-x-1">
-                        <Clock className="w-3 h-3" />
-                        <span>{game.duration}</span>
+                      <div className="flex items-center space-x-1 ml-4">
+                        <Star className="w-4 h-4 text-yellow-300 fill-current" />
+                        <span className="text-white font-medium">{game.rating}</span>
                       </div>
-                      <Badge className={`text-xs border ${getDifficultyColor(game.difficulty)}`}>
-                        {game.difficulty}
-                      </Badge>
                     </div>
                     
-                    <Button 
-                      onClick={() => playGame(game.id)}
-                      className="bg-white text-gray-800 hover:bg-gray-100 rounded-full font-bold px-6 py-2 shadow-lg transform transition-all duration-200 hover:scale-105"
-                    >
-                      <Play className="w-4 h-4 mr-2" />
-                      Play Now
-                    </Button>
-                  </div>
-                  
-                  {game.completedLevels && (
-                    <div className="relative z-10 mt-3 pt-3 border-t border-white/20">
-                      <div className="flex justify-between text-sm text-white/90 mb-1">
-                        <span>Progress</span>
-                        <span>{game.completedLevels}/{game.totalLevels} levels</span>
+                    <div className="relative z-10 flex items-center justify-between">
+                      <div className="flex items-center space-x-4 text-sm text-white/80">
+                        <div className="flex items-center space-x-1">
+                          <Clock className="w-3 h-3" />
+                          <span>{game.duration}</span>
+                        </div>
+                        <Badge className={`text-xs border ${getDifficultyColor(game.difficulty)}`}>
+                          {game.difficulty}
+                        </Badge>
                       </div>
-                      <div className="w-full bg-white/20 rounded-full h-2">
-                        <div 
-                          className="bg-white rounded-full h-2 transition-all duration-500" 
-                          style={{ width: `${(game.completedLevels / game.totalLevels) * 100}%` }}
-                        ></div>
-                      </div>
+                      
+                      <Button 
+                        onClick={() => playGame(game.id)}
+                        className="bg-white text-gray-800 hover:bg-gray-100 rounded-full font-bold px-6 py-2 shadow-lg transform transition-all duration-200 hover:scale-105"
+                      >
+                        <Play className="w-4 h-4 mr-2" />
+                        Play Now
+                      </Button>
                     </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                    
+                    {game.completedLevels && (
+                      <div className="relative z-10 mt-3 pt-3 border-t border-white/20">
+                        <div className="flex justify-between text-sm text-white/90 mb-1">
+                          <span>Progress</span>
+                          <span>{game.completedLevels}/{game.totalLevels} levels</span>
+                        </div>
+                        <div className="w-full bg-white/20 rounded-full h-2">
+                          <div 
+                            className="bg-white rounded-full h-2 transition-all duration-500" 
+                            style={{ width: `${(game.completedLevels / game.totalLevels) * 100}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
 
         {/* Category Filter */}
         <div className="space-y-4">
@@ -243,62 +232,63 @@ const MobileGamesInterface = () => {
             <option value="3-5">Ages 3-5 🧒</option>
             <option value="4-6">Ages 4-6 👦</option>
             <option value="5-7">Ages 5-7 👧</option>
-            <option value="6-8">Ages 6-8 🧒</option>
           </select>
         </div>
 
         {/* Games Grid */}
-        <div className="space-y-4">
-          <h3 className="text-xl font-bold text-gray-800">More Adventures</h3>
-          <div className="grid grid-cols-1 gap-4">
-            {filteredGames.map((game) => (
-              <Card key={game.id} className="overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-102 active:scale-98">
-                <CardContent className="p-0">
-                  <div className="flex">
-                    <div className={`w-24 h-24 bg-gradient-to-br ${game.gradient} flex items-center justify-center relative overflow-hidden`}>
-                      <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
-                      <span className="text-3xl relative z-10">{game.emoji}</span>
-                    </div>
-                    
-                    <div className="flex-1 p-4">
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex-1">
-                          <h4 className="text-lg font-bold text-gray-800 mb-1">{game.title}</h4>
-                          <p className="text-sm text-gray-600 mb-2">{game.description}</p>
-                        </div>
-                        <div className="flex items-center space-x-1 ml-2">
-                          <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                          <span className="text-sm font-medium text-gray-700">{game.rating}</span>
-                        </div>
+        {regularGames.length > 0 && (
+          <div className="space-y-4">
+            <h3 className="text-xl font-bold text-gray-800">More Adventures</h3>
+            <div className="grid grid-cols-1 gap-4">
+              {filteredGames.filter(game => !game.featured).map((game) => (
+                <Card key={game.id} className="overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-102 active:scale-98">
+                  <CardContent className="p-0">
+                    <div className="flex">
+                      <div className={`w-24 h-24 bg-gradient-to-br ${game.gradient} flex items-center justify-center relative overflow-hidden`}>
+                        <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+                        <span className="text-3xl relative z-10">{game.emoji}</span>
                       </div>
                       
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <Badge className={`text-xs border ${getDifficultyColor(game.difficulty)}`}>
-                            {game.difficulty}
-                          </Badge>
-                          <div className="flex items-center space-x-1 text-xs text-gray-500">
-                            <Clock className="w-3 h-3" />
-                            <span>{game.duration}</span>
+                      <div className="flex-1 p-4">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1">
+                            <h4 className="text-lg font-bold text-gray-800 mb-1">{game.title}</h4>
+                            <p className="text-sm text-gray-600 mb-2">{game.description}</p>
+                          </div>
+                          <div className="flex items-center space-x-1 ml-2">
+                            <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                            <span className="text-sm font-medium text-gray-700">{game.rating}</span>
                           </div>
                         </div>
                         
-                        <Button 
-                          onClick={() => playGame(game.id)}
-                          size="sm"
-                          className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full font-bold px-4 py-2 shadow-md hover:shadow-lg transform transition-all duration-200 hover:scale-105"
-                        >
-                          <Play className="w-3 h-3 mr-1" />
-                          Play
-                        </Button>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <Badge className={`text-xs border ${getDifficultyColor(game.difficulty)}`}>
+                              {game.difficulty}
+                            </Badge>
+                            <div className="flex items-center space-x-1 text-xs text-gray-500">
+                              <Clock className="w-3 h-3" />
+                              <span>{game.duration}</span>
+                            </div>
+                          </div>
+                          
+                          <Button 
+                            onClick={() => playGame(game.id)}
+                            size="sm"
+                            className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full font-bold px-4 py-2 shadow-md hover:shadow-lg transform transition-all duration-200 hover:scale-105"
+                          >
+                            <Play className="w-3 h-3 mr-1" />
+                            Play
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* No Results */}
         {filteredGames.length === 0 && (
