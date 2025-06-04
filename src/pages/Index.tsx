@@ -65,13 +65,32 @@ const Index = () => {
         return (
           <div className="space-y-8">
             <QuickStats />
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2 space-y-8">
+            
+            {/* Main Play Games CTA */}
+            <div className="bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 rounded-3xl p-8 text-white text-center shadow-2xl">
+              <div className="max-w-2xl mx-auto">
+                <div className="text-6xl mb-4">🎮</div>
+                <h2 className="text-4xl font-bold mb-4">Ready for Fun Learning?</h2>
+                <p className="text-xl mb-8 text-white/90">Dive into educational games that make learning an adventure!</p>
+                <button 
+                  onClick={() => setIsGamingMode(true)}
+                  className="bg-white text-gray-800 hover:bg-gray-100 px-12 py-6 rounded-2xl text-2xl font-bold shadow-lg transform transition-all duration-200 hover:scale-105 active:scale-95"
+                >
+                  <div className="flex items-center justify-center space-x-3">
+                    <span>🚀</span>
+                    <span>Start Playing</span>
+                    <span>🎯</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="space-y-8">
                 <ChildProfiles preview={true} />
                 <LearningProgress preview={true} />
               </div>
               <div className="space-y-8">
-                <SubscriptionCard />
                 <NotificationsPanel />
               </div>
             </div>
@@ -97,13 +116,32 @@ const Index = () => {
         return (
           <div className="space-y-8">
             <QuickStats />
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2 space-y-8">
+            
+            {/* Main Play Games CTA */}
+            <div className="bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 rounded-3xl p-8 text-white text-center shadow-2xl">
+              <div className="max-w-2xl mx-auto">
+                <div className="text-6xl mb-4">🎮</div>
+                <h2 className="text-4xl font-bold mb-4">Ready for Fun Learning?</h2>
+                <p className="text-xl mb-8 text-white/90">Dive into educational games that make learning an adventure!</p>
+                <button 
+                  onClick={() => setIsGamingMode(true)}
+                  className="bg-white text-gray-800 hover:bg-gray-100 px-12 py-6 rounded-2xl text-2xl font-bold shadow-lg transform transition-all duration-200 hover:scale-105 active:scale-95"
+                >
+                  <div className="flex items-center justify-center space-x-3">
+                    <span>🚀</span>
+                    <span>Start Playing</span>
+                    <span>🎯</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="space-y-8">
                 <ChildProfiles preview={true} />
                 <LearningProgress preview={true} />
               </div>
               <div className="space-y-8">
-                <SubscriptionCard />
                 <NotificationsPanel />
               </div>
             </div>
@@ -136,7 +174,7 @@ const Index = () => {
         <AppSidebar />
         <div className="flex-1">
           <DashboardHeader onEnterGamingMode={() => setIsGamingMode(true)} />
-          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <main className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-8">
             {renderDesktopContent()}
           </main>
         </div>

@@ -3,8 +3,11 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Play, Book, Star, Trophy, Clock, TrendingUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const MobileDashboard = () => {
+  const navigate = useNavigate();
+
   const quickStats = [
     { 
       title: 'Games Played', 
@@ -65,7 +68,10 @@ const MobileDashboard = () => {
           <div>
             <h2 className="text-2xl font-bold mb-2">Hi Emma! 👋</h2>
             <p className="text-purple-100 mb-4">Ready for another learning adventure?</p>
-            <Button className="bg-white text-purple-600 hover:bg-purple-50 rounded-2xl font-bold">
+            <Button 
+              onClick={() => navigate('/games')}
+              className="bg-white text-purple-600 hover:bg-purple-50 rounded-2xl font-bold"
+            >
               <Play className="w-5 h-5 mr-2" />
               Continue Learning
             </Button>
@@ -129,7 +135,10 @@ const MobileDashboard = () => {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-2 gap-4">
-        <Button className="btn-primary h-16 text-lg">
+        <Button 
+          onClick={() => navigate('/games')}
+          className="btn-primary h-16 text-lg"
+        >
           🎮 Play Games
         </Button>
         <Button className="btn-secondary h-16 text-lg">

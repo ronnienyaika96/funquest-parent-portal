@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -125,6 +124,11 @@
     @apply fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-2 py-2 z-50;
     height: 80px;
     box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Rainbow Gradient */
+  .bg-rainbow-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
   }
 
   /* Floating Action Buttons */
