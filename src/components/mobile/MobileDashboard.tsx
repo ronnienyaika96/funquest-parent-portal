@@ -13,28 +13,28 @@ const MobileDashboard = () => {
       title: 'Games Played', 
       value: '24', 
       icon: Play, 
-      color: 'from-blue-400 to-blue-500',
+      color: 'from-blue-500 to-blue-600',
       bgColor: 'bg-blue-50'
     },
     { 
       title: 'Books Read', 
       value: '8', 
       icon: Book, 
-      color: 'from-purple-400 to-purple-500',
+      color: 'from-purple-500 to-purple-600',
       bgColor: 'bg-purple-50'
     },
     { 
       title: 'Stars Earned', 
       value: '156', 
       icon: Star, 
-      color: 'from-yellow-400 to-yellow-500',
+      color: 'from-yellow-500 to-yellow-600',
       bgColor: 'bg-yellow-50'
     },
     { 
       title: 'Achievements', 
       value: '12', 
       icon: Trophy, 
-      color: 'from-green-400 to-green-500',
+      color: 'from-green-500 to-green-600',
       bgColor: 'bg-green-50'
     }
   ];
@@ -63,7 +63,7 @@ const MobileDashboard = () => {
   return (
     <div className="p-4 space-y-6 pb-24">
       {/* Welcome Section */}
-      <div className="card-mobile bg-gradient-to-br from-purple-500 to-pink-500 text-white">
+      <div className="card-mobile bg-purple-500 text-white">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold mb-2">Hi Emma! 👋</h2>
@@ -88,7 +88,7 @@ const MobileDashboard = () => {
             <Card key={index} className={`${stat.bgColor} border-0 shadow-soft`}>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <div className={`w-10 h-10 rounded-2xl bg-gradient-to-r ${stat.color} flex items-center justify-center shadow-md`}>
+                  <div className={`w-10 h-10 rounded-2xl bg-${stat.color.includes('blue') ? 'blue' : stat.color.includes('purple') ? 'purple' : stat.color.includes('yellow') ? 'yellow' : 'green'}-500 flex items-center justify-center shadow-md`}>
                     <Icon className="w-5 h-5 text-white" />
                   </div>
                   <TrendingUp className="w-4 h-4 text-green-500" />
@@ -122,7 +122,7 @@ const MobileDashboard = () => {
                 </div>
                 <div className="progress-bar">
                   <div 
-                    className="progress-fill" 
+                    className="h-full bg-green-500 rounded-full transition-all duration-500 ease-out" 
                     style={{ width: `${activity.progress}%` }}
                   ></div>
                 </div>
@@ -137,24 +137,27 @@ const MobileDashboard = () => {
       <div className="grid grid-cols-2 gap-4">
         <Button 
           onClick={() => navigate('/games')}
-          className="btn-primary h-16 text-lg"
+          className="bg-orange-500 text-white hover:bg-orange-600 h-16 text-lg rounded-2xl"
         >
           🎮 Play Games
         </Button>
-        <Button className="btn-secondary h-16 text-lg">
-          📚 Read Books
+        <Button 
+          onClick={() => navigate('/shop')}
+          className="bg-green-500 text-white hover:bg-green-600 h-16 text-lg rounded-2xl"
+        >
+          📚 Shop Books
         </Button>
       </div>
 
       {/* Achievement Showcase */}
-      <div className="card-mobile bg-gradient-to-br from-yellow-50 to-orange-50">
+      <div className="card-mobile bg-yellow-50">
         <div className="text-center">
           <div className="text-4xl mb-2">🏆</div>
           <h3 className="text-lg font-bold text-gray-800 mb-1">Amazing Progress!</h3>
           <p className="text-gray-600 text-sm mb-4">You're on a 5-day learning streak!</p>
           <div className="flex justify-center space-x-2">
             {[1, 2, 3, 4, 5].map((day) => (
-              <div key={day} className="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center">
+              <div key={day} className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
                 <span className="text-white text-sm font-bold">{day}</span>
               </div>
             ))}

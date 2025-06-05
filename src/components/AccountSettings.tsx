@@ -1,10 +1,243 @@
 
 import React, { useState } from 'react';
-import { User, Bell, CreditCard, Shield, Download } from 'lucide-react';
+import { User, Bell, CreditCard, Shield, Download, Eye, EyeOff, Lock, Settings as SettingsIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import ManageSubscriptionModal from './forms/ManageSubscriptionModal';
+import BillingHistoryModal from './forms/BillingHistoryModal';
 
 const AccountSettings = () => {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [showTwoFactor, setShowTwoFactor] = useState(false);
+  const [showPrivacySettings, setShowPrivacySettings] = useState(false);
+
+  // Change Password Modal
+  const ChangePasswordModal = () => {
+    const [passwords, setPasswords] = useState({
+      current: '',
+      new: '',
+      confirm: ''
+    });
+    const [showPasswords, setShowPasswords] = useState({
+      current: false,
+      new: false,
+      confirm: false
+    });
+
+    const handleSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      if (passwords.new !== passwords.confirm) {
+        alert('New passwords do not match');
+        return;
+      }
+      alert('Password changed successfully!');
+      setShowChangePassword(false);
+      setPasswords({ current: '', new: '', confirm: '' });
+    };
+
+    return (
+      <Dialog open={showChangePassword} onOpenChange={setShowChangePassword}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change Password</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="currentPassword">Current Password</Label>
+              <div className="relative">
+                <Input
+                  id="currentPassword"
+                  type={showPasswords.current ? 'text' : 'password'}
+                  value={passwords.current}
+                  onChange={(e) => setPasswords(prev => ({ ...prev, current: e.target.value }))}
+                  required
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-2 top-1/2 -translate-y-1/2"
+                  onClick={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}
+                >
+                  {showPasswords.current ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </Button>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="newPassword">New Password</Label>
+              <div className="relative">
+                <Input
+                  id="newPassword"
+                  type={showPasswords.new ? 'text' : 'password'}
+                  value={passwords.new}
+                  onChange={(e) => setPasswords(prev => ({ ...prev, new: e.target.value }))}
+                  required
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-2 top-1/2 -translate-y-1/2"
+                  onClick={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}
+                >
+                  {showPasswords.new ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm New Password</Label>
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type={showPasswords.confirm ? 'text' : 'password'}
+                  value={passwords.confirm}
+                  onChange={(e) => setPasswords(prev => ({ ...prev, confirm: e.target.value }))}
+                  required
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-2 top-1/2 -translate-y-1/2"
+                  onClick={() => setShowPasswords(prev => ({ ...prev, confirm: !prev.confirm }))}
+                >
+                  {showPasswords.confirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <Button type="submit" className="flex-1">Change Password</Button>
+              <Button type="button" variant="outline" onClick={() => setShowChangePassword(false)}>
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    );
+  };
+
+  // Two Factor Authentication Modal
+  const TwoFactorModal = () => {
+    const [verificationCode, setVerificationCode] = useState('');
+    const [qrCodeGenerated, setQrCodeGenerated] = useState(false);
+
+    const handleSetup = () => {
+      setQrCodeGenerated(true);
+    };
+
+    const handleVerify = (e: React.FormEvent) => {
+      e.preventDefault();
+      alert('Two-factor authentication enabled successfully!');
+      setShowTwoFactor(false);
+      setQrCodeGenerated(false);
+      setVerificationCode('');
+    };
+
+    return (
+      <Dialog open={showTwoFactor} onOpenChange={setShowTwoFactor}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Two-Factor Authentication</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {!qrCodeGenerated ? (
+              <div className="text-center space-y-4">
+                <p>Enhance your account security with two-factor authentication.</p>
+                <Button onClick={handleSetup} className="w-full">
+                  Set Up Two-Factor Authentication
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={handleVerify} className="space-y-4">
+                <div className="text-center space-y-4">
+                  <div className="w-32 h-32 bg-gray-200 mx-auto rounded-lg flex items-center justify-center">
+                    <p className="text-xs text-gray-500">QR Code</p>
+                  </div>
+                  <p className="text-sm">Scan this QR code with your authenticator app</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="verificationCode">Verification Code</Label>
+                  <Input
+                    id="verificationCode"
+                    value={verificationCode}
+                    onChange={(e) => setVerificationCode(e.target.value)}
+                    placeholder="Enter 6-digit code"
+                    required
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <Button type="submit" className="flex-1">Verify & Enable</Button>
+                  <Button type="button" variant="outline" onClick={() => setShowTwoFactor(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  };
+
+  // Privacy Settings Modal
+  const PrivacySettingsModal = () => {
+    const [privacySettings, setPrivacySettings] = useState({
+      dataCollection: true,
+      analytics: false,
+      marketing: true,
+      childDataSharing: false
+    });
+
+    const handleSave = () => {
+      alert('Privacy settings updated successfully!');
+      setShowPrivacySettings(false);
+    };
+
+    return (
+      <Dialog open={showPrivacySettings} onOpenChange={setShowPrivacySettings}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Privacy Settings</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6">
+            {Object.entries(privacySettings).map(([key, value]) => (
+              <div key={key} className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium capitalize">{key.replace(/([A-Z])/g, ' $1')}</p>
+                  <p className="text-sm text-gray-500">Control your privacy preferences</p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPrivacySettings(prev => ({ ...prev, [key]: !value }))}
+                  className={value ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}
+                >
+                  {value ? 'Enabled' : 'Disabled'}
+                </Button>
+              </div>
+            ))}
+            
+            <div className="flex gap-2 pt-4">
+              <Button onClick={handleSave} className="flex-1">Save Settings</Button>
+              <Button variant="outline" onClick={() => setShowPrivacySettings(false)}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -113,12 +346,16 @@ const AccountSettings = () => {
             <p className="text-sm text-blue-700">$19.99/month • Next billing: June 15, 2024</p>
           </div>
           <div className="flex gap-3">
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-              Manage Subscription
-            </button>
-            <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
-              Billing History
-            </button>
+            <ManageSubscriptionModal>
+              <Button className="bg-blue-600 text-white hover:bg-blue-700">
+                Manage Subscription
+              </Button>
+            </ManageSubscriptionModal>
+            <BillingHistoryModal>
+              <Button variant="outline">
+                Billing History
+              </Button>
+            </BillingHistoryModal>
           </div>
         </div>
 
@@ -129,15 +366,24 @@ const AccountSettings = () => {
             Privacy & Security
           </h3>
           <div className="space-y-3">
-            <button className="w-full text-left p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+            <button 
+              onClick={() => setShowChangePassword(true)}
+              className="w-full text-left p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+            >
               <div className="font-medium text-gray-900">Change Password</div>
               <div className="text-sm text-gray-500">Update your account password</div>
             </button>
-            <button className="w-full text-left p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+            <button 
+              onClick={() => setShowTwoFactor(true)}
+              className="w-full text-left p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+            >
               <div className="font-medium text-gray-900">Two-Factor Authentication</div>
               <div className="text-sm text-gray-500">Add an extra layer of security</div>
             </button>
-            <button className="w-full text-left p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+            <button 
+              onClick={() => setShowPrivacySettings(true)}
+              className="w-full text-left p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+            >
               <div className="font-medium text-gray-900">Privacy Settings</div>
               <div className="text-sm text-gray-500">Control your data and privacy preferences</div>
             </button>
@@ -168,6 +414,11 @@ const AccountSettings = () => {
           </button>
         </div>
       </div>
+
+      {/* Modals */}
+      <ChangePasswordModal />
+      <TwoFactorModal />
+      <PrivacySettingsModal />
     </div>
   );
 };

@@ -1,237 +1,312 @@
 
 import React, { useState } from 'react';
-import { Download, Search, Filter, Star, Eye, Printer } from 'lucide-react';
-
-interface Printable {
-  id: string;
-  title: string;
-  category: string;
-  ageRange: string;
-  difficulty: 'Easy' | 'Medium' | 'Hard';
-  rating: number;
-  downloads: number;
-  thumbnail: string;
-  description: string;
-  tags: string[];
-}
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Download, Search, Filter, Eye, Star, Calendar } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 const PrintablesSection = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedAge, setSelectedAge] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedPrintable, setSelectedPrintable] = useState<any>(null);
 
-  const printables: Printable[] = [
+  const categories = ['All', 'Worksheets', 'Coloring Pages', 'Certificates', 'Games', 'Activity Sheets'];
+
+  const printables = [
     {
-      id: '1',
+      id: 1,
       title: 'Alphabet Tracing Worksheets',
-      category: 'Writing',
-      ageRange: '3-5',
-      difficulty: 'Easy',
+      description: 'Complete A-Z letter tracing practice sheets',
+      category: 'Worksheets',
+      difficulty: 'Beginner',
+      pages: 26,
+      downloads: 1234,
       rating: 4.8,
-      downloads: 1250,
-      thumbnail: '📝',
-      description: 'Help children learn to write letters with guided tracing exercises',
-      tags: ['alphabet', 'tracing', 'handwriting']
+      preview: '/api/placeholder/300/400',
+      downloadUrl: '#',
+      featured: true
     },
     {
-      id: '2',
-      title: 'Number Recognition Games',
-      category: 'Math',
-      ageRange: '4-6',
+      id: 2,
+      title: 'Rainbow Coloring Pages',
+      description: 'Fun rainbow-themed coloring activities',
+      category: 'Coloring Pages',
       difficulty: 'Easy',
-      rating: 4.6,
-      downloads: 980,
-      thumbnail: '🔢',
-      description: 'Fun activities to help kids identify and count numbers 1-20',
-      tags: ['numbers', 'counting', 'recognition']
-    },
-    {
-      id: '3',
-      title: 'Animal Coloring Pages',
-      category: 'Art',
-      ageRange: '3-8',
-      difficulty: 'Easy',
+      pages: 12,
+      downloads: 892,
       rating: 4.9,
-      downloads: 2100,
-      thumbnail: '🎨',
-      description: 'Beautiful animal illustrations for creative coloring fun',
-      tags: ['animals', 'coloring', 'creativity']
+      preview: '/api/placeholder/300/400',
+      downloadUrl: '#'
     },
     {
-      id: '4',
-      title: 'Simple Addition Worksheets',
-      category: 'Math',
-      ageRange: '5-7',
-      difficulty: 'Medium',
-      rating: 4.5,
-      downloads: 750,
-      thumbnail: '➕',
-      description: 'Practice basic addition with colorful, engaging problems',
-      tags: ['addition', 'math', 'practice']
-    },
-    {
-      id: '5',
-      title: 'Story Sequencing Cards',
-      category: 'Reading',
-      ageRange: '4-7',
-      difficulty: 'Medium',
+      id: 3,
+      title: 'Math Addition Games',
+      description: 'Interactive addition worksheets and games',
+      category: 'Games',
+      difficulty: 'Intermediate',
+      pages: 8,
+      downloads: 567,
       rating: 4.7,
-      downloads: 650,
-      thumbnail: '📖',
-      description: 'Help children understand story order and comprehension',
-      tags: ['reading', 'comprehension', 'sequencing']
+      preview: '/api/placeholder/300/400',
+      downloadUrl: '#'
     },
     {
-      id: '6',
-      title: 'Pattern Completion Puzzles',
-      category: 'Logic',
-      ageRange: '5-8',
-      difficulty: 'Hard',
-      rating: 4.4,
-      downloads: 420,
-      thumbnail: '🧩',
-      description: 'Challenge logical thinking with pattern recognition activities',
-      tags: ['patterns', 'logic', 'thinking']
+      id: 4,
+      title: 'Achievement Certificates',
+      description: 'Colorful certificates for completed activities',
+      category: 'Certificates',
+      difficulty: 'All Levels',
+      pages: 5,
+      downloads: 445,
+      rating: 4.6,
+      preview: '/api/placeholder/300/400',
+      downloadUrl: '#'
     }
   ];
 
-  const categories = ['all', 'Writing', 'Math', 'Art', 'Reading', 'Logic'];
-  const ageRanges = ['all', '3-5', '4-6', '5-7', '5-8', '3-8'];
-
   const filteredPrintables = printables.filter(printable => {
-    const matchesSearch = printable.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         printable.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesCategory = selectedCategory === 'all' || printable.category === selectedCategory;
-    const matchesAge = selectedAge === 'all' || printable.ageRange === selectedAge;
-    
-    return matchesSearch && matchesCategory && matchesAge;
+    const matchesSearch = printable.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === 'All' || printable.category === selectedCategory;
+    return matchesSearch && matchesCategory;
   });
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'Easy': return 'text-green-600 bg-green-100';
-      case 'Medium': return 'text-yellow-600 bg-yellow-100';
-      case 'Hard': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
-    }
+  const PreviewModal = ({ printable }: { printable: any }) => {
+    const [showPreview, setShowPreview] = useState(false);
+
+    const handleDownload = () => {
+      // Mock download functionality
+      alert(`Downloading ${printable.title}...`);
+      setShowPreview(false);
+    };
+
+    return (
+      <Dialog open={showPreview} onOpenChange={setShowPreview}>
+        <DialogTrigger asChild>
+          <Button variant="outline" size="sm">
+            <Eye className="w-4 h-4 mr-2" />
+            Preview
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{printable.title}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <img 
+                  src={printable.preview} 
+                  alt={printable.title}
+                  className="w-full h-64 object-cover rounded-lg bg-gray-200"
+                />
+                <div className="flex gap-2">
+                  <Button onClick={handleDownload} className="flex-1">
+                    <Download className="w-4 h-4 mr-2" />
+                    Download PDF
+                  </Button>
+                  <Button variant="outline">
+                    <Star className="w-4 h-4 mr-2" />
+                    Favorite
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-semibold mb-2">Description</h3>
+                  <p className="text-gray-600">{printable.description}</p>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-500">Category</p>
+                    <Badge variant="outline">{printable.category}</Badge>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Difficulty</p>
+                    <Badge>{printable.difficulty}</Badge>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Pages</p>
+                    <p className="font-medium">{printable.pages}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Downloads</p>
+                    <p className="font-medium">{printable.downloads.toLocaleString()}</p>
+                  </div>
+                </div>
+                
+                <div>
+                  <p className="text-sm text-gray-500">Rating</p>
+                  <div className="flex items-center space-x-2">
+                    <div className="flex text-yellow-400">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className={`w-4 h-4 ${i < Math.floor(printable.rating) ? 'fill-current' : ''}`} />
+                      ))}
+                    </div>
+                    <span className="text-sm text-gray-600">({printable.rating})</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
   };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Printables</h2>
-          <p className="text-gray-600 mt-1">Download educational worksheets and activities</p>
-        </div>
-        <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
-          <Download className="w-4 h-4" />
-          <span>Download All</span>
-        </button>
+        <h1 className="text-3xl font-bold text-gray-900">Printables Library</h1>
+        <Button>
+          <Calendar className="w-4 h-4 mr-2" />
+          My Downloads
+        </Button>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-2xl shadow-lg p-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              type="text"
-              placeholder="Search printables..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <select 
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            {categories.map(category => (
-              <option key={category} value={category}>
-                {category === 'all' ? 'All Categories' : category}
-              </option>
-            ))}
-          </select>
-          <select 
-            value={selectedAge}
-            onChange={(e) => setSelectedAge(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            {ageRanges.map(age => (
-              <option key={age} value={age}>
-                {age === 'all' ? 'All Ages' : `Ages ${age}`}
-              </option>
-            ))}
-          </select>
-          <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center space-x-2">
-            <Filter className="w-4 h-4" />
-            <span>More Filters</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Results */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredPrintables.map((printable) => (
-          <div key={printable.id} className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-            <div className="p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="text-4xl">{printable.thumbnail}</div>
-                <div className="flex items-center space-x-1">
-                  <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                  <span className="text-sm text-gray-600">{printable.rating}</span>
-                </div>
-              </div>
-
-              <h3 className="font-bold text-lg text-gray-900 mb-2">{printable.title}</h3>
-              <p className="text-gray-600 text-sm mb-4">{printable.description}</p>
-
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-sm text-gray-500">Ages {printable.ageRange}</span>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(printable.difficulty)}`}>
-                  {printable.difficulty}
-                </span>
-              </div>
-
-              <div className="flex flex-wrap gap-1 mb-4">
-                {printable.tags.slice(0, 3).map((tag) => (
-                  <span key={tag} className="bg-gray-100 text-gray-600 px-2 py-1 rounded-md text-xs">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-
-              <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                <span>{printable.downloads} downloads</span>
-                <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-md font-medium">
-                  {printable.category}
-                </span>
-              </div>
-
-              <div className="flex space-x-2">
-                <button className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-1">
-                  <Download className="w-4 h-4" />
-                  <span>Download</span>
-                </button>
-                <button className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
-                  <Eye className="w-4 h-4" />
-                </button>
-                <button className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
-                  <Printer className="w-4 h-4" />
-                </button>
-              </div>
+      {/* Search and Filters */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Find Printables</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                placeholder="Search printables..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm">
+                <Filter className="w-4 h-4 mr-2" />
+                Filters
+              </Button>
+              {categories.map(category => (
+                <Button
+                  key={category}
+                  variant={selectedCategory === category ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedCategory(category)}
+                  className={selectedCategory === category ? "bg-blue-600 text-white" : ""}
+                >
+                  {category}
+                </Button>
+              ))}
             </div>
           </div>
-        ))}
+        </CardContent>
+      </Card>
+
+      {/* Featured Section */}
+      {selectedCategory === 'All' && (
+        <div>
+          <h2 className="text-xl font-semibold mb-4">Featured Printables</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {printables.filter(p => p.featured).map(printable => (
+              <Card key={printable.id} className="border-yellow-200 bg-yellow-50">
+                <div className="relative">
+                  <img 
+                    src={printable.preview} 
+                    alt={printable.title}
+                    className="w-full h-48 object-cover rounded-t-lg bg-gray-200"
+                  />
+                  <Badge className="absolute top-2 left-2 bg-yellow-500 text-white">Featured</Badge>
+                </div>
+                <CardContent className="p-4">
+                  <h3 className="font-semibold mb-2">{printable.title}</h3>
+                  <p className="text-sm text-gray-600 mb-3">{printable.description}</p>
+                  
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-2">
+                      <Badge variant="outline" className="text-xs">{printable.category}</Badge>
+                      <span className="text-xs text-gray-500">{printable.pages} pages</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <Star className="w-3 h-3 text-yellow-400 fill-current" />
+                      <span className="text-xs text-gray-600">{printable.rating}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <PreviewModal printable={printable} />
+                    <Button size="sm" className="flex-1">
+                      <Download className="w-4 h-4 mr-2" />
+                      Download
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* All Printables Grid */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4">
+          {selectedCategory === 'All' ? 'All Printables' : selectedCategory}
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredPrintables.map(printable => (
+            <Card key={printable.id} className="hover:shadow-lg transition-shadow">
+              <div className="relative">
+                <img 
+                  src={printable.preview} 
+                  alt={printable.title}
+                  className="w-full h-48 object-cover rounded-t-lg bg-gray-200"
+                />
+                <div className="absolute top-2 right-2 flex gap-1">
+                  {printable.featured && (
+                    <Badge className="bg-yellow-500 text-white text-xs">Featured</Badge>
+                  )}
+                </div>
+              </div>
+              <CardContent className="p-4">
+                <h3 className="font-semibold mb-2">{printable.title}</h3>
+                <p className="text-sm text-gray-600 mb-3 line-clamp-2">{printable.description}</p>
+                
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    <Badge variant="outline" className="text-xs">{printable.category}</Badge>
+                    <span className="text-xs text-gray-500">{printable.pages} pages</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Star className="w-3 h-3 text-yellow-400 fill-current" />
+                    <span className="text-xs text-gray-600">{printable.rating}</span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs text-gray-500">{printable.downloads.toLocaleString()} downloads</span>
+                  <Badge className="text-xs">{printable.difficulty}</Badge>
+                </div>
+                
+                <div className="flex gap-2">
+                  <PreviewModal printable={printable} />
+                  <Button size="sm" className="flex-1">
+                    <Download className="w-4 h-4 mr-2" />
+                    Download
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
 
       {filteredPrintables.length === 0 && (
-        <div className="text-center py-12">
-          <div className="text-6xl mb-4">📄</div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No printables found</h3>
-          <p className="text-gray-600">Try adjusting your search or filters</p>
-        </div>
+        <Card>
+          <CardContent className="text-center py-12">
+            <p className="text-gray-500 text-lg">No printables found matching your criteria.</p>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

@@ -1,9 +1,9 @@
+
 import React, { useState } from 'react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '../components/AppSidebar';
 import DashboardHeader from '../components/DashboardHeader';
 import QuickStats from '../components/QuickStats';
-import ChildProfiles from '../components/ChildProfiles';
 import LearningProgress from '../components/LearningProgress';
 import OrdersSection from '../components/OrdersSection';
 import PrintablesSection from '../components/PrintablesSection';
@@ -37,7 +37,7 @@ const Index = () => {
       case '/games':
         return <MobileGamesInterface />;
       case '/children':
-        return <ChildProfiles preview={false} />;
+        return <div className="p-4"><p>Children section for mobile - content here</p></div>;
       case '/progress':
         return <LearningProgress preview={false} />;
       case '/shop':
@@ -65,33 +65,32 @@ const Index = () => {
           <div className="space-y-8">
             <QuickStats />
             
-            {/* Main Play Games CTA */}
-            <div className="bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 rounded-3xl p-8 text-white text-center shadow-2xl">
-              <div className="max-w-2xl mx-auto">
-                <div className="text-6xl mb-4">🎮</div>
-                <h2 className="text-4xl font-bold mb-4">Ready for Fun Learning?</h2>
-                <p className="text-xl mb-8 text-white/90">Dive into educational games that make learning an adventure!</p>
+            {/* Main Play Games CTA - Center of attention */}
+            <div className="bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 rounded-3xl p-12 text-white text-center shadow-2xl">
+              <div className="max-w-3xl mx-auto">
+                <div className="text-8xl mb-6">🎮</div>
+                <h2 className="text-5xl font-bold mb-6">Ready for Fun Learning?</h2>
+                <p className="text-2xl mb-10 text-white/90">Dive into educational games that make learning an adventure!</p>
                 <button 
                   onClick={() => setIsGamingMode(true)}
-                  className="bg-white text-gray-800 hover:bg-gray-100 px-12 py-6 rounded-2xl text-2xl font-bold shadow-lg transform transition-all duration-200 hover:scale-105 active:scale-95"
+                  className="bg-white text-gray-800 hover:bg-gray-100 px-16 py-8 rounded-3xl text-3xl font-bold shadow-2xl transform transition-all duration-200 hover:scale-105 active:scale-95"
                 >
-                  <div className="flex items-center justify-center space-x-3">
+                  <div className="flex items-center justify-center space-x-4">
                     <span>🚀</span>
-                    <span>Start Playing</span>
+                    <span>Start Playing Now</span>
                     <span>🎯</span>
                   </div>
                 </button>
               </div>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <ChildProfiles preview={true} />
+            <div className="grid grid-cols-1 lg:grid-cols-1 gap-8 max-w-4xl mx-auto">
               <LearningProgress preview={true} />
             </div>
           </div>
         );
       case '/children':
-        return <ChildProfiles preview={false} />;
+        return <div className="space-y-6"><h2 className="text-2xl font-bold">Children Profiles</h2><p>Children management content here</p></div>;
       case '/progress':
         return <LearningProgress preview={false} />;
       case '/shop':
@@ -111,27 +110,26 @@ const Index = () => {
           <div className="space-y-8">
             <QuickStats />
             
-            {/* Main Play Games CTA */}
-            <div className="bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 rounded-3xl p-8 text-white text-center shadow-2xl">
-              <div className="max-w-2xl mx-auto">
-                <div className="text-6xl mb-4">🎮</div>
-                <h2 className="text-4xl font-bold mb-4">Ready for Fun Learning?</h2>
-                <p className="text-xl mb-8 text-white/90">Dive into educational games that make learning an adventure!</p>
+            {/* Main Play Games CTA - Center of attention */}
+            <div className="bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 rounded-3xl p-12 text-white text-center shadow-2xl">
+              <div className="max-w-3xl mx-auto">
+                <div className="text-8xl mb-6">🎮</div>
+                <h2 className="text-5xl font-bold mb-6">Ready for Fun Learning?</h2>
+                <p className="text-2xl mb-10 text-white/90">Dive into educational games that make learning an adventure!</p>
                 <button 
                   onClick={() => setIsGamingMode(true)}
-                  className="bg-white text-gray-800 hover:bg-gray-100 px-12 py-6 rounded-2xl text-2xl font-bold shadow-lg transform transition-all duration-200 hover:scale-105 active:scale-95"
+                  className="bg-white text-gray-800 hover:bg-gray-100 px-16 py-8 rounded-3xl text-3xl font-bold shadow-2xl transform transition-all duration-200 hover:scale-105 active:scale-95"
                 >
-                  <div className="flex items-center justify-center space-x-3">
+                  <div className="flex items-center justify-center space-x-4">
                     <span>🚀</span>
-                    <span>Start Playing</span>
+                    <span>Start Playing Now</span>
                     <span>🎯</span>
                   </div>
                 </button>
               </div>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <ChildProfiles preview={true} />
+            <div className="grid grid-cols-1 lg:grid-cols-1 gap-8 max-w-4xl mx-auto">
               <LearningProgress preview={true} />
             </div>
           </div>
@@ -156,14 +154,14 @@ const Index = () => {
     );
   }
 
-  // Desktop Layout (existing)
+  // Desktop Layout
   return (
     <SidebarProvider>
       <div className="min-h-screen bg-gray-50 flex w-full">
         <AppSidebar />
         <div className="flex-1">
           <DashboardHeader onEnterGamingMode={() => setIsGamingMode(true)} />
-          <main className="max-w-6xl mx-auto px-6 py-8">
+          <main className="max-w-7xl mx-auto px-8 py-8">
             {renderDesktopContent()}
           </main>
         </div>
