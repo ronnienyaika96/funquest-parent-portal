@@ -5,6 +5,7 @@ import { AppSidebar } from '../components/AppSidebar';
 import DashboardHeader from '../components/DashboardHeader';
 import QuickStats from '../components/QuickStats';
 import LearningProgress from '../components/LearningProgress';
+import ChildProfiles from '../components/ChildProfiles';
 import OrdersSection from '../components/OrdersSection';
 import PrintablesSection from '../components/PrintablesSection';
 import { EnhancedSubscriptionCard } from '../components/enhanced/EnhancedSubscriptionCard';
@@ -37,7 +38,7 @@ const Index = () => {
       case '/games':
         return <MobileGamesInterface />;
       case '/children':
-        return <div className="p-4"><p>Children section for mobile - content here</p></div>;
+        return <ChildProfiles />;
       case '/progress':
         return <LearningProgress preview={false} />;
       case '/shop':
@@ -90,7 +91,7 @@ const Index = () => {
           </div>
         );
       case '/children':
-        return <div className="space-y-6"><h2 className="text-2xl font-bold">Children Profiles</h2><p>Children management content here</p></div>;
+        return <ChildProfiles />;
       case '/progress':
         return <LearningProgress preview={false} />;
       case '/shop':

@@ -2,7 +2,7 @@
 import React from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { User, Settings, LogOut, Shield, HelpCircle, Bell } from 'lucide-react';
+import { User, Settings, LogOut, HelpCircle, Bell } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export function ProfileDropdown() {
@@ -27,10 +27,6 @@ export function ProfileDropdown() {
         <DropdownMenuItem onClick={() => navigate('/notifications')}>
           <Bell className="w-4 h-4 mr-2" />
           Notifications
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate('/admin')}>
-          <Shield className="w-4 h-4 mr-2" />
-          Admin Panel
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem>
