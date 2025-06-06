@@ -1,47 +1,154 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Plus, Upload, Eye, Settings, Play, Pause } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { Plus, Upload, Eye, Settings, Play, Pause, Edit, Trash2 } from 'lucide-react';
 
-const games = [
-  {
-    id: 1,
-    name: 'Letter Tracing',
-    category: 'Literacy',
-    ageRange: '3-6',
-    status: 'live',
-    sessions: 3200,
-    rating: 4.8,
-    lastUpdated: '2024-05-15'
-  },
-  {
-    id: 2,
-    name: 'Math Puzzles',
-    category: 'Math',
-    ageRange: '5-8',
-    status: 'live',
-    sessions: 2400,
-    rating: 4.6,
-    lastUpdated: '2024-05-10'
-  },
-  {
-    id: 3,
-    name: 'Coloring Adventure',
-    category: 'Creativity',
-    ageRange: '2-7',
-    status: 'draft',
-    sessions: 0,
-    rating: 0,
-    lastUpdated: '2024-06-01'
-  }
-];
+interface Game {
+  id: string;
+  name: string;
+  category: string;
+  age_range: string;
+  status: string;
+  analytics_data: {
+    sessions: number;
+    rating: number;
+    completion_rate: number;
+  };
+  created_at: string;
+  description?: string;
+}
 
 export function GamesManager() {
-  const [selectedGame, setSelectedGame] = useState(null);
+  const [games, setGames] = useState<Game[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedGame, setSelectedGame] = useState<Game | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [gameForm, setGameForm] = useState({
+    name: '',
+    category: '',
+    ageRange: '',
+    description: '',
+    status: 'draft'
+  });
+  const { toast } = useToast();
+
+  useEffect(() => {
+    fetchGames();
+  }, []);
+
+  const fetchGames = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('games')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setGames(data || []);
+    } catch (error) {
+      console.error('Error fetching games:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch games",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createGame = async () => {
+    try {
+      const { error } = await supabase
+        .from('games')
+        .insert([{
+          name: gameForm.name,
+          category: gameForm.category,
+          age_range: gameForm.ageRange,
+          description: gameForm.description,
+          status: gameForm.status,
+        }]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Game created successfully",
+      });
+
+      setIsCreateModalOpen(false);
+      setGameForm({ name: '', category: '', ageRange: '', description: '', status: 'draft' });
+      fetchGames();
+    } catch (error) {
+      console.error('Error creating game:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create game",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const toggleGameStatus = async (gameId: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'live' ? 'draft' : 'live';
+    
+    try {
+      const { error } = await supabase
+        .from('games')
+        .update({ status: newStatus })
+        .eq('id', gameId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `Game ${newStatus === 'live' ? 'published' : 'unpublished'}`,
+      });
+
+      fetchGames();
+    } catch (error) {
+      console.error('Error updating game status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update game status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const deleteGame = async (gameId: string) => {
+    if (!confirm('Are you sure you want to delete this game?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('games')
+        .delete()
+        .eq('id', gameId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Game deleted successfully",
+      });
+
+      fetchGames();
+    } catch (error) {
+      console.error('Error deleting game:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete game",
+        variant: "destructive",
+      });
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -56,6 +163,14 @@ export function GamesManager() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -68,10 +183,44 @@ export function GamesManager() {
             <Upload className="w-4 h-4" />
             <span>Upload Content</span>
           </Button>
-          <Button className="flex items-center space-x-2">
-            <Plus className="w-4 h-4" />
-            <span>Add Game</span>
-          </Button>
+          <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+            <DialogTrigger asChild>
+              <Button className="flex items-center space-x-2">
+                <Plus className="w-4 h-4" />
+                <span>Add Game</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create New Game</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <Input
+                  placeholder="Game name"
+                  value={gameForm.name}
+                  onChange={(e) => setGameForm(prev => ({ ...prev, name: e.target.value }))}
+                />
+                <Input
+                  placeholder="Category (e.g., Literacy, Math, Creativity)"
+                  value={gameForm.category}
+                  onChange={(e) => setGameForm(prev => ({ ...prev, category: e.target.value }))}
+                />
+                <Input
+                  placeholder="Age range (e.g., 3-6)"
+                  value={gameForm.ageRange}
+                  onChange={(e) => setGameForm(prev => ({ ...prev, ageRange: e.target.value }))}
+                />
+                <Input
+                  placeholder="Description"
+                  value={gameForm.description}
+                  onChange={(e) => setGameForm(prev => ({ ...prev, description: e.target.value }))}
+                />
+                <Button onClick={createGame} className="w-full">
+                  Create Game
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -83,7 +232,7 @@ export function GamesManager() {
               <div className="flex justify-between items-start">
                 <div>
                   <CardTitle className="text-lg">{game.name}</CardTitle>
-                  <CardDescription>{game.category} • Ages {game.ageRange}</CardDescription>
+                  <CardDescription>{game.category} • Ages {game.age_range}</CardDescription>
                 </div>
                 {getStatusBadge(game.status)}
               </div>
@@ -92,28 +241,43 @@ export function GamesManager() {
               <div className="space-y-4">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Sessions:</span>
-                  <span className="font-medium">{game.sessions.toLocaleString()}</span>
+                  <span className="font-medium">{game.analytics_data?.sessions || 0}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Rating:</span>
-                  <span className="font-medium">{game.rating > 0 ? `${game.rating}/5` : 'N/A'}</span>
+                  <span className="font-medium">
+                    {game.analytics_data?.rating > 0 ? `${game.analytics_data.rating}/5` : 'N/A'}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Last Updated:</span>
-                  <span className="font-medium">{game.lastUpdated}</span>
+                  <span className="text-gray-600">Completion Rate:</span>
+                  <span className="font-medium">
+                    {game.analytics_data?.completion_rate > 0 ? `${game.analytics_data.completion_rate}%` : 'N/A'}
+                  </span>
                 </div>
                 
                 <div className="flex items-center justify-between pt-2">
                   <div className="flex items-center space-x-2">
                     <span className="text-sm text-gray-600">Active:</span>
-                    <Switch checked={game.status === 'live'} />
+                    <Switch 
+                      checked={game.status === 'live'} 
+                      onCheckedChange={() => toggleGameStatus(game.id, game.status)}
+                    />
                   </div>
-                  <div className="flex space-x-2">
+                  <div className="flex space-x-1">
                     <Button variant="ghost" size="sm">
                       <Eye className="w-4 h-4" />
                     </Button>
                     <Button variant="ghost" size="sm">
-                      <Settings className="w-4 h-4" />
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => deleteGame(game.id)}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
                 </div>
@@ -123,46 +287,18 @@ export function GamesManager() {
         ))}
       </div>
 
-      {/* Game Upload Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Upload New Game Content</CardTitle>
-          <CardDescription>Add new games or update existing game assets</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Game Name</label>
-                <Input placeholder="Enter game name" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                <Input placeholder="e.g., Literacy, Math, Creativity" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Age Range</label>
-                <Input placeholder="e.g., 3-6" />
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Game Files</label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                  <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                  <div className="mt-4">
-                    <Button variant="outline">Choose Files</Button>
-                    <p className="mt-2 text-sm text-gray-500">Upload Unity builds, assets, or game data</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="flex justify-end mt-6">
-            <Button>Upload Game</Button>
-          </div>
-        </CardContent>
-      </Card>
+      {games.length === 0 && (
+        <Card>
+          <CardContent className="text-center py-12">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No games yet</h3>
+            <p className="text-gray-600 mb-4">Create your first educational game to get started.</p>
+            <Button onClick={() => setIsCreateModalOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Create Game
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Age Level Settings */}
       <Card>

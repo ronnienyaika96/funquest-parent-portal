@@ -1,14 +1,63 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Users, BookOpen, Gamepad2, CreditCard, Upload, Mail, BarChart3, Settings, Plus, Edit, Trash2, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { supabase } from '@/integrations/supabase/client';
+
+interface DashboardStats {
+  totalUsers: number;
+  activeChildren: number;
+  gamesPlayed: number;
+  revenue: string;
+}
 
 export function AdminOverview() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { signOut } = useAdminAuth();
+  const [stats, setStats] = useState<DashboardStats>({
+    totalUsers: 0,
+    activeChildren: 0,
+    gamesPlayed: 0,
+    revenue: '$0'
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDashboardStats();
+  }, []);
+
+  const fetchDashboardStats = async () => {
+    try {
+      // Fetch real stats from database
+      const [
+        { count: userCount },
+        { data: games }
+      ] = await Promise.all([
+        supabase.from('profiles').select('*', { count: 'exact', head: true }),
+        supabase.from('games').select('analytics_data')
+      ]);
+
+      const totalSessions = games?.reduce((sum, game) => 
+        sum + (game.analytics_data?.sessions || 0), 0
+      ) || 0;
+
+      setStats({
+        totalUsers: userCount || 0,
+        activeChildren: Math.floor((userCount || 0) * 1.8), // Mock calculation
+        gamesPlayed: totalSessions,
+        revenue: `$${(totalSessions * 0.27).toFixed(0)}` // Mock revenue calculation
+      });
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleQuickAction = (action: string) => {
     toast({
@@ -17,11 +66,16 @@ export function AdminOverview() {
     });
   };
 
-  const stats = [
-    { title: 'Total Users', value: '1,234', change: '+12%', icon: Users, color: 'text-blue-600' },
-    { title: 'Active Children', value: '2,456', change: '+8%', icon: BookOpen, color: 'text-green-600' },
-    { title: 'Games Played', value: '45,678', change: '+15%', icon: Gamepad2, color: 'text-purple-600' },
-    { title: 'Revenue', value: '$12,345', change: '+20%', icon: CreditCard, color: 'text-orange-600' },
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/admin/auth');
+  };
+
+  const statsData = [
+    { title: 'Total Users', value: loading ? '...' : stats.totalUsers.toString(), change: '+12%', icon: Users, color: 'text-blue-600' },
+    { title: 'Active Children', value: loading ? '...' : stats.activeChildren.toString(), change: '+8%', icon: BookOpen, color: 'text-green-600' },
+    { title: 'Games Played', value: loading ? '...' : stats.gamesPlayed.toString(), change: '+15%', icon: Gamepad2, color: 'text-purple-600' },
+    { title: 'Revenue', value: loading ? '...' : stats.revenue, change: '+20%', icon: CreditCard, color: 'text-orange-600' },
   ];
 
   const quickActions = [
@@ -46,15 +100,20 @@ export function AdminOverview() {
           <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
           <p className="text-gray-600">Manage your FunQuest platform</p>
         </div>
-        <Button onClick={() => navigate('/admin/settings')} className="flex items-center space-x-2">
-          <Settings className="w-4 h-4" />
-          <span>Settings</span>
-        </Button>
+        <div className="flex space-x-3">
+          <Button onClick={() => navigate('/admin/settings')} className="flex items-center space-x-2">
+            <Settings className="w-4 h-4" />
+            <span>Settings</span>
+          </Button>
+          <Button variant="outline" onClick={handleSignOut}>
+            Sign Out
+          </Button>
+        </div>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => {
+        {statsData.map((stat, index) => {
           const Icon = stat.icon;
           return (
             <Card key={index} className="hover:shadow-lg transition-shadow">

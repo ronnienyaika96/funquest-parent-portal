@@ -9,26 +9,26 @@ const AuthPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const type = searchParams.get('type') as 'parent' | 'admin' || 'parent';
+  const type = searchParams.get('type');
   const [isLogin, setIsLogin] = useState(true);
+
+  // Redirect admin users to admin auth page
+  useEffect(() => {
+    if (type === 'admin') {
+      navigate('/admin/auth');
+      return;
+    }
+  }, [type, navigate]);
 
   // Redirect if user is already logged in
   useEffect(() => {
     if (!loading && user) {
-      if (type === 'admin') {
-        navigate('/admin');
-      } else {
-        navigate('/');
-      }
-    }
-  }, [user, loading, navigate, type]);
-
-  const handleAuthSuccess = () => {
-    if (type === 'admin') {
-      navigate('/admin');
-    } else {
       navigate('/');
     }
+  }, [user, loading, navigate]);
+
+  const handleAuthSuccess = () => {
+    navigate('/');
   };
 
   if (loading) {
@@ -47,13 +47,13 @@ const AuthPage = () => {
       <div className="w-full max-w-md">
         {isLogin ? (
           <LoginForm
-            type={type}
+            type="parent"
             onLoginSuccess={handleAuthSuccess}
             onSwitchToSignup={() => setIsLogin(false)}
           />
         ) : (
           <SignupForm
-            type={type}
+            type="parent"
             onSignupSuccess={handleAuthSuccess}
             onSwitchToLogin={() => setIsLogin(true)}
           />

@@ -9,6 +9,165 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_roles: {
+        Row: {
+          created_at: string
+          id: string
+          permissions: Json | null
+          role: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          permissions?: Json | null
+          role?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          permissions?: Json | null
+          role?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      content_uploads: {
+        Row: {
+          age_range: string
+          category: string
+          created_at: string
+          file_path: string
+          file_size: number
+          file_type: string
+          id: string
+          metadata: Json | null
+          name: string
+          status: string | null
+          tags: string[] | null
+          updated_at: string
+          uploaded_by: string
+        }
+        Insert: {
+          age_range: string
+          category: string
+          created_at?: string
+          file_path: string
+          file_size: number
+          file_type: string
+          id?: string
+          metadata?: Json | null
+          name: string
+          status?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          uploaded_by: string
+        }
+        Update: {
+          age_range?: string
+          category?: string
+          created_at?: string
+          file_path?: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          metadata?: Json | null
+          name?: string
+          status?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          uploaded_by?: string
+        }
+        Relationships: []
+      }
+      games: {
+        Row: {
+          age_range: string
+          analytics_data: Json | null
+          category: string
+          created_at: string
+          created_by: string
+          description: string | null
+          file_path: string | null
+          id: string
+          name: string
+          settings: Json | null
+          status: string | null
+          thumbnail_path: string | null
+          updated_at: string
+        }
+        Insert: {
+          age_range: string
+          analytics_data?: Json | null
+          category: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          file_path?: string | null
+          id?: string
+          name: string
+          settings?: Json | null
+          status?: string | null
+          thumbnail_path?: string | null
+          updated_at?: string
+        }
+        Update: {
+          age_range?: string
+          analytics_data?: Json | null
+          category?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          file_path?: string | null
+          id?: string
+          name?: string
+          settings?: Json | null
+          status?: string | null
+          thumbnail_path?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      newsletter_subscribers: {
+        Row: {
+          email: string
+          first_name: string | null
+          id: string
+          last_name: string | null
+          metadata: Json | null
+          status: string | null
+          subscribed_at: string
+          tags: string[] | null
+          unsubscribed_at: string | null
+        }
+        Insert: {
+          email: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          metadata?: Json | null
+          status?: string | null
+          subscribed_at?: string
+          tags?: string[] | null
+          unsubscribed_at?: string | null
+        }
+        Update: {
+          email?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          metadata?: Json | null
+          status?: string | null
+          subscribed_at?: string
+          tags?: string[] | null
+          unsubscribed_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -41,7 +200,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: {
+        Args: { user_id?: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
 interface SignupFormProps {
-  type: 'parent' | 'admin';
+  type: 'parent';
   onSignupSuccess: () => void;
   onSwitchToLogin: () => void;
 }
@@ -72,9 +72,7 @@ const SignupForm = ({ type, onSignupSuccess, onSwitchToLogin }: SignupFormProps)
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle className="text-2xl text-center">
-          {type === 'parent' ? 'Parent Sign Up' : 'Admin Sign Up'}
-        </CardTitle>
+        <CardTitle className="text-2xl text-center">Parent Sign Up</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">

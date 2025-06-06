@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
 interface LoginFormProps {
-  type: 'parent' | 'admin';
+  type: 'parent';
   onLoginSuccess: () => void;
   onSwitchToSignup: () => void;
 }
@@ -48,9 +48,7 @@ const LoginForm = ({ type, onLoginSuccess, onSwitchToSignup }: LoginFormProps) =
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle className="text-2xl text-center">
-          {type === 'parent' ? 'Parent Login' : 'Admin Login'}
-        </CardTitle>
+        <CardTitle className="text-2xl text-center">Parent Login</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -103,6 +101,12 @@ const LoginForm = ({ type, onLoginSuccess, onSwitchToSignup }: LoginFormProps) =
                 Sign up
               </Button>
             </p>
+            <div className="pt-4 border-t">
+              <p className="text-xs text-gray-500 mb-2">Admin Access</p>
+              <Button variant="outline" size="sm" onClick={() => window.location.href = '/auth?type=admin'}>
+                Admin Login
+              </Button>
+            </div>
           </div>
         </form>
       </CardContent>
