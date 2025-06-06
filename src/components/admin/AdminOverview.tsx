@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, BookOpen, Games, CreditCard, Upload, Mail, BarChart3, Settings, Plus, Edit, Trash2, Eye } from 'lucide-react';
+import { Users, BookOpen, Gamepad2, CreditCard, Upload, Mail, BarChart3, Settings, Plus, Edit, Trash2, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
@@ -20,7 +20,7 @@ export function AdminOverview() {
   const stats = [
     { title: 'Total Users', value: '1,234', change: '+12%', icon: Users, color: 'text-blue-600' },
     { title: 'Active Children', value: '2,456', change: '+8%', icon: BookOpen, color: 'text-green-600' },
-    { title: 'Games Played', value: '45,678', change: '+15%', icon: Games, color: 'text-purple-600' },
+    { title: 'Games Played', value: '45,678', change: '+15%', icon: Gamepad2, color: 'text-purple-600' },
     { title: 'Revenue', value: '$12,345', change: '+20%', icon: CreditCard, color: 'text-orange-600' },
   ];
 
@@ -138,7 +138,7 @@ export function AdminOverview() {
                 variant="outline"
                 onClick={() => navigate('/admin/games')}
               >
-                <Games className="w-4 h-4 mr-2" />
+                <Gamepad2 className="w-4 h-4 mr-2" />
                 Manage Games
               </Button>
               <Button 
