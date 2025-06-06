@@ -4,9 +4,22 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Button } from '@/components/ui/button';
 import { User, Settings, LogOut, HelpCircle, Bell } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 
 export function ProfileDropdown() {
   const navigate = useNavigate();
+  const { signOut } = useAuth();
+  const { toast } = useToast();
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast({
+      title: "Signed out",
+      description: "You have been successfully signed out.",
+    });
+    navigate('/auth');
+  };
 
   return (
     <DropdownMenu>
@@ -34,7 +47,7 @@ export function ProfileDropdown() {
           Help & Support
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-red-600">
+        <DropdownMenuItem className="text-red-600" onClick={handleSignOut}>
           <LogOut className="w-4 h-4 mr-2" />
           Sign Out
         </DropdownMenuItem>

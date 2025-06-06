@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 
 interface SignupFormProps {
   type: 'parent' | 'admin';
@@ -22,22 +24,45 @@ const SignupForm = ({ type, onSignupSuccess, onSwitchToLogin }: SignupFormProps)
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { signUp } = useAuth();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match');
+      toast({
+        title: "Password Mismatch",
+        description: "Passwords do not match",
+        variant: "destructive",
+      });
       return;
     }
     
     setIsLoading(true);
     
-    // Mock registration - replace with actual auth logic
-    setTimeout(() => {
-      console.log(`${type} signup:`, formData);
-      setIsLoading(false);
+    const { error } = await signUp(
+      formData.email,
+      formData.password,
+      formData.firstName,
+      formData.lastName
+    );
+    
+    if (error) {
+      toast({
+        title: "Signup Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Account Created!",
+        description: "Please check your email to verify your account.",
+      });
       onSignupSuccess();
-    }, 1000);
+    }
+    
+    setIsLoading(false);
   };
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {
