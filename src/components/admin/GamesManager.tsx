@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { Plus, Upload, Eye, Settings, Play, Pause, Edit, Trash2 } from 'lucide-react';
 
 interface Game {
@@ -38,6 +39,7 @@ export function GamesManager() {
     status: 'draft'
   });
   const { toast } = useToast();
+  const { user } = useAdminAuth();
 
   useEffect(() => {
     fetchGames();
@@ -51,7 +53,30 @@ export function GamesManager() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setGames(data || []);
+      
+      // Transform the data to match our interface
+      const transformedGames: Game[] = (data || []).map(game => ({
+        id: game.id,
+        name: game.name,
+        category: game.category,
+        age_range: game.age_range,
+        status: game.status || 'draft',
+        created_at: game.created_at,
+        description: game.description || undefined,
+        analytics_data: (() => {
+          if (game.analytics_data && typeof game.analytics_data === 'object' && game.analytics_data !== null) {
+            const data = game.analytics_data as any;
+            return {
+              sessions: data.sessions || 0,
+              rating: data.rating || 0,
+              completion_rate: data.completion_rate || 0
+            };
+          }
+          return { sessions: 0, rating: 0, completion_rate: 0 };
+        })()
+      }));
+
+      setGames(transformedGames);
     } catch (error) {
       console.error('Error fetching games:', error);
       toast({
@@ -65,6 +90,15 @@ export function GamesManager() {
   };
 
   const createGame = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "You must be logged in to create games.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('games')
@@ -74,6 +108,7 @@ export function GamesManager() {
           age_range: gameForm.ageRange,
           description: gameForm.description,
           status: gameForm.status,
+          created_by: user.id,
         }]);
 
       if (error) throw error;
@@ -241,18 +276,18 @@ export function GamesManager() {
               <div className="space-y-4">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Sessions:</span>
-                  <span className="font-medium">{game.analytics_data?.sessions || 0}</span>
+                  <span className="font-medium">{game.analytics_data.sessions}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Rating:</span>
                   <span className="font-medium">
-                    {game.analytics_data?.rating > 0 ? `${game.analytics_data.rating}/5` : 'N/A'}
+                    {game.analytics_data.rating > 0 ? `${game.analytics_data.rating}/5` : 'N/A'}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Completion Rate:</span>
                   <span className="font-medium">
-                    {game.analytics_data?.completion_rate > 0 ? `${game.analytics_data.completion_rate}%` : 'N/A'}
+                    {game.analytics_data.completion_rate > 0 ? `${game.analytics_data.completion_rate}%` : 'N/A'}
                   </span>
                 </div>
                 

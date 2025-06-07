@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -42,9 +41,14 @@ export function AdminOverview() {
         supabase.from('games').select('analytics_data')
       ]);
 
-      const totalSessions = games?.reduce((sum, game) => 
-        sum + (game.analytics_data?.sessions || 0), 0
-      ) || 0;
+      // Safely parse analytics data
+      const totalSessions = games?.reduce((sum, game) => {
+        if (game.analytics_data && typeof game.analytics_data === 'object' && game.analytics_data !== null) {
+          const analyticsData = game.analytics_data as { sessions?: number };
+          return sum + (analyticsData.sessions || 0);
+        }
+        return sum;
+      }, 0) || 0;
 
       setStats({
         totalUsers: userCount || 0,

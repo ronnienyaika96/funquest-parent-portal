@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { Upload, FileText, Image, Film, Download, Trash2, X, Plus } from 'lucide-react';
 
 interface UploadedFile {
@@ -31,6 +31,7 @@ export function ContentUploadPanel() {
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { user } = useAdminAuth();
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -124,29 +125,40 @@ export function ContentUploadPanel() {
       return;
     }
 
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "You must be logged in to upload files.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsUploading(true);
 
     try {
-      for (const uploadedFile of uploadedFiles) {
+      const uploadData = uploadedFiles.map(uploadedFile => {
         const { file, metadata } = uploadedFile;
         const fileName = `${Date.now()}-${file.name}`;
         
-        // Mock upload to database (in real implementation, you'd upload to Supabase Storage first)
-        const { error } = await supabase
-          .from('content_uploads')
-          .insert([{
-            name: metadata.name,
-            file_path: `/uploads/${fileName}`,
-            file_type: file.type,
-            file_size: file.size,
-            category: metadata.category,
-            age_range: metadata.ageRange,
-            tags: metadata.tags,
-          }]);
+        return {
+          name: metadata.name,
+          file_path: `/uploads/${fileName}`,
+          file_type: file.type,
+          file_size: file.size,
+          category: metadata.category,
+          age_range: metadata.ageRange,
+          tags: metadata.tags,
+          uploaded_by: user.id,
+        };
+      });
 
-        if (error) {
-          throw error;
-        }
+      const { error } = await supabase
+        .from('content_uploads')
+        .insert(uploadData);
+
+      if (error) {
+        throw error;
       }
 
       toast({
