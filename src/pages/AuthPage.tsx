@@ -9,16 +9,7 @@ const AuthPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const type = searchParams.get('type');
   const [isLogin, setIsLogin] = useState(true);
-
-  // Redirect admin users to admin auth page
-  useEffect(() => {
-    if (type === 'admin') {
-      navigate('/admin/auth');
-      return;
-    }
-  }, [type, navigate]);
 
   // Redirect if user is already logged in
   useEffect(() => {

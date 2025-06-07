@@ -101,12 +101,6 @@ const LoginForm = ({ type, onLoginSuccess, onSwitchToSignup }: LoginFormProps) =
                 Sign up
               </Button>
             </p>
-            <div className="pt-4 border-t">
-              <p className="text-xs text-gray-500 mb-2">Admin Access</p>
-              <Button variant="outline" size="sm" onClick={() => window.location.href = '/auth?type=admin'}>
-                Admin Login
-              </Button>
-            </div>
           </div>
         </form>
       </CardContent>

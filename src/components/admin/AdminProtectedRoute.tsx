@@ -22,7 +22,7 @@ const AdminProtectedRoute = ({ children }: AdminProtectedRouteProps) => {
   }
 
   if (!user || !isAdmin) {
-    return <Navigate to="/auth?type=admin" replace />;
+    return <Navigate to="/admin/auth" replace />;
   }
 
   return <>{children}</>;

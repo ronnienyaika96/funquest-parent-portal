@@ -28,6 +28,8 @@ const App = () => (
             <Routes>
               {/* Auth Routes */}
               <Route path="/auth" element={<AuthPage />} />
+              
+              {/* Admin Auth Routes - Completely separate */}
               <Route path="/admin/auth" element={<AdminAuthPage />} />
               
               {/* Protected Parent Routes */}
@@ -44,7 +46,7 @@ const App = () => (
               <Route path="/settings" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
               
-              {/* Admin Dashboard Routes */}
+              {/* Admin Dashboard Routes - Completely separate */}
               <Route path="/admin" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
               <Route path="/admin/dashboard" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
               <Route path="/admin/users" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />

@@ -4,8 +4,6 @@ import { Button } from '@/components/ui/button';
 import { ContactSupportForm } from './forms/ContactSupportForm';
 import { ProfileDropdown } from './forms/ProfileDropdown';
 import { NotificationsDropdown } from './forms/NotificationsDropdown';
-import { Shield } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 
 interface DashboardHeaderProps {
@@ -13,7 +11,6 @@ interface DashboardHeaderProps {
 }
 
 const DashboardHeader = ({ onEnterGamingMode }: DashboardHeaderProps) => {
-  const navigate = useNavigate();
   const { user } = useAuth();
   
   const firstName = user?.user_metadata?.first_name || 'User';
@@ -29,11 +26,6 @@ const DashboardHeader = ({ onEnterGamingMode }: DashboardHeaderProps) => {
         </div>
         
         <div className="flex items-center space-x-4">
-          <Button onClick={() => navigate('/admin')} variant="outline" className="flex items-center space-x-2">
-            <Shield className="w-4 h-4" />
-            <span>Admin Panel</span>
-          </Button>
-          
           <ContactSupportForm />
           <NotificationsDropdown />
           <ProfileDropdown />
