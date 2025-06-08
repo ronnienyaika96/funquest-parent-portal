@@ -10,14 +10,6 @@ interface LetterTracingProps {
   onBack: () => void;
 }
 
-interface TracingProgress {
-  letter: string;
-  completed: boolean;
-  score: number;
-  attempts: number;
-  timestamp: string;
-}
-
 const LetterTracing = ({ letter: initialLetter = 'A', onBack }: LetterTracingProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -50,7 +42,6 @@ const LetterTracing = ({ letter: initialLetter = 'A', onBack }: LetterTracingPro
           setSvgContent(svgText);
         } else {
           console.error(`Failed to load SVG for letter ${letter}`);
-          // Fallback to simple text if SVG not found
           setSvgContent('');
         }
       }
@@ -67,14 +58,6 @@ const LetterTracing = ({ letter: initialLetter = 'A', onBack }: LetterTracingPro
     if (!user) return;
 
     try {
-      const progress: TracingProgress = {
-        letter: currentLetter,
-        completed,
-        score: finalScore,
-        attempts: attempts + 1,
-        timestamp: new Date().toISOString()
-      };
-
       const { error } = await supabase
         .from('tracing_progress')
         .upsert({
@@ -121,7 +104,6 @@ const LetterTracing = ({ letter: initialLetter = 'A', onBack }: LetterTracingPro
 
   const playLetterSound = () => {
     console.log(`Playing sound for letter ${currentLetter}`);
-    // Create a simple audio feedback using Web Audio API
     try {
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       const oscillator = audioContext.createOscillator();
@@ -142,9 +124,8 @@ const LetterTracing = ({ letter: initialLetter = 'A', onBack }: LetterTracingPro
   };
 
   const calculateScore = (pathLength: number) => {
-    // Simple scoring based on path length and attempts
     const baseScore = Math.max(100 - (attempts * 10), 10);
-    const pathScore = Math.min(pathLength / 50, 1) * 50; // Bonus for longer paths
+    const pathScore = Math.min(pathLength / 50, 1) * 50;
     return Math.round(baseScore + pathScore);
   };
 
@@ -154,7 +135,6 @@ const LetterTracing = ({ letter: initialLetter = 'A', onBack }: LetterTracingPro
     setIsCompleted(true);
     setShowCelebration(true);
     
-    // Save progress
     saveProgress(true, finalScore);
     
     setTimeout(() => setShowCelebration(false), 3000);
@@ -179,7 +159,6 @@ const LetterTracing = ({ letter: initialLetter = 'A', onBack }: LetterTracingPro
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set canvas size based on container
     const resizeCanvas = () => {
       const container = canvas.parentElement;
       if (container) {
@@ -239,20 +218,16 @@ const LetterTracing = ({ letter: initialLetter = 'A', onBack }: LetterTracingPro
     const stopDrawing = () => {
       if (isDrawing) {
         setIsDrawing(false);
-        // Simple completion detection based on path length
         if (tracingPath.length > 30) {
           setTimeout(() => handleComplete(), 500);
         }
       }
     };
 
-    // Mouse events
     canvas.addEventListener('mousedown', startDrawing);
     canvas.addEventListener('mousemove', draw);
     canvas.addEventListener('mouseup', stopDrawing);
     canvas.addEventListener('mouseout', stopDrawing);
-
-    // Touch events
     canvas.addEventListener('touchstart', startDrawing, { passive: false });
     canvas.addEventListener('touchmove', draw, { passive: false });
     canvas.addEventListener('touchend', stopDrawing);

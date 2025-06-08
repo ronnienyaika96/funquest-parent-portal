@@ -195,6 +195,42 @@ export type Database = {
         }
         Relationships: []
       }
+      tracing_progress: {
+        Row: {
+          attempts: number
+          completed: boolean
+          created_at: string
+          id: string
+          last_traced: string
+          letter: string
+          score: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          completed?: boolean
+          created_at?: string
+          id?: string
+          last_traced?: string
+          letter: string
+          score?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          completed?: boolean
+          created_at?: string
+          id?: string
+          last_traced?: string
+          letter?: string
+          score?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
