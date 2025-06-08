@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, RotateCcw, Volume2, Star, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -26,6 +25,14 @@ const LetterTracing = ({ letter: initialLetter = 'A', onBack }: LetterTracingPro
 
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
   const currentIndex = alphabet.indexOf(currentLetter);
+
+  // Get background image URLs from uploaded images
+  const getBackgroundImageUrl = (imageName: string) => {
+    const { data } = supabase.storage
+      .from('assets')
+      .getPublicUrl(imageName);
+    return data.publicUrl;
+  };
 
   // Load SVG from Supabase Storage
   const loadSVG = async (letter: string) => {
@@ -259,8 +266,13 @@ const LetterTracing = ({ letter: initialLetter = 'A', onBack }: LetterTracingPro
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-200 via-blue-200 to-purple-200 flex items-center justify-center">
-        <div className="text-center">
+      <div 
+        className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('${getBackgroundImageUrl('photo-1472396961693-142e6e269027')}')`
+        }}
+      >
+        <div className="text-center bg-white/90 backdrop-blur-sm rounded-3xl p-8 shadow-2xl">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-xl text-gray-700">Loading letter {currentLetter}...</p>
         </div>
@@ -269,23 +281,28 @@ const LetterTracing = ({ letter: initialLetter = 'A', onBack }: LetterTracingPro
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-200 via-blue-200 to-purple-200 p-4">
+    <div 
+      className="min-h-screen p-4 bg-cover bg-center bg-no-repeat"
+      style={{
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)), url('${getBackgroundImageUrl('photo-1500673922987-e212871fec22')}')`
+      }}
+    >
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <Button onClick={onBack} className="bg-white/80 hover:bg-white rounded-2xl p-4 shadow-lg" variant="outline">
+        <Button onClick={onBack} className="bg-white/90 hover:bg-white backdrop-blur-sm rounded-2xl p-4 shadow-xl border-0" variant="outline">
           <ArrowLeft className="w-6 h-6 mr-2" />
           Back to ABC
         </Button>
         
-        <h1 className="text-2xl md:text-4xl font-bold text-gray-800 text-center flex-1 mx-4">
+        <h1 className="text-2xl md:text-4xl font-bold text-white text-center flex-1 mx-4 drop-shadow-2xl">
           ✏️ Trace the Letter {currentLetter}! ✏️
         </h1>
         
         <div className="flex space-x-2">
-          <Button onClick={playLetterSound} className="bg-yellow-400 hover:bg-yellow-500 rounded-2xl p-4 shadow-lg">
+          <Button onClick={playLetterSound} className="bg-yellow-400/90 hover:bg-yellow-500 backdrop-blur-sm rounded-2xl p-4 shadow-xl border-0">
             <Volume2 className="w-6 h-6" />
           </Button>
-          <Button onClick={clearCanvas} className="bg-red-400 hover:bg-red-500 rounded-2xl p-4 shadow-lg text-white">
+          <Button onClick={clearCanvas} className="bg-red-400/90 hover:bg-red-500 backdrop-blur-sm rounded-2xl p-4 shadow-xl text-white border-0">
             <RotateCcw className="w-6 h-6" />
           </Button>
         </div>
@@ -296,13 +313,13 @@ const LetterTracing = ({ letter: initialLetter = 'A', onBack }: LetterTracingPro
         <Button 
           onClick={goToPreviousLetter} 
           disabled={currentIndex === 0}
-          className="bg-white/80 hover:bg-white rounded-full p-3 shadow-lg disabled:opacity-50"
+          className="bg-white/90 hover:bg-white backdrop-blur-sm rounded-full p-3 shadow-xl disabled:opacity-50 border-0"
           variant="outline"
         >
           <ChevronLeft className="w-6 h-6" />
         </Button>
         
-        <div className="bg-white/90 rounded-2xl px-6 py-3 shadow-lg">
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl px-6 py-3 shadow-xl border-0">
           <span className="text-2xl font-bold text-gray-800">
             {currentIndex + 1} / {alphabet.length}
           </span>
@@ -311,7 +328,7 @@ const LetterTracing = ({ letter: initialLetter = 'A', onBack }: LetterTracingPro
         <Button 
           onClick={goToNextLetter} 
           disabled={currentIndex === alphabet.length - 1}
-          className="bg-white/80 hover:bg-white rounded-full p-3 shadow-lg disabled:opacity-50"
+          className="bg-white/90 hover:bg-white backdrop-blur-sm rounded-full p-3 shadow-xl disabled:opacity-50 border-0"
           variant="outline"
         >
           <ChevronRight className="w-6 h-6" />
@@ -321,7 +338,7 @@ const LetterTracing = ({ letter: initialLetter = 'A', onBack }: LetterTracingPro
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Tracing Canvas */}
-          <div className="bg-white rounded-3xl p-4 md:p-8 shadow-2xl">
+          <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-4 md:p-8 shadow-2xl border-0">
             <h2 className="text-xl md:text-2xl font-bold text-center mb-4 text-gray-700">
               Trace with your finger!
             </h2>
@@ -362,7 +379,7 @@ const LetterTracing = ({ letter: initialLetter = 'A', onBack }: LetterTracingPro
           {/* Letter Information */}
           <div className="space-y-6">
             {/* Letter Example */}
-            <div className="bg-white rounded-3xl p-6 md:p-8 shadow-2xl text-center">
+            <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-6 md:p-8 shadow-2xl text-center border-0">
               <h3 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4">
                 {currentLetter} is for...
               </h3>
@@ -373,7 +390,7 @@ const LetterTracing = ({ letter: initialLetter = 'A', onBack }: LetterTracingPro
             </div>
 
             {/* Instructions */}
-            <div className="bg-white rounded-3xl p-6 shadow-2xl">
+            <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-6 shadow-2xl border-0">
               <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">How to trace:</h3>
               <ul className="text-base md:text-lg text-gray-600 space-y-2">
                 <li>👆 Use your finger or mouse</li>
@@ -384,7 +401,7 @@ const LetterTracing = ({ letter: initialLetter = 'A', onBack }: LetterTracingPro
             </div>
 
             {/* Quick Navigation */}
-            <div className="bg-white rounded-3xl p-6 shadow-2xl">
+            <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-6 shadow-2xl border-0">
               <h3 className="text-xl font-bold text-gray-800 mb-4">Quick Jump:</h3>
               <div className="grid grid-cols-6 gap-2">
                 {alphabet.slice(0, 12).map((letter) => (
@@ -429,8 +446,8 @@ const LetterTracing = ({ letter: initialLetter = 'A', onBack }: LetterTracingPro
 
       {/* Celebration Modal */}
       {showCelebration && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl p-8 md:p-12 text-center shadow-3xl animate-scale-in max-w-md w-full">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 md:p-12 text-center shadow-3xl animate-scale-in max-w-md w-full border-0">
             <div className="text-6xl md:text-8xl mb-4">🎉</div>
             <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
             <h2 className="text-2xl md:text-4xl font-bold text-gray-800 mb-4">
@@ -468,9 +485,9 @@ const LetterTracing = ({ letter: initialLetter = 'A', onBack }: LetterTracingPro
       )}
 
       {/* Floating decorations */}
-      <div className="fixed bottom-8 right-8 text-4xl md:text-5xl animate-bounce">🌟</div>
-      <div className="fixed top-1/4 left-8 text-3xl md:text-4xl animate-pulse">🎈</div>
-      {isCompleted && <div className="fixed top-1/2 right-1/4 text-5xl md:text-6xl animate-bounce">✨</div>}
+      <div className="fixed bottom-8 right-8 text-4xl md:text-5xl animate-bounce drop-shadow-lg">🌟</div>
+      <div className="fixed top-1/4 left-8 text-3xl md:text-4xl animate-pulse drop-shadow-lg">🎈</div>
+      {isCompleted && <div className="fixed top-1/2 right-1/4 text-5xl md:text-6xl animate-bounce drop-shadow-lg">✨</div>}
     </div>
   );
 };
