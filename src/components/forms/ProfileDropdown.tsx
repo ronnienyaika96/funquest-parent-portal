@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
@@ -25,11 +24,11 @@ export function ProfileDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <User className="w-5 h-5" />
+        <Button variant="ghost" size="icon" className="!bg-white !shadow-md !border border-gray-200 hover:!bg-gray-100 focus:!bg-gray-100">
+          <User className="w-5 h-5 text-gray-600" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent align="end" className="w-56 bg-white shadow-xl rounded-2xl border border-gray-200 !z-[99]">
         <DropdownMenuItem onClick={() => navigate('/settings')}>
           <User className="w-4 h-4 mr-2" />
           My Profile

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { X, Home, Palette, PenTool, Puzzle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -20,7 +19,6 @@ const GamingInterface = ({ onExitGaming }: GamingInterfaceProps) => {
   };
 
   const handleParentExit = () => {
-    // Simple parent verification - in real app, this could be a PIN or pattern
     const confirmed = window.confirm("Parent Mode: Are you sure you want to exit child mode?");
     if (confirmed) {
       onExitGaming();
@@ -28,13 +26,6 @@ const GamingInterface = ({ onExitGaming }: GamingInterfaceProps) => {
   };
 
   const games = [
-    {
-      id: 'alphabet',
-      title: 'ABC Learning',
-      icon: '🔤',
-      color: 'from-pink-400 to-pink-500',
-      description: 'Learn letters A-Z!'
-    },
     {
       id: 'tracing',
       title: 'Letter Tracing',
@@ -63,7 +54,7 @@ const GamingInterface = ({ onExitGaming }: GamingInterfaceProps) => {
   }
 
   if (activeGame === 'tracing') {
-    return <LetterTracing letter={selectedLetter} onBack={() => setActiveGame('alphabet')} />;
+    return <LetterTracing letter={selectedLetter} onBack={() => setActiveGame('home')} />;
   }
 
   if (activeGame === 'coloring') {
@@ -72,7 +63,6 @@ const GamingInterface = ({ onExitGaming }: GamingInterfaceProps) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-yellow-200 via-pink-200 to-blue-200">
-      {/* Header with parent exit */}
       <div className="flex justify-between items-center p-4">
         <div className="flex items-center space-x-3">
           <div className="w-12 h-12 bg-gradient-to-r from-orange-400 to-red-400 rounded-full flex items-center justify-center text-2xl">
@@ -117,8 +107,6 @@ const GamingInterface = ({ onExitGaming }: GamingInterfaceProps) => {
           ))}
         </div>
       </div>
-
-      {/* Decorative elements */}
       <div className="fixed bottom-4 left-4 text-6xl animate-bounce">🌟</div>
       <div className="fixed top-1/4 right-8 text-4xl animate-pulse">🎈</div>
       <div className="fixed bottom-1/4 right-1/4 text-5xl animate-bounce delay-1000">🦋</div>

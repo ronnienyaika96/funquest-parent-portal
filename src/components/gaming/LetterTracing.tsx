@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -74,27 +75,28 @@ const LetterTracing: React.FC<LetterTracingProps> = ({ letter, onBack }) => {
 
   return (
     <div
-      className="min-h-screen w-full flex flex-col items-center justify-center"
+      className={`min-h-screen w-full flex flex-col items-center ${isMobile ? "" : "justify-center"}`}
       style={{
         background: `url('${backgroundImage}') no-repeat center center/cover`,
-        fontFamily: "'Nunito', 'Comic Sans MS', 'Comic Sans', 'cursive', sans-serif"
+        fontFamily: "'Nunito', 'Comic Sans MS', 'Comic Sans', 'cursive', sans-serif",
+        padding: isMobile ? "0 0 32px 0" : undefined,
       }}
     >
-      <div className="flex flex-col items-center w-full h-full py-6">
+      <div className={`flex flex-col items-center w-full h-full ${isMobile ? "py-0" : "py-6"}`}>
         {/* MAIN GAME PANEL */}
-        <div className="bg-white/80 rounded-[2rem] shadow-2xl p-4 md:p-8 w-[97vw] max-w-xl mt-10 mb-8 border-4 border-yellow-200 flex flex-col items-center relative" style={{backdropFilter:'blur(2px)', borderRadius:'2rem'}}>
+        <div className={`bg-white/90 rounded-[2rem] shadow-2xl p-2 md:p-8 w-full max-w-xl ${isMobile ? "mt-0 mb-4 border-b-0 border-x-0 rounded-t-3xl min-h-[80vh]" : "mt-10 mb-8 border-4"} border-yellow-200 flex flex-col items-center relative`} style={{backdropFilter:'blur(2px)'}}>
           {/* Optional Back Button */}
           {onBack && (
             <button
               onClick={onBack}
-              className="absolute left-4 top-4 flex items-center gap-2 bg-funquest-blue/70 hover:bg-funquest-blue text-white px-4 py-2 rounded-xl shadow-md font-bold z-10"
+              className={`absolute left-4 top-4 flex items-center gap-2 bg-funquest-blue/70 hover:bg-funquest-blue text-white px-4 py-2 rounded-xl shadow-md font-bold z-10 ${isMobile ? "top-3 left-2 text-base" : ""}`}
             >
-              <ArrowLeft size={22} />
+              <ArrowLeft size={isMobile ? 20 : 22} />
               Back
             </button>
           )}
           {/* Letter label */}
-          <div className="text-center mb-2 mt-2">
+          <div className={`text-center ${isMobile ? "mb-1 mt-4" : "mb-2 mt-2"}`}>
             <span className="text-5xl md:text-6xl font-extrabold drop-shadow text-funquest-blue" style={{
               letterSpacing: '0.09em',
               textShadow: "0px 4px 16px #a6e0ff"
@@ -104,43 +106,61 @@ const LetterTracing: React.FC<LetterTracingProps> = ({ letter, onBack }) => {
             <span className="block text-lg md:text-2xl font-medium text-funquest-green animate-pulse">{getLetterLabel(currentLetter)}</span>
           </div>
           {/* SVG Container + Tracing Overlay */}
-          <LetterTraceCanvas
-            svgContent={svgContent}
-            svgBounds={svgBounds}
-            tracing={tracing}
-            setTracing={setTracing}
-            currentStroke={currentStroke}
-            setCurrentStroke={setCurrentStroke}
-            onSvgBoundsDetected={setSvgBounds}
-          />
+          <div className={isMobile ? "w-full px-2" : ""}>
+            <LetterTraceCanvas
+              svgContent={svgContent}
+              svgBounds={svgBounds}
+              tracing={tracing}
+              setTracing={setTracing}
+              currentStroke={currentStroke}
+              setCurrentStroke={setCurrentStroke}
+              onSvgBoundsDetected={setSvgBounds}
+            />
+          </div>
           {/* Navigation arrows */}
-          <div className="mt-6 flex items-center justify-between gap-10 w-full px-6">
+          <div className={`mt-6 flex items-center justify-between gap-10 w-full px-6 ${isMobile ? "mt-3 gap-4" : ""}`}>
             <button
-              className="bg-funquest-blue/90 px-5 py-3 rounded-2xl shadow-lg hover:bg-funquest-blue text-white font-bold text-xl transition-all duration-100 disabled:opacity-50"
-              style={{ minWidth: 56, border: 'none' }}
+              className={`transition-all duration-100 disabled:opacity-50 rounded-full border-4 p-0 shadow-lg focus:outline-none
+                ${currentIndex === 0
+                  ? "bg-gray-200 border-gray-300 cursor-default"
+                  : "bg-blue-600 hover:bg-blue-700 border-blue-700"}
+                flex items-center justify-center h-14 w-14`}
               disabled={currentIndex === 0}
               onClick={prevLetter}
               aria-label="Previous letter"
+              style={
+                isMobile
+                  ? { minWidth: 44, minHeight: 44, fontSize: 20 }
+                  : { minWidth: 56 }
+              }
             >
-              <ArrowLeft size={30} />
+              <ArrowLeft size={isMobile ? 32 : 30} color={currentIndex === 0 ? "#7dd3fc" : "#fff"} />
             </button>
             <button
-              className="bg-funquest-orange/90 px-5 py-3 rounded-2xl shadow-lg hover:bg-funquest-orange text-white font-bold text-xl transition-all duration-100 disabled:opacity-50"
-              style={{ minWidth: 56, border: 'none' }}
+              className={`transition-all duration-100 disabled:opacity-50 rounded-full border-4 p-0 shadow-lg focus:outline-none
+                ${currentIndex === ALPHABET.length - 1
+                  ? "bg-gray-200 border-gray-300 cursor-default"
+                  : "bg-orange-500 hover:bg-orange-600 border-orange-600"}
+                flex items-center justify-center h-14 w-14`}
               disabled={currentIndex === ALPHABET.length - 1}
               onClick={nextLetter}
               aria-label="Next letter"
+              style={
+                isMobile
+                  ? { minWidth: 44, minHeight: 44, fontSize: 20 }
+                  : { minWidth: 56 }
+              }
             >
-              <ArrowRight size={30} />
+              <ArrowRight size={isMobile ? 32 : 30} color={currentIndex === ALPHABET.length - 1 ? "#fdba74" : "#fff"} />
             </button>
           </div>
           {/* Reset button */}
-          <div className="mt-4 text-center">
+          <div className={`mt-4 text-center ${isMobile && "w-full px-2"}`}>
             <button
-              className="bg-funquest-green/80 hover:bg-funquest-green text-white px-5 py-2 rounded-xl font-bold text-md shadow"
+              className="bg-funquest-green/90 hover:bg-funquest-green text-white px-5 py-3 rounded-xl font-bold text-md shadow w-full max-w-xs transition-all duration-200"
               onClick={() => { setTracing([]); setCurrentStroke([]); }}
             >
-              Clear drawing
+              Clear Drawing
             </button>
           </div>
         </div>
@@ -155,6 +175,7 @@ const LetterTracing: React.FC<LetterTracingProps> = ({ letter, onBack }) => {
                 }`}
                 aria-label={`Jump to letter ${l.toUpperCase()}`}
                 onClick={() => setCurrentIndex(idx)}
+                style={isMobile ? { minWidth: 38, minHeight: 38, fontSize: 18 } : undefined}
               >
                 {l.toUpperCase()}
               </button>

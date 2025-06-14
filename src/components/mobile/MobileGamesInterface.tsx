@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -100,9 +99,17 @@ const MobileGamesInterface = () => {
     }
   };
 
+  // Modified to send user into game: tracing/coloring based on ID!
   const playGame = (gameId: number) => {
-    console.log(`Starting game ${gameId}`);
-    // Here you would navigate to the actual game interface
+    // Letter Tracing (ID 1) and Rainbow Coloring (ID 2)
+    if (gameId === 1) {
+      // Go to the in-app /gaming route with tracing active (simulate gaming mode mobile flow)
+      window.location.href = "/?startGame=tracing";
+    } else if (gameId === 2) {
+      window.location.href = "/?startGame=coloring";
+    } else {
+      alert("Only Tracing and Coloring games are available right now.");
+    }
   };
 
   const featuredGames = games.filter(game => game.featured);
