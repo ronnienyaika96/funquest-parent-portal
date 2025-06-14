@@ -61,16 +61,16 @@ const MobileDashboard = () => {
   ];
 
   return (
-    <div className="p-4 space-y-6 pb-24 bg-white">
+    <div className="p-4 space-y-6 pb-28 bg-white min-h-screen">
       {/* Welcome Section */}
-      <div className="card-mobile bg-purple-500 text-white mb-2">
-        <div className="flex items-center justify-between">
+      <div className="card-mobile bg-purple-500 text-white mb-2 pt-3 pb-5 px-5 rounded-2xl">
+        <div className="flex items-center justify-between gap-4">
           <div>
             <h2 className="text-2xl font-bold mb-1">Hi Emma! 👋</h2>
             <p className="text-purple-100 mb-2">Ready for another learning adventure?</p>
             <Button 
               onClick={() => navigate('/games')}
-              className="bg-white text-purple-600 hover:bg-purple-50 rounded-2xl font-bold min-h-12 py-3 px-4"
+              className="bg-white text-purple-600 hover:bg-purple-100 rounded-2xl font-bold min-h-12 py-3 px-4 mt-1"
             >
               <Play className="w-5 h-5 mr-2" />
               Continue Learning
@@ -85,8 +85,8 @@ const MobileDashboard = () => {
         {quickStats.map((stat, index) => {
           const Icon = stat.icon;
           return (
-            <Card key={index} className={`${stat.bgColor} border-0 shadow-soft`}>
-              <CardContent className="p-3 sm:p-4">
+            <Card key={index} className={`${stat.bgColor} border-0 shadow-soft rounded-2xl`}>
+              <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
                   <div className={`w-10 h-10 rounded-2xl bg-${stat.color.includes('blue') ? 'blue' : stat.color.includes('purple') ? 'purple' : stat.color.includes('yellow') ? 'yellow' : 'green'}-500 flex items-center justify-center shadow-md`}>
                     <Icon className="w-5 h-5 text-white" />
@@ -102,7 +102,7 @@ const MobileDashboard = () => {
       </div>
 
       {/* Progress Section */}
-      <div className="card-mobile px-3 pt-4 pb-4">
+      <div className="card-mobile px-3 pt-4 pb-4 rounded-2xl">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-lg font-bold text-gray-800">Today's Progress</h3>
           <div className="flex items-center space-x-1">
@@ -150,7 +150,7 @@ const MobileDashboard = () => {
       </div>
 
       {/* Achievement Showcase */}
-      <div className="card-mobile bg-yellow-50 py-4 px-3">
+      <div className="card-mobile bg-yellow-50 py-4 px-3 rounded-2xl">
         <div className="text-center">
           <div className="text-4xl mb-2">🏆</div>
           <h3 className="text-lg font-bold text-gray-800 mb-1">Amazing Progress!</h3>
@@ -169,3 +169,4 @@ const MobileDashboard = () => {
 };
 
 export default MobileDashboard;
+

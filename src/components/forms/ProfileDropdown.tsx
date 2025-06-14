@@ -28,7 +28,15 @@ export function ProfileDropdown() {
           <User className="w-5 h-5 text-gray-600" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56 bg-white shadow-xl rounded-2xl border border-gray-200 !z-[99]">
+      <DropdownMenuContent
+        align="end"
+        className="w-56 bg-white !bg-white !bg-opacity-100 shadow-2xl rounded-2xl border border-gray-200 !z-[999] py-2"
+        style={{
+          background: '#fff',
+          zIndex: 999,
+          top: 44,
+        }}
+      >
         <DropdownMenuItem onClick={() => navigate('/settings')}>
           <User className="w-4 h-4 mr-2" />
           My Profile

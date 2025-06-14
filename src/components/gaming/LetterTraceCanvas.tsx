@@ -90,19 +90,20 @@ const LetterTraceCanvas: React.FC<TraceCanvasProps> = ({
   return (
     <div
       ref={svgContainer}
-      className="mx-auto my-6 md:my-10 relative rounded-[1.5rem] border-4 border-blue-300 pointer-events-auto touch-none"
+      className="relative letter-trace-canvas mx-auto flex items-center justify-center border-4 border-blue-300 bg-white"
       style={{
         width: isMobile ? '90vw' : '380px',
         height: isMobile ? '90vw' : '380px',
-        maxWidth: 400,
-        maxHeight: 400,
+        maxWidth: isMobile ? 360 : 400,
+        maxHeight: isMobile ? 360 : 400,
         aspectRatio: '1/1',
-        boxShadow: '0 2px 24px 0px #bae6fd60',
-        background: 'rgba(255,255,255,0.8)',
-        padding: isMobile ? 12 : 22, // add internal padding
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
+        boxShadow: isMobile
+          ? "0 2px 18px #38bdf833"
+          : '0 2px 24px 0px #bae6fd60',
+        background: isMobile ? 'rgba(255,255,255,0.93)' : 'rgba(255,255,255,0.96)',
+        padding: isMobile ? 8 : 18,
+        overflow: 'hidden',
+        touchAction: 'none'
       }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
