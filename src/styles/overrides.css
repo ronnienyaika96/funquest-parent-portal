@@ -1,0 +1,34 @@
+
+/* Custom Scrollbar for Mobile */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.5); border-radius: 2px;}
+::-webkit-scrollbar-thumb:hover { background: rgba(156, 163, 175, 0.8);}
+@supports (padding: max(0px)) {
+  .safe-area-top { padding-top: max(1rem, env(safe-area-inset-top));}
+  .safe-area-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom));}
+}
+/* Custom override for SVGs in tracing container */
+.letter-svg-container svg {
+  width: 92% !important;
+  height: 92% !important;
+  max-width: 360px !important;
+  max-height: 360px !important;
+  display: block !important;
+  margin: 0 auto !important;
+  overflow: visible !important;
+}
+.letter-svg-container svg path,
+.letter-svg-container svg ellipse,
+.letter-svg-container svg circle,
+.letter-svg-container svg rect,
+.letter-svg-container svg polyline,
+.letter-svg-container svg polygon {
+  stroke: #1e1e1e !important;
+  stroke-width: 4 !important;
+  fill: #007bff !important;
+}
+.letter-svg-container svg text {
+  fill: #007bff !important;
+  font-weight: bold !important;
+}
