@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -12,15 +11,12 @@ const DESKTOP_BG = "https://blbsqooxwyapcxsfgope.supabase.co/storage/v1/object/p
 const MOBILE_BG = "https://blbsqooxwyapcxsfgope.supabase.co/storage/v1/object/public/assets//mobile%20background.png";
 const BASE_SVG = "https://blbsqooxwyapcxsfgope.supabase.co/storage/v1/object/public/assets/";
 
-// Convert lowercase to path, e.g., "b" -> "letter b.svg"
+// Convert lowercase to path, e.g., "a" -> "letter a path-01.svg"
 function getLetterSvgPath(letter: string): string {
   if (letter === "a") {
-    // Letter 'a' has a unique file name
     return `${BASE_SVG}letter%20a%20path-01.svg`;
   }
-  // The rest are named like "letter b.svg", "letter c.svg" etc.
-  // The space must be URL-encoded to "%20".
-  return `${BASE_SVG}letter%20${letter}.svg`;
+  return `${BASE_SVG}letter-${letter}.svg`;
 }
 
 interface LetterTracingProps {
