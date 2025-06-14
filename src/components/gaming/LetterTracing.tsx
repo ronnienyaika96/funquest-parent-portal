@@ -82,189 +82,95 @@ const LetterTracing: React.FC<LetterTracingProps> = ({ letter, onBack }) => {
       }}
     >
       <div className={`flex flex-col items-center w-full h-full ${isMobile ? "py-0" : "py-6"}`}>
-        {/* For MOBILE: No outer white card, just core nav/buttons/canvas floating on background */}
-        {!isMobile && (
+        {/* No desktop card: content directly on bg for both desktop and mobile */}
+        <div className="w-full flex flex-col items-center" style={{ minHeight: isMobile ? '94vh' : '80vh' }}>
+          {/* Optional Back Button */}
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="absolute left-2 top-2 flex items-center gap-2 bg-blue-400/90 hover:bg-blue-500 text-white px-3 py-2 rounded-xl shadow font-bold z-10"
+              style={{ fontSize: isMobile ? 15 : 16 }}
+            >
+              <ArrowLeft size={isMobile ? 20 : 22} />
+              Back
+            </button>
+          )}
+          {/* Letter label */}
+          <div className="text-center mb-2 mt-6">
+            <span className="text-5xl font-extrabold drop-shadow text-funquest-blue" style={{
+              letterSpacing: '0.08em',
+              textShadow: "0px 4px 16px #a6e0ff"
+            }}>
+              {currentLetter.toUpperCase()}
+            </span>
+            <span className="block text-lg font-medium text-funquest-green animate-pulse">{getLetterLabel(currentLetter)}</span>
+          </div>
+
+          {/* SVG Container + Tracing Overlay */}
           <div
-            className={`bg-white/95 rounded-t-3xl rounded-b-2xl shadow-xl w-full flex flex-col items-center border-y-0 border-x-0 
-              mt-10 mb-8 p-8 max-w-xl border-4 p-8`}
+            className="w-full flex justify-center items-center"
             style={{
-              backdropFilter: 'blur(2px)',
-              minHeight: '80vh',
-              boxShadow: "0 6px 36px 0px #bae6fd60",
+              maxWidth: isMobile ? 370 : 400,
+              margin: isMobile ? '0 auto' : '',
+              marginBottom: isMobile ? 4 : '',
             }}
           >
-            {/* Optional Back Button */}
-            {onBack && (
-              <button
-                onClick={onBack}
-                className="absolute left-2 top-2 flex items-center gap-2 bg-blue-400/90 hover:bg-blue-500 text-white px-3 py-2 rounded-xl shadow font-bold z-10"
-                style={{ fontSize: 16 }}
-              >
-                <ArrowLeft size={22} />
-                Back
-              </button>
-            )}
-            {/* Letter label */}
-            <div className="text-center mb-2 mt-6">
-              <span className="text-5xl font-extrabold drop-shadow text-funquest-blue" style={{
-                letterSpacing: '0.08em',
-                textShadow: "0px 4px 16px #a6e0ff"
-              }}>
-                {currentLetter.toUpperCase()}
-              </span>
-              <span className="block text-lg font-medium text-funquest-green animate-pulse">{getLetterLabel(currentLetter)}</span>
-            </div>
-
-            {/* SVG Container + Tracing Overlay */}
-            <div className="w-full flex justify-center items-center" style={{
-              maxWidth: 400,
-              margin: '',
-            }}>
-              <LetterTraceCanvas
-                svgContent={svgContent}
-                svgBounds={svgBounds}
-                tracing={tracing}
-                setTracing={setTracing}
-                currentStroke={currentStroke}
-                setCurrentStroke={setCurrentStroke}
-                onSvgBoundsDetected={setSvgBounds}
-              />
-            </div>
-            {/* Navigation arrows */}
-            <div className="mt-6 flex items-center justify-between gap-10 w-full px-6 max-w-xs mx-auto">
-              <button
-                className={`transition-all duration-100 disabled:opacity-40 rounded-full border-4 p-0 shadow-xl focus:outline-none
-                  ${currentIndex === 0
-                    ? "bg-gray-200 border-gray-300 cursor-default"
-                    : "bg-blue-600 hover:bg-blue-700 border-blue-700"}
-                  flex items-center justify-center`}
-                disabled={currentIndex === 0}
-                onClick={prevLetter}
-                aria-label="Previous letter"
-                style={{
-                  minWidth: 48, minHeight: 48, fontSize: 22,
-                  boxShadow: currentIndex === 0 ? 'none' : '0 2px 14px #60a5fad9'
-                }}
-              >
-                <ArrowLeft size={32} color={currentIndex === 0 ? "#7dd3fc" : "#fff"} />
-              </button>
-              <button
-                className={`transition-all duration-100 disabled:opacity-40 rounded-full border-4 p-0 shadow-xl focus:outline-none
-                  ${currentIndex === ALPHABET.length - 1
-                    ? "bg-gray-200 border-gray-300 cursor-default"
-                    : "bg-orange-500 hover:bg-orange-600 border-orange-600"}
-                  flex items-center justify-center`}
-                disabled={currentIndex === ALPHABET.length - 1}
-                onClick={nextLetter}
-                aria-label="Next letter"
-                style={{
-                  minWidth: 48, minHeight: 48, fontSize: 22,
-                  boxShadow: currentIndex === ALPHABET.length - 1 ? 'none' : '0 2px 14px #fdba74d9'
-                }}
-              >
-                <ArrowRight size={32} color={currentIndex === ALPHABET.length - 1 ? "#fdba74" : "#fff"} />
-              </button>
-            </div>
-            {/* Reset button */}
-            <div className="mt-4 text-center w-full px-2">
-              <button
-                className="w-full max-w-xs bg-funquest-green/90 hover:bg-funquest-green text-white px-5 py-3 rounded-xl font-bold text-md shadow transition-all duration-200"
-                onClick={() => { setTracing([]); setCurrentStroke([]); }}
-              >
-                Clear Drawing
-              </button>
-            </div>
+            <LetterTraceCanvas
+              svgContent={svgContent}
+              svgBounds={svgBounds}
+              tracing={tracing}
+              setTracing={setTracing}
+              currentStroke={currentStroke}
+              setCurrentStroke={setCurrentStroke}
+              onSvgBoundsDetected={setSvgBounds}
+            />
           </div>
-        )}
-
-        {/* MOBILE: No outer card */}
-        {isMobile && (
-          <div className="w-full flex flex-col items-center" style={{ minHeight: '94vh' }}>
-            {/* Optional Back Button */}
-            {onBack && (
-              <button
-                onClick={onBack}
-                className="absolute left-2 top-2 flex items-center gap-2 bg-blue-400/90 hover:bg-blue-500 text-white px-3 py-2 rounded-xl shadow font-bold z-10"
-                style={{ fontSize: 15 }}
-              >
-                <ArrowLeft size={20} />
-                Back
-              </button>
-            )}
-            {/* Letter label */}
-            <div className="text-center mb-2 mt-4">
-              <span className="text-5xl font-extrabold drop-shadow text-funquest-blue" style={{
-                letterSpacing: '0.08em',
-                textShadow: "0px 4px 16px #a6e0ff"
-              }}>
-                {currentLetter.toUpperCase()}
-              </span>
-              <span className="block text-lg font-medium text-funquest-green animate-pulse">{getLetterLabel(currentLetter)}</span>
-            </div>
-            {/* SVG Container + Tracing Overlay */}
-            <div
-              className="w-full flex justify-center items-center"
+          {/* Navigation arrows */}
+          <div className={`${isMobile ? "mt-5" : "mt-6"} flex items-center justify-between gap-10 w-full px-6 max-w-xs mx-auto`}>
+            <button
+              className={`transition-all duration-100 disabled:opacity-40 rounded-full border-4 p-0 shadow-xl focus:outline-none
+                ${currentIndex === 0
+                  ? "bg-gray-200 border-gray-300 cursor-default"
+                  : "bg-blue-600 hover:bg-blue-700 border-blue-700"}
+                flex items-center justify-center`}
+              disabled={currentIndex === 0}
+              onClick={prevLetter}
+              aria-label="Previous letter"
               style={{
-                maxWidth: 370,
-                margin: '0 auto',
-                marginBottom: 4,
+                minWidth: 48, minHeight: 48, fontSize: 22,
+                boxShadow: currentIndex === 0 ? 'none' : '0 2px 14px #60a5fad9'
               }}
             >
-              <LetterTraceCanvas
-                svgContent={svgContent}
-                svgBounds={svgBounds}
-                tracing={tracing}
-                setTracing={setTracing}
-                currentStroke={currentStroke}
-                setCurrentStroke={setCurrentStroke}
-                onSvgBoundsDetected={setSvgBounds}
-              />
-            </div>
-            {/* Navigation arrows */}
-            <div className="mt-5 flex items-center justify-between gap-10 w-full px-6 max-w-xs mx-auto">
-              <button
-                className={`transition-all duration-100 disabled:opacity-40 rounded-full border-4 p-0 shadow-xl focus:outline-none
-                  ${currentIndex === 0
-                    ? "bg-gray-200 border-gray-300 cursor-default"
-                    : "bg-blue-600 hover:bg-blue-700 border-blue-700"}
-                  flex items-center justify-center`}
-                disabled={currentIndex === 0}
-                onClick={prevLetter}
-                aria-label="Previous letter"
-                style={{
-                  minWidth: 48, minHeight: 48, fontSize: 22,
-                  boxShadow: currentIndex === 0 ? 'none' : '0 2px 14px #60a5fad9'
-                }}
-              >
-                <ArrowLeft size={32} color={currentIndex === 0 ? "#7dd3fc" : "#fff"} />
-              </button>
-              <button
-                className={`transition-all duration-100 disabled:opacity-40 rounded-full border-4 p-0 shadow-xl focus:outline-none
-                  ${currentIndex === ALPHABET.length - 1
-                    ? "bg-gray-200 border-gray-300 cursor-default"
-                    : "bg-orange-500 hover:bg-orange-600 border-orange-600"}
-                  flex items-center justify-center`}
-                disabled={currentIndex === ALPHABET.length - 1}
-                onClick={nextLetter}
-                aria-label="Next letter"
-                style={{
-                  minWidth: 48, minHeight: 48, fontSize: 22,
-                  boxShadow: currentIndex === ALPHABET.length - 1 ? 'none' : '0 2px 14px #fdba74d9'
-                }}
-              >
-                <ArrowRight size={32} color={currentIndex === ALPHABET.length - 1 ? "#fdba74" : "#fff"} />
-              </button>
-            </div>
-            {/* Reset button */}
-            <div className="mt-4 text-center w-full px-2">
-              <button
-                className="w-full max-w-xs bg-funquest-green/90 hover:bg-funquest-green text-white px-5 py-3 rounded-xl font-bold text-md shadow transition-all duration-200"
-                onClick={() => { setTracing([]); setCurrentStroke([]); }}
-              >
-                Clear Drawing
-              </button>
-            </div>
-            {/* Quick nav for mobile: keep as before */}
+              <ArrowLeft size={32} color={currentIndex === 0 ? "#7dd3fc" : "#fff"} />
+            </button>
+            <button
+              className={`transition-all duration-100 disabled:opacity-40 rounded-full border-4 p-0 shadow-xl focus:outline-none
+                ${currentIndex === ALPHABET.length - 1
+                  ? "bg-gray-200 border-gray-300 cursor-default"
+                  : "bg-orange-500 hover:bg-orange-600 border-orange-600"}
+                flex items-center justify-center`}
+              disabled={currentIndex === ALPHABET.length - 1}
+              onClick={nextLetter}
+              aria-label="Next letter"
+              style={{
+                minWidth: 48, minHeight: 48, fontSize: 22,
+                boxShadow: currentIndex === ALPHABET.length - 1 ? 'none' : '0 2px 14px #fdba74d9'
+              }}
+            >
+              <ArrowRight size={32} color={currentIndex === ALPHABET.length - 1 ? "#fdba74" : "#fff"} />
+            </button>
+          </div>
+          {/* Reset button */}
+          <div className="mt-4 text-center w-full px-2">
+            <button
+              className="w-full max-w-xs bg-funquest-green/90 hover:bg-funquest-green text-white px-5 py-3 rounded-xl font-bold text-md shadow transition-all duration-200"
+              onClick={() => { setTracing([]); setCurrentStroke([]); }}
+            >
+              Clear Drawing
+            </button>
+          </div>
+          {/* Quick nav for mobile */}
+          {isMobile && (
             <div className="mt-2 w-full px-2 flex flex-wrap justify-center gap-1">
               {ALPHABET.map((l, idx) => (
                 <button
@@ -280,8 +186,8 @@ const LetterTracing: React.FC<LetterTracingProps> = ({ letter, onBack }) => {
                 </button>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
