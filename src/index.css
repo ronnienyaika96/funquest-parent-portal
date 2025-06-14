@@ -11,7 +11,53 @@
 :root, body {
   overscroll-behavior-y: none;
 }
+
 /* App-wide: force overlays/menus to not be transparent */
-[class*='dropdown'], [class*='menu'] {
+[class*='dropdown'], [class*='menu'], [role*="menu"], [data-radix-popper-content-wrapper] {
   background: #fff !important;
+  background-color: #fff !important;
+  opacity: 1 !important;
+  filter: none !important;
+  box-shadow: 0 8px 40px 0 rgba(54, 54, 54, 0.12), 0 1.5px 5px 0 rgba(54,54,54,.10);
+  z-index: 999 !important;
+}
+
+/* Menu items should inherit a solid bg on hover/focus, fallback to white */
+[class*="menu"] [class*="item"]:hover,
+[class*="menu"] [class*="item"]:focus,
+[role="menuitem"]:hover,
+[role="menuitem"]:focus {
+  background: #f3f3f3 !important;
+  background-color: #f3f3f3 !important;
+  opacity: 1 !important;
+}
+
+/* Ensure popover/dropdown content is never transparent */
+[data-radix-popper-content-wrapper], .radix-popper-content, .radix-dropdown-menu__content {
+  background: #fff !important;
+  background-color: #fff !important;
+  opacity: 1 !important;
+  z-index: 999 !important;
+}
+
+/* For shadcn and radix ui border shadow */
+[data-radix-popper-content-wrapper], .radix-popper-content, .radix-dropdown-menu__content, [class*='dropdown'] {
+  box-shadow: 0 8px 40px 0 rgba(54, 54, 54, 0.12), 0 1.5px 5px 0 rgba(54,54,54,.10) !important;
+  border-radius: 14px !important;
+}
+
+/* Prevent transparency when nested or deeply themed */
+[class*='dropdown'] *, [class*='menu'] *, .radix-popper-content *, [data-radix-popper-content-wrapper] * {
+  background: transparent !important;
+  background-color: transparent !important;
+  opacity: 1 !important;
+}
+
+/* Just in case theme or dark mode overrides */
+@media (prefers-color-scheme: dark) {
+  [class*='dropdown'], [class*='menu'], [role*="menu"], [data-radix-popper-content-wrapper] {
+    background: #222 !important;
+    background-color: #222 !important;
+    color: #fff !important;
+  }
 }
