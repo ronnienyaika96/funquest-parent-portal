@@ -1,7 +1,8 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import LetterTraceCanvas from "./LetterTraceCanvas";
+import { getLetterLabel } from "./letter-labels";
 
 // Kid-friendly alphabet letters
 const ALPHABET = "abcdefghijklmnopqrstuvwxyz".split('');
@@ -18,18 +19,6 @@ function getLetterSvgPath(letter: string): string {
   return `${BASE_SVG}letter-${letter}.svg`;
 }
 
-const getLetterLabel = (letter: string) => {
-  const examples: Record<string, string> = {
-    a: '🍎 Apple', b: '🐝 Bee', c: '🐱 Cat', d: '🐶 Dog', e: '🥚 Egg',
-    f: '🐸 Frog', g: '🦒 Giraffe', h: '🏠 House', i: '🍦 Ice Cream',
-    j: '🤹‍♂️ Juggle', k: '🦘 Kangaroo', l: '🦁 Lion', m: '🌝 Moon',
-    n: '🐧 Nest', o: '🐙 Octopus', p: '🦜 Parrot', q: '👑 Queen',
-    r: '🤖 Robot', s: '🌟 Star', t: '🌳 Tree', u: '☔ Umbrella',
-    v: '🎻 Violin', w: '🐋 Whale', x: '❌ X-ray', y: '🛶 Yacht', z: '🦓 Zebra'
-  };
-  return examples[letter] || '';
-};
-
 interface LetterTracingProps {
   letter?: string;
   onBack?: () => void;
@@ -44,7 +33,7 @@ const LetterTracing: React.FC<LetterTracingProps> = ({ letter, onBack }) => {
   const [svgContent, setSvgContent] = useState<string | null>(null);
   const [tracing, setTracing] = useState<{ x: number; y: number }[][]>([]);
   const [currentStroke, setCurrentStroke] = useState<{ x: number; y: number }[]>([]);
-  const svgContainer = useRef<HTMLDivElement>(null);
+  const [svgBounds, setSvgBounds] = useState<{ width: number; height: number }>({ width: 300, height: 300 });
   const isMobile = useIsMobile();
 
   const currentLetter = ALPHABET[currentIndex];
@@ -58,51 +47,6 @@ const LetterTracing: React.FC<LetterTracingProps> = ({ letter, onBack }) => {
     setTracing([]);
     setCurrentStroke([]);
   }, [currentLetter]);
-
-  // *** Drawing logic ***
-  const [svgBounds, setSvgBounds] = useState<{ width: number; height: number }>({ width: 300, height: 300 });
-
-  useEffect(() => {
-    if (!svgContent) return;
-    try {
-      const temp = document.createElement('div');
-      temp.innerHTML = svgContent;
-      const svg = temp.querySelector('svg');
-      if (svg) {
-        const width = Number(svg.getAttribute('width')) || 320;
-        const height = Number(svg.getAttribute('height')) || 320;
-        setSvgBounds({ width, height });
-      }
-    } catch(e) {
-      setSvgBounds({ width: 320, height: 320 });
-    }
-  }, [svgContent]);
-
-  // Tracing - draw on overlaid SVG
-  const handlePointerDown = (e: React.PointerEvent) => {
-    if (!svgContainer.current) return;
-    const rect = svgContainer.current.getBoundingClientRect();
-    let x = e.clientX - rect.left;
-    let y = e.clientY - rect.top;
-    setCurrentStroke([{ x, y }]);
-    svgContainer.current.setPointerCapture(e.pointerId);
-  };
-
-  const handlePointerMove = (e: React.PointerEvent) => {
-    if (!svgContainer.current || currentStroke.length === 0) return;
-    const rect = svgContainer.current.getBoundingClientRect();
-    let x = e.clientX - rect.left;
-    let y = e.clientY - rect.top;
-    setCurrentStroke([...currentStroke, { x, y }]);
-  };
-
-  const handlePointerUp = (e: React.PointerEvent) => {
-    if (currentStroke.length > 1) {
-      setTracing([...tracing, currentStroke]);
-    }
-    setCurrentStroke([]);
-    if (svgContainer.current) svgContainer.current.releasePointerCapture(e.pointerId);
-  };
 
   const prevLetter = () => setCurrentIndex(idx => Math.max(0, idx - 1));
   const nextLetter = () => setCurrentIndex(idx => Math.min(ALPHABET.length - 1, idx + 1));
@@ -138,67 +82,16 @@ const LetterTracing: React.FC<LetterTracingProps> = ({ letter, onBack }) => {
             </span>
             <span className="block text-lg md:text-2xl font-medium text-funquest-green animate-pulse">{getLetterLabel(currentLetter)}</span>
           </div>
-          {/* SVG + Tracing Overlay */}
-          <div
-            ref={svgContainer}
-            className="mx-auto my-6 md:my-10 relative bg-funquest-accent/10 rounded-[1.5rem] border-4 border-blue-300 pointer-events-auto touch-none"
-            style={{
-              width: isMobile ? '90vw' : '380px',
-              height: isMobile ? '90vw' : '380px',
-              maxWidth: 400,
-              maxHeight: 400,
-              aspectRatio: '1/1',
-              boxShadow: '0 2px 24px 0px #bae6fd60'
-            }}
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerLeave={handlePointerUp}
-          >
-            {/* Inline SVG Letter for tracing */}
-            {svgContent ? (
-              <div
-                className="absolute inset-0 w-full h-full pointer-events-none select-none flex items-center justify-center"
-                style={{ zIndex: 0, opacity: 0.25, filter: 'drop-shadow(0 0 12px #93c5fd)' }}
-                dangerouslySetInnerHTML={{ __html: svgContent }}
-              />
-            ) : (
-              <div className="flex items-center justify-center w-full h-full" style={{ minHeight: 200 }}>
-                <span className="text-2xl animate-pulse text-blue-400 font-bold">Loading...</span>
-              </div>
-            )}
-            {/* Overlay SVG for tracing lines */}
-            <svg
-              width={svgBounds.width}
-              height={svgBounds.height}
-              className="absolute inset-0 w-full h-full pointer-events-none"
-              style={{ zIndex: 1, overflow: 'visible' }}
-            >
-              {tracing.map((stroke, i) => (
-                <polyline
-                  key={i}
-                  points={stroke.map(p => `${p.x},${p.y}`).join(' ')}
-                  fill="none"
-                  stroke="#3b82f6"
-                  strokeWidth={isMobile ? 16 : 10}
-                  strokeLinejoin="round"
-                  strokeLinecap="round"
-                  opacity={0.85}
-                />
-              ))}
-              {currentStroke.length > 1 && (
-                <polyline
-                  points={currentStroke.map(p => `${p.x},${p.y}`).join(' ')}
-                  fill="none"
-                  stroke="#2563eb"
-                  strokeWidth={isMobile ? 16 : 10}
-                  strokeLinejoin="round"
-                  strokeLinecap="round"
-                  opacity={0.75}
-                />
-              )}
-            </svg>
-          </div>
+          {/* SVG Container + Tracing Overlay */}
+          <LetterTraceCanvas
+            svgContent={svgContent}
+            svgBounds={svgBounds}
+            tracing={tracing}
+            setTracing={setTracing}
+            currentStroke={currentStroke}
+            setCurrentStroke={setCurrentStroke}
+            onSvgBoundsDetected={setSvgBounds}
+          />
           {/* Navigation arrows */}
           <div className="mt-6 flex items-center justify-between gap-10 w-full px-6">
             <button
@@ -253,4 +146,3 @@ const LetterTracing: React.FC<LetterTracingProps> = ({ letter, onBack }) => {
 };
 
 export default LetterTracing;
-
