@@ -12,7 +12,6 @@ const BASE_SVG = "https://blbsqooxwyapcxsfgope.supabase.co/storage/v1/object/pub
 
 // Convert lowercase to path, e.g., "a" -> "letter a path-01.svg"
 function getLetterSvgPath(letter: string): string {
-  // Accept both safe fallback and generic dynamic (see user instructions)
   if (letter === "a") {
     return `${BASE_SVG}letter%20a%20path-01.svg`;
   }
@@ -20,7 +19,6 @@ function getLetterSvgPath(letter: string): string {
 }
 
 const getLetterLabel = (letter: string) => {
-  // Friendly example text
   const examples: Record<string, string> = {
     a: '🍎 Apple', b: '🐝 Bee', c: '🐱 Cat', d: '🐶 Dog', e: '🥚 Egg',
     f: '🐸 Frog', g: '🦒 Giraffe', h: '🏠 House', i: '🍦 Ice Cream',
@@ -32,8 +30,17 @@ const getLetterLabel = (letter: string) => {
   return examples[letter] || '';
 };
 
-const LetterTracing: React.FC = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+interface LetterTracingProps {
+  letter?: string;
+  onBack?: () => void;
+}
+
+const LetterTracing: React.FC<LetterTracingProps> = ({ letter, onBack }) => {
+  // If letter prop present, start with it, otherwise default to 0
+  const initialIndex = letter
+    ? Math.max(0, ALPHABET.findIndex((l) => l === letter.toLowerCase()))
+    : 0;
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [svgContent, setSvgContent] = useState<string | null>(null);
   const [tracing, setTracing] = useState<{ x: number; y: number }[][]>([]);
   const [currentStroke, setCurrentStroke] = useState<{ x: number; y: number }[]>([]);
@@ -41,12 +48,10 @@ const LetterTracing: React.FC = () => {
   const isMobile = useIsMobile();
 
   const currentLetter = ALPHABET[currentIndex];
-  // Choose background based on mobile/desktop
   const backgroundImage = isMobile ? MOBILE_BG : DESKTOP_BG;
 
-  // Load and inline the SVG
   useEffect(() => {
-    setSvgContent(null); // Show loading state if needed
+    setSvgContent(null); // reset loading
     fetch(getLetterSvgPath(currentLetter)).then(async (res) => {
       setSvgContent(await res.text());
     });
@@ -55,12 +60,9 @@ const LetterTracing: React.FC = () => {
   }, [currentLetter]);
 
   // *** Drawing logic ***
-  // We layer a <svg> over the letter SVG, matching its bounding box, for blue path drawing!
   const [svgBounds, setSvgBounds] = useState<{ width: number; height: number }>({ width: 300, height: 300 });
 
-  // To update svg size when SVG is loaded
   useEffect(() => {
-    // parse svg for width and height after loading
     if (!svgContent) return;
     try {
       const temp = document.createElement('div');
@@ -102,7 +104,6 @@ const LetterTracing: React.FC = () => {
     if (svgContainer.current) svgContainer.current.releasePointerCapture(e.pointerId);
   };
 
-  // Handlers for prev/next buttons
   const prevLetter = () => setCurrentIndex(idx => Math.max(0, idx - 1));
   const nextLetter = () => setCurrentIndex(idx => Math.min(ALPHABET.length - 1, idx + 1));
 
@@ -117,6 +118,16 @@ const LetterTracing: React.FC = () => {
       <div className="flex flex-col items-center w-full h-full py-6">
         {/* MAIN GAME PANEL */}
         <div className="bg-white/80 rounded-[2rem] shadow-2xl p-4 md:p-8 w-[97vw] max-w-xl mt-10 mb-8 border-4 border-yellow-200 flex flex-col items-center relative">
+          {/* Optional Back Button (for context navigation) */}
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="absolute left-4 top-4 flex items-center gap-2 bg-funquest-blue/70 hover:bg-funquest-blue text-white px-4 py-2 rounded-xl shadow-md font-bold z-10"
+            >
+              <ArrowLeft size={22} />
+              Back
+            </button>
+          )}
           {/* Letter label */}
           <div className="text-center mb-2 mt-2">
             <span className="text-5xl md:text-6xl font-extrabold drop-shadow text-funquest-blue" style={{
@@ -139,13 +150,12 @@ const LetterTracing: React.FC = () => {
               aspectRatio: '1/1',
               boxShadow: '0 2px 24px 0px #bae6fd60'
             }}
-            // SVG/Overlay pointer events
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
             onPointerLeave={handlePointerUp}
           >
-            {/* Inline SVG Letter - faint gray in background, non-interactive */}
+            {/* Inline SVG Letter for tracing */}
             {svgContent ? (
               <div
                 className="absolute inset-0 w-full h-full pointer-events-none select-none flex items-center justify-center"
@@ -157,7 +167,7 @@ const LetterTracing: React.FC = () => {
                 <span className="text-2xl animate-pulse text-blue-400 font-bold">Loading...</span>
               </div>
             )}
-            {/* Overlay SVG for blue tracing lines */}
+            {/* Overlay SVG for tracing lines */}
             <svg
               width={svgBounds.width}
               height={svgBounds.height}
@@ -243,3 +253,4 @@ const LetterTracing: React.FC = () => {
 };
 
 export default LetterTracing;
+
