@@ -13,12 +13,13 @@ export function ProfileDropdown() {
   const { toast } = useToast();
 
   const handleSignOut = async () => {
-    await signOut();
-    toast({
-      title: "Signed out",
-      description: "You have been successfully signed out.",
+    await signOut(() => {
+      toast({
+        title: "Signed out",
+        description: "You have been successfully signed out.",
+      });
+      navigate('/auth', { replace: true });
     });
-    navigate('/auth');
   };
 
   return (

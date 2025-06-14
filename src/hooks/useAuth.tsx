@@ -9,7 +9,7 @@ interface AuthContextType {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<{ error: any }>;
-  signOut: () => Promise<void>;
+  signOut: (onAfterSignOut?: () => void) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -64,8 +64,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error };
   };
 
-  const signOut = async () => {
+  // Enhance signOut to accept an optional callback and clear state immediately.
+  const signOut = async (onAfterSignOut?: () => void) => {
     await supabase.auth.signOut();
+    setUser(null);
+    setSession(null);
+    if (onAfterSignOut) {
+      onAfterSignOut();
+    }
   };
 
   const value = {
@@ -87,3 +93,4 @@ export function useAuth() {
   }
   return context;
 }
+
