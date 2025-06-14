@@ -13,10 +13,10 @@ const BASE_SVG = "https://blbsqooxwyapcxsfgope.supabase.co/storage/v1/object/pub
 
 // Convert lowercase to path, e.g., "a" -> "letter a path-01.svg"
 function getLetterSvgPath(letter: string): string {
-  if (letter === "a") {
-    return `${BASE_SVG}letter%20a%20path-01.svg`;
-  }
-  return `${BASE_SVG}letter-${letter}.svg`;
+  // Try several common file naming patterns for maximum compatibility
+  return (
+    `${BASE_SVG}letter%20${letter}.svg`
+  );
 }
 
 interface LetterTracingProps {
@@ -41,9 +41,32 @@ const LetterTracing: React.FC<LetterTracingProps> = ({ letter, onBack }) => {
 
   useEffect(() => {
     setSvgContent(null); // reset loading
-    fetch(getLetterSvgPath(currentLetter)).then(async (res) => {
-      setSvgContent(await res.text());
-    });
+
+    // Try fetching the most likely file
+    const fetchSvg = async () => {
+      let fetched = false;
+      // Try several naming patterns
+      const possiblePaths = [
+        `${BASE_SVG}letter%20${currentLetter}.svg`,                  // letter b.svg
+        `${BASE_SVG}letter-${currentLetter}.svg`,                   // letter-b.svg
+        `${BASE_SVG}letter%20${currentLetter}%20path-01.svg`,       // letter b path-01.svg
+        `${BASE_SVG}letter%20${currentLetter.toUpperCase()}.svg`,   // letter B.svg
+      ];
+      for (const url of possiblePaths) {
+        const res = await fetch(url);
+        if (res.ok) {
+          setSvgContent(await res.text());
+          fetched = true;
+          break;
+        }
+      }
+      if (!fetched) {
+        setSvgContent('<svg viewBox="0 0 300 300"><text x="50%" y="50%" text-anchor="middle" fill="#f87171" font-size="32" dy=".3em">SVG not found</text></svg>');
+      }
+    };
+
+    fetchSvg();
+
     setTracing([]);
     setCurrentStroke([]);
   }, [currentLetter]);
