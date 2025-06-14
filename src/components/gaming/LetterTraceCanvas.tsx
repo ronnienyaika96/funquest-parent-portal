@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -23,6 +22,26 @@ const LetterTraceCanvas: React.FC<TraceCanvasProps> = ({
 }) => {
   const svgContainer = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+
+  // Enhance SVG: inject style for dark stroke and bright fill
+  function enhanceSvg(raw: string | null) {
+    if (!raw) return null;
+    // Insert <style> in svg (before </svg>) to override all path/stroke/fill colors with high contrast settings
+    const STYLE = `
+      <style>
+        path, ellipse, circle, rect, polyline, polygon, g text {
+          stroke: #1e1e1e !important;
+          stroke-width: 4 !important;
+          fill: #007bff !important;
+        }
+        text {
+          fill: #007bff !important;
+        }
+      </style>`;
+    // Only add style if not already present
+    if (raw.includes('<style>')) return raw;
+    return raw.replace(/<svg([^>]*)>/, `<svg$1>${STYLE}`);
+  }
 
   // Parse svgBounds when SVG content changes
   useEffect(() => {
@@ -71,14 +90,19 @@ const LetterTraceCanvas: React.FC<TraceCanvasProps> = ({
   return (
     <div
       ref={svgContainer}
-      className="mx-auto my-6 md:my-10 relative bg-funquest-accent/10 rounded-[1.5rem] border-4 border-blue-300 pointer-events-auto touch-none"
+      className="mx-auto my-6 md:my-10 relative rounded-[1.5rem] border-4 border-blue-300 pointer-events-auto touch-none"
       style={{
         width: isMobile ? '90vw' : '380px',
         height: isMobile ? '90vw' : '380px',
         maxWidth: 400,
         maxHeight: 400,
         aspectRatio: '1/1',
-        boxShadow: '0 2px 24px 0px #bae6fd60'
+        boxShadow: '0 2px 24px 0px #bae6fd60',
+        background: 'rgba(255,255,255,0.8)',
+        padding: isMobile ? 12 : 22, // add internal padding
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
       }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
@@ -89,8 +113,10 @@ const LetterTraceCanvas: React.FC<TraceCanvasProps> = ({
       {svgContent ? (
         <div
           className="absolute inset-0 w-full h-full pointer-events-none select-none flex items-center justify-center"
-          style={{ zIndex: 0, opacity: 0.25, filter: 'drop-shadow(0 0 12px #93c5fd)' }}
-          dangerouslySetInnerHTML={{ __html: svgContent }}
+          style={{ zIndex: 0, opacity: 1, filter: 'drop-shadow(0 0 12px #93c5fd)' }}
+          dangerouslySetInnerHTML={{
+            __html: enhanceSvg(svgContent) || "",
+          }}
         />
       ) : (
         <div className="flex items-center justify-center w-full h-full" style={{ minHeight: 200 }}>
@@ -102,7 +128,7 @@ const LetterTraceCanvas: React.FC<TraceCanvasProps> = ({
         width={svgBounds.width}
         height={svgBounds.height}
         className="absolute inset-0 w-full h-full pointer-events-none"
-        style={{ zIndex: 1, overflow: 'visible' }}
+        style={{ zIndex: 1, overflow: 'visible', pointerEvents: 'none' }}
       >
         {tracing.map((stroke, i) => (
           <polyline

@@ -42,15 +42,14 @@ const LetterTracing: React.FC<LetterTracingProps> = ({ letter, onBack }) => {
   useEffect(() => {
     setSvgContent(null); // reset loading
 
-    // Try fetching the most likely file
+    // Try fetching the most likely file(s) - no change here, robust as before
     const fetchSvg = async () => {
       let fetched = false;
-      // Try several naming patterns
       const possiblePaths = [
-        `${BASE_SVG}letter%20${currentLetter}.svg`,                  // letter b.svg
-        `${BASE_SVG}letter-${currentLetter}.svg`,                   // letter-b.svg
-        `${BASE_SVG}letter%20${currentLetter}%20path-01.svg`,       // letter b path-01.svg
-        `${BASE_SVG}letter%20${currentLetter.toUpperCase()}.svg`,   // letter B.svg
+        `${BASE_SVG}letter%20${currentLetter}.svg`,
+        `${BASE_SVG}letter-${currentLetter}.svg`,
+        `${BASE_SVG}letter%20${currentLetter}%20path-01.svg`,
+        `${BASE_SVG}letter%20${currentLetter.toUpperCase()}.svg`,
       ];
       for (const url of possiblePaths) {
         const res = await fetch(url);
@@ -64,7 +63,6 @@ const LetterTracing: React.FC<LetterTracingProps> = ({ letter, onBack }) => {
         setSvgContent('<svg viewBox="0 0 300 300"><text x="50%" y="50%" text-anchor="middle" fill="#f87171" font-size="32" dy=".3em">SVG not found</text></svg>');
       }
     };
-
     fetchSvg();
 
     setTracing([]);
@@ -84,8 +82,8 @@ const LetterTracing: React.FC<LetterTracingProps> = ({ letter, onBack }) => {
     >
       <div className="flex flex-col items-center w-full h-full py-6">
         {/* MAIN GAME PANEL */}
-        <div className="bg-white/80 rounded-[2rem] shadow-2xl p-4 md:p-8 w-[97vw] max-w-xl mt-10 mb-8 border-4 border-yellow-200 flex flex-col items-center relative">
-          {/* Optional Back Button (for context navigation) */}
+        <div className="bg-white/80 rounded-[2rem] shadow-2xl p-4 md:p-8 w-[97vw] max-w-xl mt-10 mb-8 border-4 border-yellow-200 flex flex-col items-center relative" style={{backdropFilter:'blur(2px)', borderRadius:'2rem'}}>
+          {/* Optional Back Button */}
           {onBack && (
             <button
               onClick={onBack}
