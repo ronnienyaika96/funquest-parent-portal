@@ -1,8 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import LetterTraceCanvas from "./LetterTraceCanvas";
 import { getLetterLabel } from "./letter-labels";
+import LetterTracingNavButtons from './LetterTracingNavButtons';
+import LetterTracingLetterLabel from './LetterTracingLetterLabel';
+import LetterTracingQuickNav from './LetterTracingQuickNav';
 
 // Kid-friendly alphabet letters
 const ALPHABET = "abcdefghijklmnopqrstuvwxyz".split('');
@@ -11,21 +15,12 @@ const DESKTOP_BG = "https://blbsqooxwyapcxsfgope.supabase.co/storage/v1/object/p
 const MOBILE_BG = "https://blbsqooxwyapcxsfgope.supabase.co/storage/v1/object/public/assets//mobile%20background.png";
 const BASE_SVG = "https://blbsqooxwyapcxsfgope.supabase.co/storage/v1/object/public/assets/";
 
-// Convert lowercase to path, e.g., "a" -> "letter a path-01.svg"
-function getLetterSvgPath(letter: string): string {
-  // Try several common file naming patterns for maximum compatibility
-  return (
-    `${BASE_SVG}letter%20${letter}.svg`
-  );
-}
-
 interface LetterTracingProps {
   letter?: string;
   onBack?: () => void;
 }
 
 const LetterTracing: React.FC<LetterTracingProps> = ({ letter, onBack }) => {
-  // If letter prop present, start with it, otherwise default to 0
   const initialIndex = letter
     ? Math.max(0, ALPHABET.findIndex((l) => l === letter.toLowerCase()))
     : 0;
@@ -42,7 +37,6 @@ const LetterTracing: React.FC<LetterTracingProps> = ({ letter, onBack }) => {
   useEffect(() => {
     setSvgContent(null); // reset loading
 
-    // Try fetching the most likely file(s) - no change here, robust as before
     const fetchSvg = async () => {
       let fetched = false;
       const possiblePaths = [
@@ -82,7 +76,7 @@ const LetterTracing: React.FC<LetterTracingProps> = ({ letter, onBack }) => {
       }}
     >
       <div className={`flex flex-col items-center w-full h-full ${isMobile ? "py-0" : "py-6"}`}>
-        {/* No desktop card: content directly on bg for both desktop and mobile */}
+        {/* No white card on desktop or mobile: content is placed directly on the background */}
         <div className="w-full flex flex-col items-center" style={{ minHeight: isMobile ? '94vh' : '80vh' }}>
           {/* Optional Back Button */}
           {onBack && (
@@ -96,15 +90,7 @@ const LetterTracing: React.FC<LetterTracingProps> = ({ letter, onBack }) => {
             </button>
           )}
           {/* Letter label */}
-          <div className="text-center mb-2 mt-6">
-            <span className="text-5xl font-extrabold drop-shadow text-funquest-blue" style={{
-              letterSpacing: '0.08em',
-              textShadow: "0px 4px 16px #a6e0ff"
-            }}>
-              {currentLetter.toUpperCase()}
-            </span>
-            <span className="block text-lg font-medium text-funquest-green animate-pulse">{getLetterLabel(currentLetter)}</span>
-          </div>
+          <LetterTracingLetterLabel letter={currentLetter} />
 
           {/* SVG Container + Tracing Overlay */}
           <div
@@ -126,40 +112,13 @@ const LetterTracing: React.FC<LetterTracingProps> = ({ letter, onBack }) => {
             />
           </div>
           {/* Navigation arrows */}
-          <div className={`${isMobile ? "mt-5" : "mt-6"} flex items-center justify-between gap-10 w-full px-6 max-w-xs mx-auto`}>
-            <button
-              className={`transition-all duration-100 disabled:opacity-40 rounded-full border-4 p-0 shadow-xl focus:outline-none
-                ${currentIndex === 0
-                  ? "bg-gray-200 border-gray-300 cursor-default"
-                  : "bg-blue-600 hover:bg-blue-700 border-blue-700"}
-                flex items-center justify-center`}
-              disabled={currentIndex === 0}
-              onClick={prevLetter}
-              aria-label="Previous letter"
-              style={{
-                minWidth: 48, minHeight: 48, fontSize: 22,
-                boxShadow: currentIndex === 0 ? 'none' : '0 2px 14px #60a5fad9'
-              }}
-            >
-              <ArrowLeft size={32} color={currentIndex === 0 ? "#7dd3fc" : "#fff"} />
-            </button>
-            <button
-              className={`transition-all duration-100 disabled:opacity-40 rounded-full border-4 p-0 shadow-xl focus:outline-none
-                ${currentIndex === ALPHABET.length - 1
-                  ? "bg-gray-200 border-gray-300 cursor-default"
-                  : "bg-orange-500 hover:bg-orange-600 border-orange-600"}
-                flex items-center justify-center`}
-              disabled={currentIndex === ALPHABET.length - 1}
-              onClick={nextLetter}
-              aria-label="Next letter"
-              style={{
-                minWidth: 48, minHeight: 48, fontSize: 22,
-                boxShadow: currentIndex === ALPHABET.length - 1 ? 'none' : '0 2px 14px #fdba74d9'
-              }}
-            >
-              <ArrowRight size={32} color={currentIndex === ALPHABET.length - 1 ? "#fdba74" : "#fff"} />
-            </button>
-          </div>
+          <LetterTracingNavButtons
+            currentIndex={currentIndex}
+            totalLetters={ALPHABET.length}
+            prevLetter={prevLetter}
+            nextLetter={nextLetter}
+            isMobile={isMobile}
+          />
           {/* Reset button */}
           <div className="mt-4 text-center w-full px-2">
             <button
@@ -171,21 +130,11 @@ const LetterTracing: React.FC<LetterTracingProps> = ({ letter, onBack }) => {
           </div>
           {/* Quick nav for mobile */}
           {isMobile && (
-            <div className="mt-2 w-full px-2 flex flex-wrap justify-center gap-1">
-              {ALPHABET.map((l, idx) => (
-                <button
-                  key={l}
-                  className={`rounded-full m-1 px-3 py-2 font-extrabold text-lg border-2 hover:scale-105 transition bg-white/95 ${
-                    idx === currentIndex ? "bg-funquest-blue text-white border-funquest-blue scale-110 shadow-lg" : "border-gray-300 text-funquest-blue"
-                  }`}
-                  aria-label={`Jump to letter ${l.toUpperCase()}`}
-                  onClick={() => setCurrentIndex(idx)}
-                  style={{ minWidth: 38, minHeight: 38, fontSize: 18 }}
-                >
-                  {l.toUpperCase()}
-                </button>
-              ))}
-            </div>
+            <LetterTracingQuickNav
+              alphabet={ALPHABET}
+              currentIndex={currentIndex}
+              onSelect={setCurrentIndex}
+            />
           )}
         </div>
       </div>
