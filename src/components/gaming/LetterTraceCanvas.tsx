@@ -71,7 +71,7 @@ const LetterTraceCanvas: React.FC<TraceCanvasProps> = ({
   return (
     <div
       ref={svgContainer}
-      className="mx-auto my-6 md:my-10 relative bg-funquest-accent/10 rounded-[1.5rem] border-4 border-blue-300 pointer-events-auto touch-none"
+      className="mx-auto my-6 md:my-10 relative bg-funquest-accent/10 rounded-[1.5rem] border-4 border-blue-300 pointer-events-auto touch-none overflow-hidden"
       style={{
         width: isMobile ? '90vw' : '380px',
         height: isMobile ? '90vw' : '380px',
@@ -85,11 +85,16 @@ const LetterTraceCanvas: React.FC<TraceCanvasProps> = ({
       onPointerUp={handlePointerUp}
       onPointerLeave={handlePointerUp}
     >
+      {/* Background for the SVG letter to improve contrast */}
+      <div 
+        className="absolute inset-4 md:inset-6 bg-white/80 rounded-xl"
+        style={{ zIndex: 0 }}
+      />
       {/* Inline SVG Letter */}
       {svgContent ? (
         <div
-          className="absolute inset-0 w-full h-full pointer-events-none select-none flex items-center justify-center"
-          style={{ zIndex: 0, opacity: 0.25, filter: 'drop-shadow(0 0 12px #93c5fd)' }}
+          className="svg-letter-container absolute inset-0 w-full h-full pointer-events-none select-none flex items-center justify-center p-8 md:p-10"
+          style={{ zIndex: 1 }}
           dangerouslySetInnerHTML={{ __html: svgContent }}
         />
       ) : (
@@ -102,7 +107,7 @@ const LetterTraceCanvas: React.FC<TraceCanvasProps> = ({
         width={svgBounds.width}
         height={svgBounds.height}
         className="absolute inset-0 w-full h-full pointer-events-none"
-        style={{ zIndex: 1, overflow: 'visible' }}
+        style={{ zIndex: 2, overflow: 'visible' }}
       >
         {tracing.map((stroke, i) => (
           <polyline
