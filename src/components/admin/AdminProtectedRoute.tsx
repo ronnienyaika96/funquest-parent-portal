@@ -3,13 +3,17 @@ import React from 'react';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { Navigate } from 'react-router-dom';
 
+/**
+ * Route guard for admin-only routes.
+ * Handles loading, unauthenticated, and unauthorized state with clear early returns.
+ */
 interface AdminProtectedRouteProps {
   children: React.ReactNode;
 }
-
 const AdminProtectedRoute = ({ children }: AdminProtectedRouteProps) => {
   const { user, isAdmin, loading } = useAdminAuth();
 
+  // Show loading spinner
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -21,33 +25,23 @@ const AdminProtectedRoute = ({ children }: AdminProtectedRouteProps) => {
     );
   }
 
+  // Not authenticated as any user: redirect to admin login
   if (!user) {
-    // Not authenticated as any user
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <p className="text-lg text-red-600 font-bold mb-2">You must be logged in as an admin to access this page.</p>
-          <Navigate to="/admin/auth" replace />
-        </div>
-      </div>
-    );
+    // It's important to use only <Navigate /> as the root render
+    console.warn('[AdminProtectedRoute] User not authenticated. Redirecting to /admin/auth.');
+    return <Navigate to="/admin/auth" replace />;
   }
 
+  // Authenticated, but not an admin user: redirect & clear message
   if (!isAdmin) {
-    // Authenticated, but not an admin user
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <p className="text-lg text-red-600 font-bold mb-2">Access denied: Only admin users can access the admin dashboard.</p>
-          <p className="text-gray-600">If you believe this is a mistake, please contact support.</p>
-          <Navigate to="/admin/auth" replace />
-        </div>
-      </div>
-    );
+    // It's important to use only <Navigate /> as the root render
+    console.warn('[AdminProtectedRoute] User is not admin. Redirecting to /admin/auth.');
+    return <Navigate to="/admin/auth" replace />;
   }
 
-  // User is authenticated and is an admin
+  // User is authenticated and is an admin: allow access
   return <>{children}</>;
 };
 
 export default AdminProtectedRoute;
+
