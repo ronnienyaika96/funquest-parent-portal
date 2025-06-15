@@ -37,10 +37,18 @@ export function useChildProfiles() {
   // Add child profile
   const addChild = useMutation({
     mutationFn: async (profile: Omit<ChildProfile, 'id' | 'created_at' | 'updated_at' | 'parent_id'>) => {
-      // Supabase RLS requires parent_id = auth.uid()
+      // Get current user ID
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user || !user.id) throw new Error('User not authenticated');
+
+      // Insert the child with parent_id = user.id
       const { data, error } = await supabase
         .from('child_profiles')
-        .insert([{ ...profile }])
+        .insert([{
+          ...profile,
+          parent_id: user.id
+        }])
         .select();
       if (error) throw error;
       return data?.[0];
@@ -63,3 +71,4 @@ export function useChildProfiles() {
 
   return { children, isLoading, error, addChild, deleteChild };
 }
+
