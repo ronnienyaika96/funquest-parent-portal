@@ -3,8 +3,9 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { Plus, Baby, Calendar, Palette, School } from 'lucide-react';
+import { School, Plus } from 'lucide-react';
+import { useChildProfiles } from '@/hooks/useChildProfiles';
+import { useToast } from '@/hooks/use-toast';
 
 const avatars = ['👧', '👦', '👶', '🧒', '👧🏻', '👦🏻', '👧🏽', '👦🏽', '👧🏿', '👦🏿'];
 const ageRanges = [
@@ -19,28 +20,75 @@ const ageRanges = [
 export function AddChildForm() {
   const [formData, setFormData] = useState({
     name: '',
-    age: '',
-    avatar: '👧',
+    age_range: '',
+    avatar: avatars[0],
     school: '',
-    interests: []
+    interests: [] as string[],
   });
 
-  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-
-  const interests = [
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const interestsList = [
     'Reading', 'Math', 'Art & Coloring', 'Music', 'Science', 'Puzzles', 'Animals', 'Stories'
   ];
+  const { addChild } = useChildProfiles();
+  const { toast } = useToast();
 
   const handleInterestToggle = (interest: string) => {
-    setSelectedInterests(prev =>
-      prev.includes(interest)
-        ? prev.filter(i => i !== interest)
-        : [...prev, interest]
+    setFormData(prev => ({
+      ...prev,
+      interests: prev.interests.includes(interest)
+        ? prev.interests.filter(i => i !== interest)
+        : [...prev.interests, interest]
+    }));
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      age_range: '',
+      avatar: avatars[0],
+      school: '',
+      interests: [],
+    });
+  };
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    addChild.mutate(
+      {
+        name: formData.name,
+        age_range: formData.age_range,
+        avatar: formData.avatar,
+        school: formData.school || null,
+        interests: formData.interests.length ? formData.interests : null
+      },
+      {
+        onSuccess: () => {
+          toast({
+            title: "Profile created!",
+            description: `${formData.name}'s profile was added.`,
+          });
+          setDialogOpen(false);
+          resetForm();
+        },
+        onError: (error: any) => {
+          toast({
+            title: "Error adding profile",
+            description: error.message || "There was an error adding the child profile.",
+            variant: "destructive"
+          });
+        },
+        onSettled: () => {
+          setIsSubmitting(false);
+        }
+      }
     );
   };
 
   return (
-    <Dialog>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
         <Button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
           <Plus className="w-4 h-4" />
@@ -54,7 +102,7 @@ export function AddChildForm() {
             Create a personalized learning profile for your child
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-6">
+        <form className="space-y-6" onSubmit={onSubmit}>
           {/* Basic Info */}
           <div className="space-y-4">
             <div>
@@ -65,6 +113,7 @@ export function AddChildForm() {
                 placeholder="Enter your child's name"
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
+                required
               />
             </div>
 
@@ -74,8 +123,9 @@ export function AddChildForm() {
               </label>
               <select
                 className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                value={formData.age}
-                onChange={(e) => setFormData({...formData, age: e.target.value})}
+                value={formData.age_range}
+                onChange={(e) => setFormData({...formData, age_range: e.target.value})}
+                required
               >
                 <option value="">Select age range</option>
                 {ageRanges.map((range) => (
@@ -108,6 +158,7 @@ export function AddChildForm() {
               {avatars.map((avatar) => (
                 <button
                   key={avatar}
+                  type="button"
                   onClick={() => setFormData({...formData, avatar})}
                   className={`text-3xl p-3 rounded-lg border-2 transition-colors ${
                     formData.avatar === avatar
@@ -127,12 +178,13 @@ export function AddChildForm() {
               Interests (Optional)
             </label>
             <div className="grid grid-cols-2 gap-2">
-              {interests.map((interest) => (
+              {interestsList.map((interest) => (
                 <button
+                  type="button"
                   key={interest}
                   onClick={() => handleInterestToggle(interest)}
                   className={`text-sm p-2 rounded-lg border transition-colors ${
-                    selectedInterests.includes(interest)
+                    formData.interests.includes(interest)
                       ? 'border-blue-500 bg-blue-50 text-blue-700'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
@@ -145,14 +197,14 @@ export function AddChildForm() {
 
           {/* Action Buttons */}
           <div className="flex space-x-3 pt-4">
-            <Button className="flex-1">
-              Create Profile
+            <Button className="flex-1" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Creating...' : 'Create Profile'}
             </Button>
-            <Button variant="outline" className="flex-1">
+            <Button variant="outline" className="flex-1" type="button" onClick={() => { setDialogOpen(false); resetForm(); }}>
               Cancel
             </Button>
           </div>
-        </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

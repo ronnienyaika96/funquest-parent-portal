@@ -36,6 +36,42 @@ export type Database = {
         }
         Relationships: []
       }
+      child_profiles: {
+        Row: {
+          age_range: string | null
+          avatar: string | null
+          created_at: string
+          id: string
+          interests: string[] | null
+          name: string
+          parent_id: string
+          school: string | null
+          updated_at: string
+        }
+        Insert: {
+          age_range?: string | null
+          avatar?: string | null
+          created_at?: string
+          id?: string
+          interests?: string[] | null
+          name: string
+          parent_id: string
+          school?: string | null
+          updated_at?: string
+        }
+        Update: {
+          age_range?: string | null
+          avatar?: string | null
+          created_at?: string
+          id?: string
+          interests?: string[] | null
+          name?: string
+          parent_id?: string
+          school?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       content_uploads: {
         Row: {
           age_range: string
@@ -168,11 +204,71 @@ export type Database = {
         }
         Relationships: []
       }
+      order_items: {
+        Row: {
+          id: string
+          order_id: string
+          price: number
+          product_id: string
+          quantity: number
+          title: string
+        }
+        Insert: {
+          id?: string
+          order_id: string
+          price: number
+          product_id: string
+          quantity?: number
+          title: string
+        }
+        Update: {
+          id?: string
+          order_id?: string
+          price?: number
+          product_id?: string
+          quantity?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          created_at: string
+          id: string
+          status: string
+          total: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          status?: string
+          total?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          status?: string
+          total?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
           email: string | null
           first_name: string | null
+          grade: string | null
           id: string
           last_name: string | null
           updated_at: string | null
@@ -181,6 +277,7 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           first_name?: string | null
+          grade?: string | null
           id: string
           last_name?: string | null
           updated_at?: string | null
@@ -189,9 +286,31 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           first_name?: string | null
+          grade?: string | null
           id?: string
           last_name?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      subscription_plans: {
+        Row: {
+          duration_months: number
+          id: string
+          name: string
+          price: number
+        }
+        Insert: {
+          duration_months?: number
+          id?: string
+          name: string
+          price: number
+        }
+        Update: {
+          duration_months?: number
+          id?: string
+          name?: string
+          price?: number
         }
         Relationships: []
       }
@@ -230,6 +349,41 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_subscriptions: {
+        Row: {
+          end_date: string | null
+          id: string
+          plan_id: string
+          start_date: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          end_date?: string | null
+          id?: string
+          plan_id: string
+          start_date?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          end_date?: string | null
+          id?: string
+          plan_id?: string
+          start_date?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
