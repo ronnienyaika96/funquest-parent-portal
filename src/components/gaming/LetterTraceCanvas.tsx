@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -159,10 +158,8 @@ const LetterTraceCanvas: React.FC<TraceCanvasProps> = ({
 
   // To clear drawing externally
   useEffect(() => {
-    if (tracing.length === 0 && currentStroke.length === 0) {
-      onTraceComplete("reset");
-    }
-    // eslint-disable-next-line
+    // Removed call: onTraceComplete("reset")
+    // This effect can be used for other logic, but must not call onTraceComplete with invalid args
   }, [tracing.length, currentStroke.length]);
 
   // Mobile touch drawing
