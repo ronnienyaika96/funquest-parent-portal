@@ -3,9 +3,22 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Bell, Search, Settings, LogOut, Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { useToast } from '@/hooks/use-toast';
 
 export function AdminHeader() {
   const navigate = useNavigate();
+  const { signOut } = useAdminAuth();
+  const { toast } = useToast();
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast({
+      title: "Signed out",
+      description: "You have been successfully signed out.",
+    });
+    navigate('/admin/auth', { replace: true });
+  };
 
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4">
@@ -41,7 +54,11 @@ export function AdminHeader() {
             <span>Parent Dashboard</span>
           </Button>
           
-          <Button variant="outline" className="flex items-center space-x-2">
+          <Button 
+            variant="outline" 
+            className="flex items-center space-x-2"
+            onClick={handleSignOut}
+          >
             <LogOut className="w-4 h-4" />
             <span>Logout</span>
           </Button>
@@ -50,3 +67,4 @@ export function AdminHeader() {
     </header>
   );
 }
+
