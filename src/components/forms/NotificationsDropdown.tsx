@@ -48,7 +48,10 @@ export function NotificationsDropdown() {
           </Badge>
         </div>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80">
+      <DropdownMenuContent
+        align="end"
+        className="w-80 !bg-white bg-opacity-100 shadow-lg z-[99]"
+      >
         <div className="p-4 border-b">
           <h3 className="font-semibold text-gray-800">Notifications</h3>
         </div>
@@ -80,3 +83,4 @@ export function NotificationsDropdown() {
     </DropdownMenu>
   );
 }
+
