@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -7,6 +6,8 @@ import { getLetterLabel } from "./letter-labels";
 import LetterTracingNavButtons from './LetterTracingNavButtons';
 import LetterTracingLetterLabel from './LetterTracingLetterLabel';
 import LetterTracingQuickNav from './LetterTracingQuickNav';
+import CheckmarkAnimation from "./CheckmarkAnimation";
+import { X } from "lucide-react";
 
 // Kid-friendly alphabet letters
 const ALPHABET = "abcdefghijklmnopqrstuvwxyz".split('');
@@ -29,6 +30,7 @@ const LetterTracing: React.FC<LetterTracingProps> = ({ letter, onBack }) => {
   const [tracing, setTracing] = useState<{ x: number; y: number }[][]>([]);
   const [currentStroke, setCurrentStroke] = useState<{ x: number; y: number }[]>([]);
   const [svgBounds, setSvgBounds] = useState<{ width: number; height: number }>({ width: 300, height: 300 });
+  const [feedback, setFeedback] = useState<null | "success" | "fail">(null);
   const isMobile = useIsMobile();
 
   const currentLetter = ALPHABET[currentIndex];
@@ -109,6 +111,11 @@ const LetterTracing: React.FC<LetterTracingProps> = ({ letter, onBack }) => {
               currentStroke={currentStroke}
               setCurrentStroke={setCurrentStroke}
               onSvgBoundsDetected={setSvgBounds}
+              onTraceComplete={(res) => {
+                if (res === "success") setFeedback("success");
+                else if (res === "fail") setFeedback("fail");
+                setTimeout(() => setFeedback(null), 1100);
+              }}
             />
           </div>
           {/* Navigation arrows */}
