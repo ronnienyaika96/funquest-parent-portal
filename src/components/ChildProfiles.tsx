@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Plus, Edit2, Star, Trophy, Clock, BookOpen, Trash2 } from 'lucide-react';
 import { AddChildForm } from './forms/AddChildForm';
@@ -22,16 +21,37 @@ const ChildProfiles = ({
   const { toast } = useToast();
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  // Debug logs for dev
+  console.log("ChildProfiles state:", {
+    children,
+    isLoading,
+    error
+  });
+
   // Use mobile version on mobile devices
   if (isMobile && !preview) {
     return <MobileChildProfiles />;
   }
 
   if (isLoading) {
-    return <div className="text-center py-16 text-blue-600 font-medium">Loading children profiles...</div>;
+    return (
+      <div className="text-center py-16 text-blue-600 font-medium">
+        Loading children profiles...
+        <div className="mt-4 text-gray-400 text-xs">
+          (If this message does not go away, there may be a database or authentication issue)
+        </div>
+      </div>
+    );
   }
   if (error) {
-    return <div className="text-center py-16 text-red-600 font-medium">Failed to load profiles: {(error as any)?.message ?? "Unknown error"}</div>;
+    return (
+      <div className="text-center py-16 text-red-600 font-medium">
+        Failed to load profiles: {(error as any)?.message ?? "Unknown error"}
+        <div className="mt-4 text-gray-400 text-xs">
+          (Check database connection and authentication status)
+        </div>
+      </div>
+    );
   }
 
   // For Preview: show only first 2
@@ -155,6 +175,9 @@ const ChildProfiles = ({
         )) : (
           <div className="col-span-full text-center text-gray-400 text-lg py-20">
             No child profiles found. Click "Add Child" to create one!
+            <div className="mt-4 text-xs text-gray-400">
+              (If you should see children here, check browser console for error details.)
+            </div>
           </div>
         )}
       </div>
