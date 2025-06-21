@@ -14,6 +14,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AuthPage from "./pages/AuthPage";
 import AdminAuthPage from "./pages/AdminAuthPage";
 import CheckoutPage from "./pages/CheckoutPage";
+import LandingPage from "./pages/LandingPage";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,9 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
+              {/* Public Landing Page */}
+              <Route path="/landing" element={<LandingPage />} />
+              
               {/* Auth Routes */}
               <Route path="/auth" element={<AuthPage />} />
               
