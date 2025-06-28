@@ -14,6 +14,7 @@ import {
 const sidebarItems = [
   { title: 'Dashboard', url: '/dashboard', icon: '🏠', color: 'text-blue-600' },
   { title: 'My Children', url: '/children', icon: '👧👦', color: 'text-purple-600' },
+  { title: 'Learning Progress', url: '/progress', icon: '📊', color: 'text-green-600' },
   { title: 'Shop', url: '/shop', icon: '🛒', color: 'text-orange-600' },
   { title: 'My Orders', url: '/orders', icon: '📦', color: 'text-blue-600' },
   { title: 'Subscriptions', url: '/subscriptions', icon: '💳', color: 'text-indigo-600' },
