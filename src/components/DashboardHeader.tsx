@@ -27,6 +27,9 @@ const DashboardHeader = ({ onEnterGamingMode }: DashboardHeaderProps) => {
         
         <div className="flex items-center space-x-4">
           <ContactSupportForm />
+          <Button variant="outline" onClick={() => window.location.href = '/admin'}>
+            Admin Dashboard
+          </Button>
           <NotificationsDropdown />
           <ProfileDropdown />
         </div>
