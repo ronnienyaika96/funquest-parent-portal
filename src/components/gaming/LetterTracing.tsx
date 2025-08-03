@@ -7,6 +7,9 @@ import LetterTracingNavButtons from './LetterTracingNavButtons';
 import LetterTracingLetterLabel from './LetterTracingLetterLabel';
 import LetterTracingQuickNav from './LetterTracingQuickNav';
 import CheckmarkAnimation from "./CheckmarkAnimation";
+import { ProgressIndicator } from './ProgressIndicator';
+import { useTracingProgress } from '@/hooks/useTracingProgress';
+import { toast } from 'sonner';
 import { X } from "lucide-react";
 
 // Kid-friendly alphabet letters
@@ -32,9 +35,13 @@ const LetterTracing: React.FC<LetterTracingProps> = ({ letter, onBack }) => {
   const [svgBounds, setSvgBounds] = useState<{ width: number; height: number }>({ width: 300, height: 300 });
   const [feedback, setFeedback] = useState<null | "success" | "fail">(null);
   const isMobile = useIsMobile();
+  
+  // Progress tracking
+  const { saveProgress, getLetterProgress } = useTracingProgress();
 
   const currentLetter = ALPHABET[currentIndex];
   const backgroundImage = isMobile ? MOBILE_BG : DESKTOP_BG;
+  const letterProgress = getLetterProgress(currentLetter);
 
   useEffect(() => {
     setSvgContent(null); // reset loading
@@ -93,6 +100,11 @@ const LetterTracing: React.FC<LetterTracingProps> = ({ letter, onBack }) => {
           )}
           {/* Letter label */}
           <LetterTracingLetterLabel letter={currentLetter} />
+          
+          {/* Progress indicator for current letter */}
+          <div className="w-full max-w-md px-4 mb-4">
+            <ProgressIndicator letter={currentLetter} showOverall={false} />
+          </div>
 
           {/* SVG Container + Tracing Overlay */}
           <div
@@ -112,8 +124,34 @@ const LetterTracing: React.FC<LetterTracingProps> = ({ letter, onBack }) => {
               setCurrentStroke={setCurrentStroke}
               onSvgBoundsDetected={setSvgBounds}
               onTraceComplete={(res) => {
-                if (res === "success") setFeedback("success");
-                else if (res === "fail") setFeedback("fail");
+                if (res === "success") {
+                  setFeedback("success");
+                  // Calculate score based on accuracy (mock calculation for now)
+                  const score = Math.floor(Math.random() * 20) + 80; // 80-100 range
+                  
+                  // Save progress to database
+                  saveProgress.mutate({
+                    letter: currentLetter,
+                    completed: true,
+                    score,
+                  }, {
+                    onSuccess: () => {
+                      toast.success(`Great job! Letter ${currentLetter.toUpperCase()} completed with ${score}% accuracy!`);
+                    },
+                    onError: (error) => {
+                      console.error('Failed to save progress:', error);
+                      toast.error('Progress not saved. Please try again.');
+                    }
+                  });
+                } else if (res === "fail") {
+                  setFeedback("fail");
+                  // Save attempt even if failed
+                  saveProgress.mutate({
+                    letter: currentLetter,
+                    completed: false,
+                    score: 0,
+                  });
+                }
                 setTimeout(() => setFeedback(null), 1100);
               }}
             />

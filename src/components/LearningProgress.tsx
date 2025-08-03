@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import { Trophy, Star, Clock, BookOpen, Filter, Download } from 'lucide-react';
+import { ProgressIndicator } from './gaming/ProgressIndicator';
+import { useTracingProgress } from '@/hooks/useTracingProgress';
 
 interface LearningProgressProps {
   preview?: boolean;
@@ -10,6 +12,10 @@ interface LearningProgressProps {
 const LearningProgress = ({ preview = false }: LearningProgressProps) => {
   const [selectedChild, setSelectedChild] = useState('all');
   const [timeRange, setTimeRange] = useState('week');
+  
+  // Get real tracing progress data
+  const { getProgressStats } = useTracingProgress();
+  const progressStats = getProgressStats();
 
   const weeklyProgress = [
     { day: 'Mon', minutes: 45, activities: 5 },
@@ -102,6 +108,11 @@ const LearningProgress = ({ preview = false }: LearningProgressProps) => {
         </div>
       </div>
 
+      {/* Real Letter Tracing Progress */}
+      <div className="bg-white rounded-2xl shadow-lg p-6">
+        <ProgressIndicator showOverall={true} />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Weekly Progress Chart */}
         <div className="bg-white rounded-2xl shadow-lg p-6">
@@ -121,7 +132,10 @@ const LearningProgress = ({ preview = false }: LearningProgressProps) => {
         <div className="bg-white rounded-2xl shadow-lg p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Skill Development</h3>
           <div className="space-y-4">
-            {skillProgress.map((skill) => (
+            {[
+              { name: 'Letter Tracing', value: progressStats.percentage, color: '#3B82F6' },
+              ...skillProgress.slice(1) // Keep other mock skills for now
+            ].map((skill) => (
               <div key={skill.name}>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="font-medium text-gray-700">{skill.name}</span>

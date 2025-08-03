@@ -1,7 +1,8 @@
 
 import React from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTracingProgress } from '@/hooks/useTracingProgress';
 
 interface AlphabetMenuProps {
   onLetterSelect: (letter: string) => void;
@@ -10,6 +11,7 @@ interface AlphabetMenuProps {
 
 const AlphabetMenu = ({ onLetterSelect, onBack }: AlphabetMenuProps) => {
   const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  const { getLetterProgress } = useTracingProgress();
   
   const getLetterColor = (index: number) => {
     const colors = [
@@ -47,25 +49,49 @@ const AlphabetMenu = ({ onLetterSelect, onBack }: AlphabetMenuProps) => {
       {/* Alphabet Grid */}
       <div className="max-w-6xl mx-auto px-6 py-8">
         <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
-          {letters.map((letter, index) => (
-            <button
-              key={letter}
-              onClick={() => onLetterSelect(letter)}
-              className={`group relative aspect-square rounded-3xl bg-gradient-to-br ${getLetterColor(index)} shadow-lg transform transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:rotate-3`}
-            >
-              <div className="absolute inset-0 rounded-3xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <div className="flex items-center justify-center h-full relative z-10">
-                <span className="text-4xl md:text-5xl font-bold text-white drop-shadow-lg">
-                  {letter}
-                </span>
-              </div>
-              
-              {/* Sparkle effect */}
-              <div className="absolute top-2 right-2 text-yellow-300 opacity-0 group-hover:opacity-100 transition-opacity animate-ping">
-                ✨
-              </div>
-            </button>
-          ))}
+          {letters.map((letter, index) => {
+            const letterProgress = getLetterProgress(letter.toLowerCase());
+            const isCompleted = letterProgress?.completed || false;
+            
+            return (
+              <button
+                key={letter}
+                onClick={() => onLetterSelect(letter)}
+                className={`group relative aspect-square rounded-3xl bg-gradient-to-br ${getLetterColor(index)} shadow-lg transform transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:rotate-3 ${isCompleted ? 'ring-4 ring-green-400 ring-opacity-60' : ''}`}
+              >
+                <div className="absolute inset-0 rounded-3xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="flex items-center justify-center h-full relative z-10">
+                  <span className="text-4xl md:text-5xl font-bold text-white drop-shadow-lg">
+                    {letter}
+                  </span>
+                </div>
+                
+                {/* Completion indicator */}
+                {isCompleted && (
+                  <div className="absolute bottom-2 right-2">
+                    <CheckCircle2 className="w-6 h-6 text-green-400 bg-white rounded-full shadow-lg" />
+                  </div>
+                )}
+                
+                {/* Sparkle effect */}
+                <div className="absolute top-2 right-2 text-yellow-300 opacity-0 group-hover:opacity-100 transition-opacity animate-ping">
+                  ✨
+                </div>
+                
+                {/* Progress indicator */}
+                {letterProgress && (
+                  <div className="absolute bottom-1 left-1 right-1">
+                    <div className="bg-white/30 rounded-full h-1">
+                      <div 
+                        className="bg-white rounded-full h-1 transition-all duration-300"
+                        style={{ width: `${letterProgress.score}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
