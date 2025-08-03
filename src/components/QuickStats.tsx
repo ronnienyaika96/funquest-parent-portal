@@ -1,45 +1,28 @@
 
 import React from 'react';
+import { useQuickStats } from '@/hooks/useQuickStats';
 
 const QuickStats = () => {
-  const stats = [
-    {
-      title: 'Active Children',
-      value: '3',
-      icon: '👧👦',
-      bgColor: 'bg-blue-50',
-      iconBg: 'bg-blue-100',
-      textColor: 'text-blue-600',
-      change: '+1 this month'
-    },
-    {
-      title: 'Learning Hours',
-      value: '47',
-      icon: '⏱️',
-      bgColor: 'bg-yellow-50',
-      iconBg: 'bg-yellow-100',
-      textColor: 'text-yellow-600',
-      change: '+8 this week'
-    },
-    {
-      title: 'Completed Activities',
-      value: '124',
-      icon: '🎯',
-      bgColor: 'bg-green-50',
-      iconBg: 'bg-green-100',
-      textColor: 'text-green-600',
-      change: '+15 this week'
-    },
-    {
-      title: 'Downloaded Printables',
-      value: '23',
-      icon: '🖨️',
-      bgColor: 'bg-purple-50',
-      iconBg: 'bg-purple-100',
-      textColor: 'text-purple-600',
-      change: '+5 this week'
-    }
-  ];
+  const { stats, isLoading } = useQuickStats();
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[...Array(4)].map((_, index) => (
+          <div key={index} className="bg-gray-50 rounded-2xl shadow-lg p-6 animate-pulse">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                <div className="h-8 bg-gray-200 rounded mb-1"></div>
+                <div className="h-3 bg-gray-200 rounded"></div>
+              </div>
+              <div className="w-16 h-16 bg-gray-200 rounded-2xl"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

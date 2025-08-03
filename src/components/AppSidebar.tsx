@@ -19,7 +19,6 @@ const sidebarItems = [
   { title: 'My Orders', url: '/orders', icon: '📦', color: 'text-blue-600' },
   { title: 'Subscriptions', url: '/subscriptions', icon: '💳', color: 'text-indigo-600' },
   { title: 'Printables', url: '/printables', icon: '🖨️', color: 'text-teal-600' },
-  { title: 'Landing Page', url: '/landing', icon: '🌟', color: 'text-pink-600' },
   { title: 'Notifications', url: '/notifications', icon: '🔔', color: 'text-yellow-600' },
   { title: 'Account Settings', url: '/settings', icon: '⚙️', color: 'text-gray-600' },
 ];
