@@ -6,15 +6,16 @@ import ProductCard from './ProductCard';
 import ProductModal from './ProductModal';
 import CartSidebar from './CartSidebar';
 import { useProducts } from '@/hooks/useProducts';
+import { useCartManager } from '@/hooks/useCartManager';
 
 const ShopInterface = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [cart, setCart] = useState([]);
   
   const { products, isLoading, getCategories, searchProducts, getProductsByCategory } = useProducts();
+  const { cart, addToCart, updateCartQuantity, cartTotal, cartItemCount } = useCartManager();
   const categories = getCategories();
   
   const filteredProducts = searchTerm 
@@ -22,33 +23,6 @@ const ShopInterface = () => {
         selectedCategory === 'All' || product.category === selectedCategory
       )
     : getProductsByCategory(selectedCategory);
-  const addToCart = (product, quantity = 1) => {
-    setCart(prevCart => {
-      const existingItem = prevCart.find(item => item.id === product.id);
-      if (existingItem) {
-        return prevCart.map(item => item.id === product.id ? {
-          ...item,
-          quantity: item.quantity + quantity
-        } : item);
-      }
-      return [...prevCart, {
-        ...product,
-        quantity
-      }];
-    });
-  };
-  const updateCartQuantity = (productId, quantity) => {
-    if (quantity === 0) {
-      setCart(prevCart => prevCart.filter(item => item.id !== productId));
-    } else {
-      setCart(prevCart => prevCart.map(item => item.id === productId ? {
-        ...item,
-        quantity
-      } : item));
-    }
-  };
-  const cartTotal = cart.reduce((total, item) => total + item.price * item.quantity, 0);
-  const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
   
   if (isLoading) {
     return (

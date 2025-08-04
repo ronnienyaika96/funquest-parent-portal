@@ -6,78 +6,32 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Download, Search, Filter, Eye, Star, Calendar } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { usePrintables } from '@/hooks/usePrintables';
+import { useAuth } from '@/hooks/useAuth';
+import { downloadFile } from '@/utils/downloadManager';
 
 const PrintablesSection = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedPrintable, setSelectedPrintable] = useState<any>(null);
+  
+  const { printables, isLoading, getCategories, searchPrintables, getPrintablesByCategory, incrementDownloads } = usePrintables();
+  const { user } = useAuth();
+  const categories = getCategories();
 
-  const categories = ['All', 'Worksheets', 'Coloring Pages', 'Certificates', 'Games', 'Activity Sheets'];
-
-  const printables = [
-    {
-      id: 1,
-      title: 'Alphabet Tracing Worksheets',
-      description: 'Complete A-Z letter tracing practice sheets',
-      category: 'Worksheets',
-      difficulty: 'Beginner',
-      pages: 26,
-      downloads: 1234,
-      rating: 4.8,
-      preview: '/api/placeholder/300/400',
-      downloadUrl: '#',
-      featured: true
-    },
-    {
-      id: 2,
-      title: 'Rainbow Coloring Pages',
-      description: 'Fun rainbow-themed coloring activities',
-      category: 'Coloring Pages',
-      difficulty: 'Easy',
-      pages: 12,
-      downloads: 892,
-      rating: 4.9,
-      preview: '/api/placeholder/300/400',
-      downloadUrl: '#'
-    },
-    {
-      id: 3,
-      title: 'Math Addition Games',
-      description: 'Interactive addition worksheets and games',
-      category: 'Games',
-      difficulty: 'Intermediate',
-      pages: 8,
-      downloads: 567,
-      rating: 4.7,
-      preview: '/api/placeholder/300/400',
-      downloadUrl: '#'
-    },
-    {
-      id: 4,
-      title: 'Achievement Certificates',
-      description: 'Colorful certificates for completed activities',
-      category: 'Certificates',
-      difficulty: 'All Levels',
-      pages: 5,
-      downloads: 445,
-      rating: 4.6,
-      preview: '/api/placeholder/300/400',
-      downloadUrl: '#'
-    }
-  ];
-
-  const filteredPrintables = printables.filter(printable => {
-    const matchesSearch = printable.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || printable.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const filteredPrintables = searchTerm 
+    ? searchPrintables(searchTerm).filter(printable => 
+        selectedCategory === 'All' || printable.category === selectedCategory
+      )
+    : getPrintablesByCategory(selectedCategory);
 
   const PreviewModal = ({ printable }: { printable: any }) => {
     const [showPreview, setShowPreview] = useState(false);
 
-    const handleDownload = () => {
-      // Mock download functionality
-      alert(`Downloading ${printable.title}...`);
+    const handleDownload = async () => {
+      // Increment download count and trigger download
+      incrementDownloads.mutate(printable.id);
+      await downloadFile(printable.id, `${printable.title}.pdf`, user?.id);
       setShowPreview(false);
     };
 
@@ -97,7 +51,7 @@ const PrintablesSection = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <img 
-                  src={printable.preview} 
+                  src={printable.preview_url || '/placeholder.svg'} 
                   alt={printable.title}
                   className="w-full h-64 object-cover rounded-lg bg-gray-200"
                 />
@@ -157,6 +111,42 @@ const PrintablesSection = () => {
     );
   };
 
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-gray-900">Printables Library</h1>
+          <Button disabled>
+            <Calendar className="w-4 h-4 mr-2" />
+            My Downloads
+          </Button>
+        </div>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Find Printables</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
+          </CardContent>
+        </Card>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {[...Array(8)].map((_, index) => (
+            <Card key={index} className="animate-pulse">
+              <CardContent className="p-4">
+                <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
+                <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded mb-3"></div>
+                <div className="h-6 bg-gray-200 rounded"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -213,9 +203,9 @@ const PrintablesSection = () => {
               <Card key={printable.id} className="border-yellow-200 bg-yellow-50">
                 <div className="relative">
                   <img 
-                    src={printable.preview} 
-                    alt={printable.title}
-                    className="w-full h-48 object-cover rounded-t-lg bg-gray-200"
+                  src={printable.preview_url || '/placeholder.svg'} 
+                  alt={printable.title}
+                  className="w-full h-48 object-cover rounded-t-lg bg-gray-200"
                   />
                   <Badge className="absolute top-2 left-2 bg-yellow-500 text-white">Featured</Badge>
                 </div>
@@ -258,7 +248,7 @@ const PrintablesSection = () => {
             <Card key={printable.id} className="hover:shadow-lg transition-shadow">
               <div className="relative">
                 <img 
-                  src={printable.preview} 
+                  src={printable.preview_url || '/placeholder.svg'} 
                   alt={printable.title}
                   className="w-full h-48 object-cover rounded-t-lg bg-gray-200"
                 />

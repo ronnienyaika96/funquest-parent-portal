@@ -1,1 +1,51 @@
 project_id = "blbsqooxwyapcxsfgope"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+
+[studio]
+enabled = true
+port = 54323
+
+[inbucket]
+enabled = true
+port = 54324
+smtp_port = 54325
+pop3_port = 54326
+
+[storage]
+enabled = true
+port = 54327
+file_size_limit = "50MiB"
+
+[auth]
+enabled = true
+port = 54328
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://06d582d1-a7cb-44e0-aee3-fcc4b5ef45d7.lovableproject.com"]
+jwt_expiry = 3600
+refresh_token_rotation_enabled = true
+secure_password_change_enabled = true
+
+[edge-runtime]
+enabled = true
+port = 54329
+
+[functions.process-payment]
+verify_jwt = true
+
+[functions.download-file]
+verify_jwt = false
+
+[functions.manage-subscription]
+verify_jwt = true
+
+[functions.send-notification]
+verify_jwt = true
