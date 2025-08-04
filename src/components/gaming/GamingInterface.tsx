@@ -7,10 +7,13 @@ import ColoringPages from './ColoringPages';
 
 interface GamingInterfaceProps {
   onExitGaming: () => void;
+  initialGame?: string;
 }
 
-const GamingInterface = ({ onExitGaming }: GamingInterfaceProps) => {
-  const [activeGame, setActiveGame] = useState<'home' | 'alphabet' | 'tracing' | 'coloring' | 'puzzles'>('home');
+const GamingInterface = ({ onExitGaming, initialGame }: GamingInterfaceProps) => {
+  const [activeGame, setActiveGame] = useState<'home' | 'alphabet' | 'tracing' | 'coloring' | 'puzzles'>(
+    initialGame === 'tracing' ? 'tracing' : initialGame === 'coloring' ? 'coloring' : 'home'
+  );
   const [selectedLetter, setSelectedLetter] = useState<string>('');
 
   const handleLetterSelect = (letter: string) => {

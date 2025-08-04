@@ -22,12 +22,33 @@ import { useIsMobile } from '../hooks/use-mobile';
 
 const Index = () => {
   const [isGamingMode, setIsGamingMode] = useState(false);
+  const [activeGame, setActiveGame] = useState<string>('');
   const isMobile = useIsMobile();
   const location = useLocation();
   const currentPath = location.pathname;
+  
+  // Handle mobile game redirects
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const startGame = urlParams.get('startGame');
+    if (startGame === 'tracing' || startGame === 'coloring') {
+      setIsGamingMode(true);
+      setActiveGame(startGame);
+    }
+  }, []);
 
   if (isGamingMode) {
-    return <GamingInterface onExitGaming={() => setIsGamingMode(false)} />;
+    return <GamingInterface 
+      onExitGaming={() => {
+        setIsGamingMode(false);
+        setActiveGame('');
+        // Clear URL params when exiting gaming mode
+        if (window.location.search.includes('startGame')) {
+          window.history.replaceState({}, '', window.location.pathname);
+        }
+      }}
+      initialGame={activeGame}
+    />;
   }
 
   const renderMobileContent = () => {
