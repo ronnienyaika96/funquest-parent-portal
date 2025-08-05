@@ -213,9 +213,9 @@ const MobileGamesInterface = () => {
                 key={category.name}
                 variant={selectedCategory === category.name ? "default" : "outline"}
                 onClick={() => setSelectedCategory(category.name)}
-                className={`flex-shrink-0 rounded-2xl px-6 py-3 min-w-0 transition-all duration-300 ${
+                className={`flex-shrink-0 rounded-2xl px-4 py-2 min-w-0 transition-all duration-300 ${
                   selectedCategory === category.name 
-                    ? `bg-gradient-to-r ${category.activeColor} text-white shadow-lg transform scale-105` 
+                    ? `bg-purple-500 text-white shadow-lg transform scale-105` 
                     : `${category.color} border-0 text-gray-700 hover:scale-105`
                 }`}
               >
