@@ -54,35 +54,36 @@ export function useCartManager() {
   };
 
   const processCheckout = async () => {
-    if (!user || cart.length === 0) {
-      toast.error('Please login and add items to cart');
+    if (!user) {
+      toast.error('Please login to continue');
+      return false;
+    }
+    if (cart.length === 0) {
+      toast.error('Add items to your cart first');
       return false;
     }
 
     setIsProcessing(true);
     try {
-      const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      
-      const { data, error } = await supabase.functions.invoke('process-payment', {
+      const { data, error } = await supabase.functions.invoke('wc-create-order', {
         body: {
-          items: cart,
+          items: cart.map((i) => ({ id: i.id, quantity: i.quantity })),
           user_id: user.id,
-          total_amount: total
-        }
+        },
       });
 
       if (error) throw error;
 
-      if (data.success) {
-        toast.success('Order processed successfully!');
-        clearCart();
+      if (data?.checkout_url) {
+        toast.success('Redirecting to checkout...');
+        window.location.href = data.checkout_url;
         return true;
       } else {
-        throw new Error(data.error || 'Payment failed');
+        throw new Error(data?.error || 'Failed to create order');
       }
     } catch (error) {
       console.error('Checkout error:', error);
-      toast.error('Payment failed. Please try again.');
+      toast.error('Checkout failed. Please try again.');
       return false;
     } finally {
       setIsProcessing(false);
