@@ -209,65 +209,6 @@ export type Database = {
         }
         Relationships: []
       }
-      order_items: {
-        Row: {
-          id: string
-          order_id: string
-          price: number
-          product_id: string
-          quantity: number
-          title: string
-        }
-        Insert: {
-          id?: string
-          order_id: string
-          price: number
-          product_id: string
-          quantity?: number
-          title: string
-        }
-        Update: {
-          id?: string
-          order_id?: string
-          price?: number
-          product_id?: string
-          quantity?: number
-          title?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "order_items_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      orders: {
-        Row: {
-          created_at: string
-          id: string
-          status: string
-          total: number | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          status?: string
-          total?: number | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          status?: string
-          total?: number | null
-          user_id?: string
-        }
-        Relationships: []
-      }
       printables: {
         Row: {
           age_range: string | null
@@ -325,54 +266,6 @@ export type Database = {
         }
         Relationships: []
       }
-      products: {
-        Row: {
-          badge: string | null
-          category: string
-          created_at: string
-          id: string
-          image_url: string | null
-          images: Json | null
-          long_description: string | null
-          original_price: number | null
-          price: number
-          short_description: string | null
-          status: string | null
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          badge?: string | null
-          category: string
-          created_at?: string
-          id?: string
-          image_url?: string | null
-          images?: Json | null
-          long_description?: string | null
-          original_price?: number | null
-          price: number
-          short_description?: string | null
-          status?: string | null
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          badge?: string | null
-          category?: string
-          created_at?: string
-          id?: string
-          image_url?: string | null
-          images?: Json | null
-          long_description?: string | null
-          original_price?: number | null
-          price?: number
-          short_description?: string | null
-          status?: string | null
-          title?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           created_at: string | null
@@ -400,27 +293,6 @@ export type Database = {
           id?: string
           last_name?: string | null
           updated_at?: string | null
-        }
-        Relationships: []
-      }
-      subscription_plans: {
-        Row: {
-          duration_months: number
-          id: string
-          name: string
-          price: number
-        }
-        Insert: {
-          duration_months?: number
-          id?: string
-          name: string
-          price: number
-        }
-        Update: {
-          duration_months?: number
-          id?: string
-          name?: string
-          price?: number
         }
         Relationships: []
       }
@@ -460,37 +332,192 @@ export type Database = {
         }
         Relationships: []
       }
-      user_subscriptions: {
+      woocommerce_customers: {
         Row: {
-          end_date: string | null
+          created_at: string | null
+          email: string
           id: string
-          plan_id: string
-          start_date: string
-          status: string
-          user_id: string
+          metadata: Json | null
+          user_id: string | null
+          woo_customer_id: number
         }
         Insert: {
-          end_date?: string | null
+          created_at?: string | null
+          email: string
           id?: string
-          plan_id: string
-          start_date?: string
-          status?: string
-          user_id: string
+          metadata?: Json | null
+          user_id?: string | null
+          woo_customer_id: number
         }
         Update: {
-          end_date?: string | null
+          created_at?: string | null
+          email?: string
           id?: string
-          plan_id?: string
-          start_date?: string
-          status?: string
-          user_id?: string
+          metadata?: Json | null
+          user_id?: string | null
+          woo_customer_id?: number
+        }
+        Relationships: []
+      }
+      woocommerce_orders: {
+        Row: {
+          created_at: string | null
+          currency: string | null
+          id: string
+          line_items: Json | null
+          metadata: Json | null
+          status: string | null
+          total: number | null
+          user_id: string | null
+          woo_customer_id: number | null
+          woo_order_id: number
+        }
+        Insert: {
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          line_items?: Json | null
+          metadata?: Json | null
+          status?: string | null
+          total?: number | null
+          user_id?: string | null
+          woo_customer_id?: number | null
+          woo_order_id: number
+        }
+        Update: {
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          line_items?: Json | null
+          metadata?: Json | null
+          status?: string | null
+          total?: number | null
+          user_id?: string | null
+          woo_customer_id?: number | null
+          woo_order_id?: number
         }
         Relationships: [
           {
-            foreignKeyName: "user_subscriptions_plan_id_fkey"
-            columns: ["plan_id"]
+            foreignKeyName: "woocommerce_orders_woo_customer_id_fkey"
+            columns: ["woo_customer_id"]
             isOneToOne: false
-            referencedRelation: "subscription_plans"
+            referencedRelation: "woocommerce_customers"
+            referencedColumns: ["woo_customer_id"]
+          },
+        ]
+      }
+      woocommerce_products: {
+        Row: {
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          id: string
+          metadata: Json | null
+          name: string
+          price: number | null
+          woo_product_id: number
+        }
+        Insert: {
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          name: string
+          price?: number | null
+          woo_product_id: number
+        }
+        Update: {
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          name?: string
+          price?: number | null
+          woo_product_id?: number
+        }
+        Relationships: []
+      }
+      woocommerce_subscription_events: {
+        Row: {
+          created_at: string | null
+          event_data: Json | null
+          event_type: string | null
+          id: string
+          subscription_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_data?: Json | null
+          event_type?: string | null
+          id?: string
+          subscription_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_data?: Json | null
+          event_type?: string | null
+          id?: string
+          subscription_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "woocommerce_subscription_events_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "woocommerce_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      woocommerce_subscriptions: {
+        Row: {
+          created_at: string | null
+          customer_id: string | null
+          end_date: string | null
+          id: string
+          next_payment_date: string | null
+          product_id: string | null
+          start_date: string | null
+          status: string | null
+          wc_subscription_id: number
+        }
+        Insert: {
+          created_at?: string | null
+          customer_id?: string | null
+          end_date?: string | null
+          id?: string
+          next_payment_date?: string | null
+          product_id?: string | null
+          start_date?: string | null
+          status?: string | null
+          wc_subscription_id: number
+        }
+        Update: {
+          created_at?: string | null
+          customer_id?: string | null
+          end_date?: string | null
+          id?: string
+          next_payment_date?: string | null
+          product_id?: string | null
+          start_date?: string | null
+          status?: string | null
+          wc_subscription_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "woocommerce_subscriptions_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "woocommerce_customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "woocommerce_subscriptions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "woocommerce_products"
             referencedColumns: ["id"]
           },
         ]

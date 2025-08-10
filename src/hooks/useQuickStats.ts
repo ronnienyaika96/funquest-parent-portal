@@ -11,21 +11,13 @@ export function useQuickStats() {
   
   // Get orders for calculating printables and activities
   const { data: orders } = useQuery({
-    queryKey: ['orders', user?.id],
+    queryKey: ['woo-orders-summary', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
       
       const { data, error } = await supabase
-        .from('orders')
-        .select(`
-          *,
-          order_items (
-            id,
-            product_id,
-            title,
-            quantity
-          )
-        `)
+        .from('woocommerce_orders')
+        .select('id, created_at, total, status, line_items')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       
@@ -41,11 +33,13 @@ export function useQuickStats() {
   // Calculate stats from real data
   const completedActivities = progressStats.completed || 0;
   const totalOrders = orders?.length || 0;
-  const printableDownloads = orders?.reduce((acc, order) => {
-    return acc + (order.order_items?.filter(item => 
-      item.title?.toLowerCase().includes('printable') || 
-      item.title?.toLowerCase().includes('coloring')
-    ).length || 0);
+  const printableDownloads = orders?.reduce((acc: number, order: any) => {
+    const items = Array.isArray(order.line_items) ? order.line_items : [];
+    const count = items.filter((item: any) => {
+      const title = String(item.name ?? '').toLowerCase();
+      return title.includes('printable') || title.includes('coloring');
+    }).length;
+    return acc + count;
   }, 0) || 0;
 
   const stats = [
