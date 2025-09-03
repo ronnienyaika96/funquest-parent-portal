@@ -12,9 +12,10 @@ interface LoginFormProps {
   type: 'parent';
   onLoginSuccess: () => void;
   onSwitchToSignup: () => void;
+  onSwitchToReset?: () => void;
 }
 
-const LoginForm = ({ type, onLoginSuccess, onSwitchToSignup }: LoginFormProps) => {
+const LoginForm = ({ type, onLoginSuccess, onSwitchToSignup, onSwitchToReset }: LoginFormProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -92,7 +93,12 @@ const LoginForm = ({ type, onLoginSuccess, onSwitchToSignup }: LoginFormProps) =
           </Button>
 
           <div className="text-center space-y-2">
-            <Button variant="link" type="button">
+            <Button 
+              variant="link" 
+              type="button" 
+              onClick={onSwitchToReset}
+              disabled={!onSwitchToReset}
+            >
               Forgot Password?
             </Button>
             <p className="text-sm text-gray-600">

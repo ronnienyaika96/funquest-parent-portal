@@ -1,15 +1,15 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import LoginForm from '../components/auth/LoginForm';
 import SignupForm from '../components/auth/SignupForm';
+import { PasswordResetForm } from '../components/auth/PasswordResetForm';
 
 const AuthPage = () => {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const [isLogin, setIsLogin] = useState(true);
+  const [authMode, setAuthMode] = useState<'login' | 'signup' | 'reset'>('login');
 
   // Redirect if user is already logged in
   useEffect(() => {
@@ -36,17 +36,24 @@ const AuthPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {isLogin ? (
+        {authMode === 'login' && (
           <LoginForm
             type="parent"
             onLoginSuccess={handleAuthSuccess}
-            onSwitchToSignup={() => setIsLogin(false)}
+            onSwitchToSignup={() => setAuthMode('signup')}
+            onSwitchToReset={() => setAuthMode('reset')}
           />
-        ) : (
+        )}
+        {authMode === 'signup' && (
           <SignupForm
             type="parent"
             onSignupSuccess={handleAuthSuccess}
-            onSwitchToLogin={() => setIsLogin(true)}
+            onSwitchToLogin={() => setAuthMode('login')}
+          />
+        )}
+        {authMode === 'reset' && (
+          <PasswordResetForm 
+            onBack={() => setAuthMode('login')} 
           />
         )}
       </div>
