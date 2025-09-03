@@ -18,12 +18,20 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const url = new URL(req.url)
-    const fileId = url.searchParams.get('fileId')
-    const userId = url.searchParams.get('userId')
+    // Parse request body
+    const { fileId, userId, checkAccess } = await req.json()
 
     if (!fileId || !userId) {
-      throw new Error('Missing fileId or userId parameter')
+      throw new Error('Missing fileId or userId in request body')
+    }
+
+    // If just checking access, return early
+    if (checkAccess) {
+      // For now return true, in real app check orders/subscriptions
+      return new Response(
+        JSON.stringify({ hasAccess: true }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
     console.log('Download request for file:', fileId, 'by user:', userId)
