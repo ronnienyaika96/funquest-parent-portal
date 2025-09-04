@@ -15,7 +15,7 @@ const ShopInterface = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   
   const { products, isLoading, getCategories, searchProducts, getProductsByCategory } = useProducts();
-  const { cart, addToCart, updateCartQuantity, cartTotal, cartItemCount } = useCartManager();
+  const { cart, addToCart, updateCartQuantity, cartTotal, cartItemCount, processCheckout, isProcessing } = useCartManager();
   const categories = getCategories();
   
   const filteredProducts = searchTerm 
@@ -137,7 +137,9 @@ const ShopInterface = () => {
           cart={cart} 
           onClose={() => setIsCartOpen(false)} 
           onUpdateQuantity={updateCartQuantity} 
-          total={cartTotal} 
+          total={cartTotal}
+          onCheckout={processCheckout}
+          isProcessing={isProcessing}
         />
       )}
     </div>

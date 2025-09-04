@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-const CartSidebar = ({ cart, onClose, onUpdateQuantity, total }) => {
+const CartSidebar = ({ cart, onClose, onUpdateQuantity, total, onCheckout, isProcessing = false }) => {
   const [couponCode, setCouponCode] = useState('');
   const [discount, setDiscount] = useState(0);
 
@@ -116,8 +116,12 @@ const CartSidebar = ({ cart, onClose, onUpdateQuantity, total }) => {
                     </div>
                   </div>
 
-                  <Button className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-3">
-                    Proceed to Checkout
+                  <Button 
+                    onClick={onCheckout}
+                    disabled={isProcessing}
+                    className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-3"
+                  >
+                    {isProcessing ? 'Processing...' : 'Proceed to Checkout'}
                   </Button>
                 </div>
               </>

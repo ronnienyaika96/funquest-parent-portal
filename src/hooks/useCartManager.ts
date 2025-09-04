@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { useCartPersistence } from './useCartPersistence';
 import { toast } from 'sonner';
 
 export interface CartItem {
@@ -15,6 +16,20 @@ export function useCartManager() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const { user } = useAuth();
+  const { saveCart, loadCart, clearCart: clearPersistedCart } = useCartPersistence();
+
+  // Load cart on mount
+  useEffect(() => {
+    const savedCart = loadCart();
+    if (savedCart.length > 0) {
+      setCart(savedCart);
+    }
+  }, [user?.id]);
+
+  // Save cart whenever it changes
+  useEffect(() => {
+    saveCart(cart);
+  }, [cart, saveCart]);
 
   const addToCart = (product: any, quantity = 1) => {
     setCart(prevCart => {
@@ -51,6 +66,7 @@ export function useCartManager() {
 
   const clearCart = () => {
     setCart([]);
+    clearPersistedCart();
   };
 
   const processCheckout = async () => {

@@ -2,6 +2,7 @@
 import React from 'react';
 import { Download, FileText } from 'lucide-react';
 import { useOrders } from '@/hooks/useOrders';
+import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 
 const OrdersSection = () => {
@@ -23,14 +24,48 @@ const OrdersSection = () => {
     }
   };
 
-  const downloadInvoice = (orderId: string) => {
-    // Mock invoice download - could be implemented with real functionality
-    alert(`Downloading invoice for ${orderId}...`);
+  const downloadInvoice = async (orderId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('download-file', {
+        body: { 
+          type: 'invoice',
+          order_id: orderId 
+        }
+      });
+      
+      if (error) throw error;
+      
+      if (data?.download_url) {
+        window.open(data.download_url, '_blank');
+      } else {
+        throw new Error('No download URL received');
+      }
+    } catch (error) {
+      console.error('Download error:', error);
+      alert(`Failed to download invoice. Please try again later.`);
+    }
   };
 
-  const downloadReceipt = (orderId: string) => {
-    // Mock receipt download - could be implemented with real functionality
-    alert(`Downloading receipt for ${orderId}...`);
+  const downloadReceipt = async (orderId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('download-file', {
+        body: { 
+          type: 'receipt',
+          order_id: orderId 
+        }
+      });
+      
+      if (error) throw error;
+      
+      if (data?.download_url) {
+        window.open(data.download_url, '_blank');
+      } else {
+        throw new Error('No download URL received');
+      }
+    } catch (error) {
+      console.error('Download error:', error);
+      alert(`Failed to download receipt. Please try again later.`);
+    }
   };
 
   if (isLoading) {
@@ -73,7 +108,10 @@ const OrdersSection = () => {
             <div className="text-6xl mb-4">🛒</div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">No orders yet</h3>
             <p className="text-gray-600 mb-6">When you make your first purchase, it will appear here.</p>
-            <button className="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-700 transition-colors">
+            <button 
+              onClick={() => window.location.href = '/shop'}
+              className="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-700 transition-colors"
+            >
               Visit Shop
             </button>
           </div>
