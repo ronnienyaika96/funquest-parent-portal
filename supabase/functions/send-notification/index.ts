@@ -1,10 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { Resend } from "npm:resend@2.0.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
+
+const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -22,43 +25,81 @@ serve(async (req) => {
 
     console.log('Sending notification:', type, 'to user:', user_id)
 
-    // In a real app, you would integrate with:
-    // - Email service (SendGrid, Resend, etc.)
-    // - Push notification service (Firebase, OneSignal, etc.)
-    // - SMS service (Twilio, etc.)
+    // Get user email from auth if user_id provided
+    let userEmail = null;
+    if (user_id) {
+      const { data: user } = await supabase.auth.admin.getUserById(user_id);
+      userEmail = user?.user?.email;
+    } else {
+      // Get from current session
+      const authHeader = req.headers.get('Authorization')?.replace('Bearer ', '');
+      if (authHeader) {
+        const { data: { user } } = await supabase.auth.getUser(authHeader);
+        userEmail = user?.email;
+      }
+    }
 
     switch (type) {
       case 'welcome':
-        // Send welcome email
-        console.log('Sending welcome notification to user:', user_id)
+        if (userEmail) {
+          await resend.emails.send({
+            from: 'KidsLearn <welcome@kidslearn.app>',
+            to: [userEmail],
+            subject: 'Welcome to KidsLearn!',
+            html: `
+              <h1>Welcome to KidsLearn!</h1>
+              <p>We're excited to have you join our learning community.</p>
+              <p>Start exploring educational games and activities for your children.</p>
+            `
+          });
+        }
         break
 
       case 'achievement':
-        // Send achievement notification
         console.log('Sending achievement notification:', message)
+        // Could send push notifications here
         break
 
       case 'purchase_confirmation':
-        // Send purchase confirmation
-        console.log('Sending purchase confirmation:', data)
+        if (userEmail && data?.order_id) {
+          await resend.emails.send({
+            from: 'KidsLearn <orders@kidslearn.app>',
+            to: [userEmail],
+            subject: `Order Confirmation #${data.order_id}`,
+            html: `
+              <h1>Thank you for your order!</h1>
+              <p>Order ID: <strong>#${data.order_id}</strong></p>
+              <p>Total: <strong>$${data.total}</strong></p>
+              <p>Your order has been confirmed and will be processed shortly.</p>
+              <p>You can track your order status in your dashboard.</p>
+            `
+          });
+        }
         break
 
       case 'subscription_reminder':
-        // Send subscription reminder
-        console.log('Sending subscription reminder to user:', user_id)
+        if (userEmail) {
+          await resend.emails.send({
+            from: 'KidsLearn <billing@kidslearn.app>',
+            to: [userEmail],
+            subject: 'Subscription Reminder',
+            html: `
+              <h1>Subscription Update</h1>
+              <p>${message}</p>
+              <p>Manage your subscription in your account settings.</p>
+            `
+          });
+        }
         break
 
       case 'progress_update':
-        // Send progress update
         console.log('Sending progress update:', message)
+        // Could integrate with parent notification preferences
         break
 
       default:
         console.log('Generic notification:', message)
     }
-
-    // Log notification for admin tracking
-    // In real app, you might store notifications in a table
 
     return new Response(
       JSON.stringify({ 

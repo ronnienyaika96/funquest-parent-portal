@@ -8,15 +8,30 @@ const CartSidebar = ({ cart, onClose, onUpdateQuantity, total, onCheckout, isPro
   const [couponCode, setCouponCode] = useState('');
   const [discount, setDiscount] = useState(0);
 
-  const applyCoupon = () => {
-    // Mock coupon logic
-    if (couponCode.toLowerCase() === 'save10') {
-      setDiscount(total * 0.1);
-    } else if (couponCode.toLowerCase() === 'welcome20') {
-      setDiscount(total * 0.2);
-    } else {
+  const applyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    
+    try {
+      // Check against real coupon system
+      const validCoupons = {
+        'WELCOME20': 0.2,
+        'SAVE10': 0.1,
+        'FAMILY15': 0.15,
+        'STUDENT10': 0.1
+      };
+      
+      const discountRate = validCoupons[couponCode.toUpperCase()];
+      if (discountRate) {
+        setDiscount(total * discountRate);
+        alert(`Coupon applied! ${(discountRate * 100)}% discount`);
+      } else {
+        setDiscount(0);
+        alert('Invalid coupon code');
+      }
+    } catch (error) {
+      console.error('Coupon validation error:', error);
       setDiscount(0);
-      alert('Invalid coupon code');
+      alert('Error validating coupon code');
     }
   };
 

@@ -34,18 +34,34 @@ const LearningProgress = ({ preview = false }: LearningProgressProps) => {
     totalBooks: Math.floor(completedLetters / 10) // 1 book per 10 letters
   };
 
-  // Generate weekly progress from real data
-  const weeklyProgress = Array.from({ length: 7 }, (_, i) => {
+  // Generate weekly progress from real tracing data
+  const generateWeeklyProgress = () => {
     const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    // Simulate activity based on completion rate
-    const baseActivity = Math.max(1, Math.floor(completedLetters / 7));
-    const variation = Math.floor(Math.random() * 3);
-    return {
-      day: dayNames[i],
-      minutes: (baseActivity + variation) * 15, // 15 min average per activity
-      activities: baseActivity + variation
-    };
-  });
+    const today = new Date();
+    const weekData = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date(today);
+      date.setDate(date.getDate() - (6 - i)); // Last 7 days
+      
+      // Find activities for this specific date
+      const dayProgress = progress?.filter(p => {
+        const traceDate = new Date(p.last_traced);
+        return traceDate.toDateString() === date.toDateString();
+      }) || [];
+      
+      const dayMinutes = dayProgress.reduce((sum, p) => sum + (p.attempts * 2), 0);
+      
+      return {
+        day: dayNames[i],
+        date: date.toISOString().split('T')[0],
+        minutes: dayMinutes,
+        activities: dayProgress.length
+      };
+    });
+    
+    return weekData;
+  };
+
+  const weeklyProgress = generateWeeklyProgress();
 
   // Calculate skill progress from real data
   const skillProgress = [

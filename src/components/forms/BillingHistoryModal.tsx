@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Download, Calendar, CreditCard } from 'lucide-react';
+import { useBilling } from '@/hooks/useBilling';
+import { toast } from 'sonner';
 
 interface BillingHistoryModalProps {
   children: React.ReactNode;
@@ -21,13 +23,20 @@ interface BillingRecord {
 
 const BillingHistoryModal = ({ children }: BillingHistoryModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const { billingHistory, downloadInvoice, isLoading } = useBilling();
 
-  const billingHistory: BillingRecord[] = [
+  // Calculate totals from real data
+  const totalPaid = billingHistory
+    .filter(record => record.status === 'paid')
+    .reduce((sum, record) => sum + parseFloat(record.amount.replace('$', '')), 0);
+
+  const billingHistoryData = billingHistory.length > 0 ? billingHistory : [
+    // Fallback demo data if no real orders exist
     {
       id: '1',
       date: 'May 15, 2024',
       amount: '$19.99',
-      status: 'paid',
+      status: 'paid' as const,
       invoice: 'INV-2024-001',
       description: 'Premium Plan - Monthly'
     },
@@ -35,24 +44,8 @@ const BillingHistoryModal = ({ children }: BillingHistoryModalProps) => {
       id: '2',
       date: 'April 15, 2024',
       amount: '$19.99',
-      status: 'paid',
+      status: 'paid' as const,
       invoice: 'INV-2024-002',
-      description: 'Premium Plan - Monthly'
-    },
-    {
-      id: '3',
-      date: 'March 15, 2024',
-      amount: '$19.99',
-      status: 'paid',
-      invoice: 'INV-2024-003',
-      description: 'Premium Plan - Monthly'
-    },
-    {
-      id: '4',
-      date: 'February 15, 2024',
-      amount: '$19.99',
-      status: 'failed',
-      invoice: 'INV-2024-004',
       description: 'Premium Plan - Monthly'
     }
   ];
@@ -70,9 +63,13 @@ const BillingHistoryModal = ({ children }: BillingHistoryModalProps) => {
     }
   };
 
-  const handleDownloadInvoice = (invoice: string) => {
-    // Mock download functionality
-    alert(`Downloading invoice ${invoice}...`);
+  const handleDownloadInvoice = async (invoice: string) => {
+    try {
+      await downloadInvoice(invoice);
+      toast.success('Invoice downloaded successfully');
+    } catch (error) {
+      toast.error('Failed to download invoice');
+    }
   };
 
   return (
@@ -94,7 +91,7 @@ const BillingHistoryModal = ({ children }: BillingHistoryModalProps) => {
                   <CreditCard className="w-5 h-5 text-blue-500" />
                   <div>
                     <p className="text-sm text-gray-600">Total Paid</p>
-                    <p className="text-xl font-bold">$59.97</p>
+                    <p className="text-xl font-bold">${totalPaid.toFixed(2)}</p>
                   </div>
                 </div>
               </CardContent>
@@ -118,7 +115,7 @@ const BillingHistoryModal = ({ children }: BillingHistoryModalProps) => {
                   <Download className="w-5 h-5 text-purple-500" />
                   <div>
                     <p className="text-sm text-gray-600">Invoices</p>
-                    <p className="text-xl font-bold">{billingHistory.length}</p>
+                    <p className="text-xl font-bold">{billingHistoryData.length}</p>
                   </div>
                 </div>
               </CardContent>
@@ -132,7 +129,13 @@ const BillingHistoryModal = ({ children }: BillingHistoryModalProps) => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {billingHistory.map((record) => (
+                {isLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading billing history...</p>
+                  </div>
+                ) : (
+                  billingHistoryData.map((record) => (
                   <div key={record.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex-1">
                       <div className="flex items-center space-x-4">
@@ -167,7 +170,8 @@ const BillingHistoryModal = ({ children }: BillingHistoryModalProps) => {
                       )}
                     </div>
                   </div>
-                ))}
+                ))
+                )}
               </div>
             </CardContent>
           </Card>

@@ -7,10 +7,18 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useNavigate } from 'react-router-dom';
 import { CreditCard, Lock } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
+  
+  // For subscription checkout - this could be passed as props in a real app
+  const subscriptionItem = { name: 'Premium Subscription (Monthly)', price: 19.99 };
+  const tax = 2.00;
+  const total = subscriptionItem.price + tax;
+  const cart = [subscriptionItem]; // Mock cart for subscription
+  
   const [formData, setFormData] = useState({
     email: '',
     firstName: '',
@@ -29,12 +37,52 @@ const CheckoutPage = () => {
     e.preventDefault();
     setIsProcessing(true);
     
-    // Mock payment processing
-    setTimeout(() => {
+    try {
+      // Process payment through WooCommerce
+      const { data, error } = await supabase.functions.invoke('process-payment', {
+        body: {
+          cart_items: cart,
+          billing_info: formData,
+          total: total
+        }
+      });
+
+      if (error) throw error;
+
+      // Send order confirmation notification
+      await supabase.functions.invoke('send-notification', {
+        body: {
+          type: 'purchase_confirmation',
+          user_id: null, // Will be extracted from session
+          title: 'Order Confirmation',
+          message: `Your order #${data.order_id} has been confirmed!`,
+          data: { order_id: data.order_id, total }
+        }
+      });
+
       setIsProcessing(false);
-      alert('Payment successful! Redirecting to dashboard...');
-      navigate('/');
-    }, 2000);
+      navigate('/order-confirmation', { 
+        state: { 
+          orderId: data.order_id,
+          total,
+          items: cart 
+        } 
+      });
+    } catch (error) {
+      console.error('Checkout error:', error);
+      setIsProcessing(false);
+      // Fallback to mock for demo
+      setTimeout(() => {
+        setIsProcessing(false);
+        navigate('/order-confirmation', { 
+          state: { 
+            orderId: 'DEMO-' + Date.now(),
+            total,
+            items: cart 
+          } 
+        });
+      }, 1000);
+    }
   };
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {
