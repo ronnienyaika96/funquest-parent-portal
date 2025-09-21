@@ -67,7 +67,7 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// FunQuest Brand Colors
+				// FunQuest Kid-Friendly Colors
 				funquest: {
 					primary: 'hsl(var(--funquest-primary))',
 					secondary: 'hsl(var(--funquest-secondary))',
@@ -78,7 +78,21 @@ export default {
 					pink: 'hsl(var(--funquest-pink))',
 					blue: 'hsl(var(--funquest-blue))',
 					green: 'hsl(var(--funquest-green))',
-					orange: 'hsl(var(--funquest-orange))'
+					orange: 'hsl(var(--funquest-orange))',
+					purple: 'hsl(var(--funquest-purple))',
+					turquoise: 'hsl(var(--funquest-turquoise))'
+				},
+				progress: {
+					beginner: 'hsl(var(--progress-beginner))',
+					intermediate: 'hsl(var(--progress-intermediate))',
+					advanced: 'hsl(var(--progress-advanced))',
+					expert: 'hsl(var(--progress-expert))'
+				},
+				badge: {
+					bronze: 'hsl(var(--badge-bronze))',
+					silver: 'hsl(var(--badge-silver))',
+					gold: 'hsl(var(--badge-gold))',
+					diamond: 'hsl(var(--badge-diamond))'
 				}
 			},
 			borderRadius: {
@@ -90,7 +104,9 @@ export default {
 			},
 			fontFamily: {
 				'nunito': ['Nunito', 'Inter', 'sans-serif'],
-				'inter': ['Inter', 'sans-serif']
+				'inter': ['Inter', 'sans-serif'],
+				'playful': ['Nunito', 'sans-serif'],
+				'clean': ['Inter', 'sans-serif']
 			},
 			fontSize: {
 				'2xs': ['0.625rem', { lineHeight: '0.875rem' }],
