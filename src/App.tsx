@@ -32,7 +32,7 @@ const App = () => (
             
             {/* Protected Parent Routes */}
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-            <Route path="/dashboard" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<Index />} />
             <Route path="/children" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/progress" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/games" element={<ProtectedRoute><Index /></ProtectedRoute>} />
