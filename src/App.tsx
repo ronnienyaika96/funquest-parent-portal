@@ -5,10 +5,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
-import ProtectedRoute from "./components/ProtectedRoute";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import AuthPage from "./pages/AuthPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import OrderConfirmation from "./pages/OrderConfirmation";
 import ResetPassword from "./pages/ResetPassword";
@@ -27,23 +25,20 @@ const App = () => (
             {/* Public Landing Page */}
             <Route path="/landing" element={<LandingPage />} />
             
-            {/* Auth Routes */}
-            <Route path="/auth" element={<AuthPage />} />
-            
-            {/* Protected Parent Routes */}
-            <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            {/* Public Routes */}
+            <Route path="/" element={<Index />} />
             <Route path="/dashboard" element={<Index />} />
-            <Route path="/children" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-            <Route path="/progress" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-            <Route path="/games" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-            <Route path="/shop" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-            <Route path="/orders" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-            <Route path="/subscriptions" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-            <Route path="/printables" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-            <Route path="/notifications" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-            <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
-            <Route path="/order-confirmation" element={<ProtectedRoute><OrderConfirmation /></ProtectedRoute>} />
+            <Route path="/children" element={<Index />} />
+            <Route path="/progress" element={<Index />} />
+            <Route path="/games" element={<Index />} />
+            <Route path="/shop" element={<Index />} />
+            <Route path="/orders" element={<Index />} />
+            <Route path="/subscriptions" element={<Index />} />
+            <Route path="/printables" element={<Index />} />
+            <Route path="/notifications" element={<Index />} />
+            <Route path="/settings" element={<Index />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/order-confirmation" element={<OrderConfirmation />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
