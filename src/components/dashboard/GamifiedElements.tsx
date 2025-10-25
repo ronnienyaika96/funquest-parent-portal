@@ -66,68 +66,11 @@ const GamifiedElements = () => {
 
   return (
     <div className="space-y-6">
-      {/* Level & Streak Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Level Progress */}
-        <Card className="bg-gradient-to-br from-white to-funquest-purple/5 border-funquest-purple/20 rounded-3xl shadow-lg">
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-funquest-purple to-funquest-pink rounded-2xl flex items-center justify-center">
-                <Crown className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h3 className="font-playful font-bold text-lg text-funquest-purple">Level {levelProgress.current}</h3>
-                <p className="text-sm font-clean text-muted-foreground">Learning Explorer</p>
-              </div>
-            </div>
-            
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-clean text-muted-foreground">Progress to Level {levelProgress.next}</span>
-                <span className="text-sm font-playful font-semibold text-funquest-purple">{levelProgress.pointsToNext} points to go!</span>
-              </div>
-              <Progress 
-                value={levelProgress.progress} 
-                className="h-3 bg-funquest-purple/10"
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Learning Streak */}
-        <Card className="bg-gradient-to-br from-white to-funquest-warning/5 border-funquest-warning/20 rounded-3xl shadow-lg">
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-funquest-warning to-funquest-orange rounded-2xl flex items-center justify-center">
-                <Zap className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h3 className="font-playful font-bold text-lg text-funquest-warning">
-                  {learningStreak.current} Day Streak!
-                </h3>
-                <p className="text-sm font-clean text-muted-foreground">Best: {learningStreak.best} days</p>
-              </div>
-            </div>
-            
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-clean text-muted-foreground">Next milestone</span>
-                <span className="text-sm font-playful font-semibold text-funquest-warning">{learningStreak.nextMilestone} days</span>
-              </div>
-              <Progress 
-                value={(learningStreak.current / learningStreak.nextMilestone) * 100} 
-                className="h-3 bg-funquest-warning/10"
-              />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Achievements */}
-      <Card className="bg-gradient-to-br from-white to-funquest-accent/5 border-funquest-accent/20 rounded-3xl shadow-lg">
+      <Card className="bg-white border-funquest-accent/20 rounded-3xl shadow-lg">
         <CardContent className="p-6">
           <div className="flex items-center space-x-3 mb-6">
-            <div className="w-10 h-10 bg-gradient-to-br from-funquest-accent to-funquest-green rounded-2xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-funquest-accent rounded-2xl flex items-center justify-center">
               <Trophy className="h-5 w-5 text-white" />
             </div>
             <h3 className="font-playful font-bold text-xl text-funquest-accent">Achievements</h3>
