@@ -7,9 +7,11 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  isAnonymous: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<{ error: any }>;
   signOut: (onAfterSignOut?: () => void) => Promise<void>;
+  ensureAnonymousSession: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -18,6 +20,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Create anonymous session if no user exists
+  const ensureAnonymousSession = async () => {
+    try {
+      const { data: { session: existingSession } } = await supabase.auth.getSession();
+      
+      if (!existingSession) {
+        const { data, error } = await supabase.auth.signInAnonymously();
+        if (error) throw error;
+        setSession(data.session);
+        setUser(data.session?.user ?? null);
+      }
+    } catch (error) {
+      console.error('Failed to create anonymous session:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     // Set up auth state listener
@@ -29,11 +49,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    // Get initial session
+    // Get initial session or create anonymous one
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
+      if (session) {
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+      } else {
+        // No session exists, create anonymous user
+        ensureAnonymousSession();
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -78,9 +103,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     session,
     loading,
+    isAnonymous: user?.is_anonymous ?? false,
     signIn,
     signUp,
     signOut,
+    ensureAnonymousSession,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
