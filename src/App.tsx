@@ -5,7 +5,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
-import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import CheckoutPage from "./pages/CheckoutPage";
 import OrderConfirmation from "./pages/OrderConfirmation";
@@ -22,21 +21,10 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            {/* Public Landing Page */}
-            <Route path="/landing" element={<LandingPage />} />
+            {/* Main Landing Page */}
+            <Route path="/" element={<LandingPage />} />
             
             {/* Public Routes */}
-            <Route path="/" element={<Index />} />
-            <Route path="/dashboard" element={<Index />} />
-            <Route path="/children" element={<Index />} />
-            <Route path="/progress" element={<Index />} />
-            <Route path="/games" element={<Index />} />
-            <Route path="/shop" element={<Index />} />
-            <Route path="/orders" element={<Index />} />
-            <Route path="/subscriptions" element={<Index />} />
-            <Route path="/printables" element={<Index />} />
-            <Route path="/notifications" element={<Index />} />
-            <Route path="/settings" element={<Index />} />
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/order-confirmation" element={<OrderConfirmation />} />
             <Route path="/reset-password" element={<ResetPassword />} />
