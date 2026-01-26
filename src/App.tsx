@@ -10,6 +10,7 @@ import CheckoutPage from "./pages/CheckoutPage";
 import OrderConfirmation from "./pages/OrderConfirmation";
 import ResetPassword from "./pages/ResetPassword";
 import LandingPage from "./pages/LandingPage";
+import KidsDashboard from "./pages/KidsDashboard";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,9 @@ const App = () => (
           <Routes>
             {/* Main Landing Page */}
             <Route path="/" element={<LandingPage />} />
+            
+            {/* Kids Dashboard */}
+            <Route path="/play" element={<KidsDashboard />} />
             
             {/* Public Routes */}
             <Route path="/checkout" element={<CheckoutPage />} />
