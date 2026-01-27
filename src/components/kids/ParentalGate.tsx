@@ -6,10 +6,12 @@ import { useNavigate } from 'react-router-dom';
 interface ParentalGateProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess?: () => void;
+  navigateTo?: string;
 }
 
-const ParentalGate = ({ isOpen, onClose, onSuccess }: ParentalGateProps) => {
+const ParentalGate = ({ isOpen, onClose, onSuccess, navigateTo = '/parent' }: ParentalGateProps) => {
+  const navigate = useNavigate();
   const [num1, setNum1] = useState(0);
   const [num2, setNum2] = useState(0);
   const [userAnswer, setUserAnswer] = useState('');
@@ -30,13 +32,14 @@ const ParentalGate = ({ isOpen, onClose, onSuccess }: ParentalGateProps) => {
     }
   }, [isOpen]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
     const correctAnswer = num1 + num2;
     
     if (parseInt(userAnswer) === correctAnswer) {
-      onSuccess();
+      onSuccess?.();
       onClose();
+      navigate(navigateTo);
     } else {
       setError(true);
       setShake(true);
