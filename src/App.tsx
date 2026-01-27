@@ -11,6 +11,7 @@ import OrderConfirmation from "./pages/OrderConfirmation";
 import ResetPassword from "./pages/ResetPassword";
 import LandingPage from "./pages/LandingPage";
 import KidsDashboard from "./pages/KidsDashboard";
+import ParentDashboard from "./pages/ParentDashboard";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,9 @@ const App = () => (
             
             {/* Kids Dashboard */}
             <Route path="/play" element={<KidsDashboard />} />
+            
+            {/* Parent Dashboard */}
+            <Route path="/parent" element={<ParentDashboard />} />
             
             {/* Public Routes */}
             <Route path="/checkout" element={<CheckoutPage />} />
