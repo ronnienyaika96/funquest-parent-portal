@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      activities: {
+        Row: {
+          age_range: string
+          audio_urls: Json | null
+          category: string
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          images: Json | null
+          name: string
+          status: string
+          steps: Json | null
+          thumbnail_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          age_range: string
+          audio_urls?: Json | null
+          category: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          images?: Json | null
+          name: string
+          status?: string
+          steps?: Json | null
+          thumbnail_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          age_range?: string
+          audio_urls?: Json | null
+          category?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          images?: Json | null
+          name?: string
+          status?: string
+          steps?: Json | null
+          thumbnail_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       admin_roles: {
         Row: {
           created_at: string
