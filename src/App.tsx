@@ -12,6 +12,7 @@ import ResetPassword from "./pages/ResetPassword";
 import LandingPage from "./pages/LandingPage";
 import KidsDashboard from "./pages/KidsDashboard";
 import ParentDashboard from "./pages/ParentDashboard";
+import AdminPanel from "./pages/AdminPanel";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,9 @@ const App = () => (
             
             {/* Parent Dashboard */}
             <Route path="/parent" element={<ParentDashboard />} />
+            
+            {/* Admin Panel */}
+            <Route path="/admin" element={<AdminPanel />} />
             
             {/* Public Routes */}
             <Route path="/checkout" element={<CheckoutPage />} />
