@@ -9,23 +9,8 @@ export function useQuickStats() {
   const { children } = useChildProfiles();
   const { getProgressStats } = useTracingProgress();
   
-  // Get orders for calculating printables and activities
-  const { data: orders } = useQuery({
-    queryKey: ['woo-orders-summary', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      
-      const { data, error } = await supabase
-        .from('woocommerce_orders')
-        .select('id, created_at, total, status, line_items')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!user?.id,
-  });
+  // Mock orders - woocommerce_orders table not available
+  const orders: any[] = [];
 
   const progressStats = getProgressStats();
   const childrenCount = children?.length || 0;

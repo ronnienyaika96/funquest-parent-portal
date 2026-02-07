@@ -23,34 +23,10 @@ export interface BillingHistory {
 export function useBilling() {
   const { user } = useAuth();
   
-  // Fetch real WooCommerce orders for billing history
-  const { data: orders = [], isLoading: ordersLoading } = useQuery({
-    queryKey: ['woocommerce-orders', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      
-      const { data, error } = await supabase
-        .from('woocommerce_orders')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-        
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id
-  });
+  // Mock billing history - woocommerce_orders table not available
+  const ordersLoading = false;
 
-  // Convert orders to billing history format
-  const billingHistory: BillingHistory[] = orders.map(order => ({
-    id: order.id,
-    date: new Date(order.created_at).toLocaleDateString(),
-    description: `Order #${order.woo_order_id}`,
-    amount: `$${order.total?.toFixed(2) || '0.00'}`,
-    status: order.status === 'completed' ? 'paid' : 
-            order.status === 'processing' ? 'pending' : 'failed',
-    invoice: `INV-${order.woo_order_id}`
-  }));
+  const billingHistory: BillingHistory[] = [];
 
   // Mock payment methods for now - in real app, integrate with Stripe/WooCommerce
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
