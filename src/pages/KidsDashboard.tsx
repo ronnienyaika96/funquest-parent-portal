@@ -22,23 +22,6 @@ const newAdventuresGames = [
   { id: 'ocean-dive', title: 'Ocean World', emoji: '🐠', color: 'bg-gradient-to-br from-cyan-400 to-blue-600', isNew: true },
   { id: 'dino-adventure', title: 'Dino Land', emoji: '🦕', color: 'bg-gradient-to-br from-emerald-400 to-teal-600', isNew: true },
   { id: 'cooking-fun', title: 'Cooking Time', emoji: '🍳', color: 'bg-gradient-to-br from-amber-400 to-orange-500', isNew: true },
-  { id: 'garden-grow', title: 'Plant & Grow', emoji: '🌻', color: 'bg-gradient-to-br from-lime-400 to-green-600', isNew: true },
-];
-
-const funWithLettersGames = [
-  { id: 'letter-b', title: 'Letter B', emoji: '🅱️', color: 'bg-gradient-to-br from-blue-400 to-blue-600' },
-  { id: 'letter-c', title: 'Letter C', emoji: '©️', color: 'bg-gradient-to-br from-sky-400 to-cyan-600' },
-  { id: 'letter-d', title: 'Letter D', emoji: '🔷', color: 'bg-gradient-to-br from-teal-400 to-teal-600' },
-  { id: 'letter-e', title: 'Letter E', emoji: '📧', color: 'bg-gradient-to-br from-green-400 to-emerald-600' },
-  { id: 'vowels', title: 'All Vowels', emoji: '🗣️', color: 'bg-gradient-to-br from-violet-400 to-purple-600' },
-];
-
-const numberFunGames = [
-  { id: 'count-10', title: 'Count to 10', emoji: '🔟', color: 'bg-gradient-to-br from-yellow-400 to-amber-500' },
-  { id: 'addition', title: 'Add It Up!', emoji: '➕', color: 'bg-gradient-to-br from-green-400 to-green-600' },
-  { id: 'matching', title: 'Match Numbers', emoji: '🎯', color: 'bg-gradient-to-br from-red-400 to-rose-600' },
-  { id: 'bigger-smaller', title: 'Big or Small?', emoji: '📏', color: 'bg-gradient-to-br from-blue-400 to-indigo-600' },
-  { id: 'number-order', title: 'Put in Order', emoji: '📊', color: 'bg-gradient-to-br from-purple-400 to-purple-600' },
 ];
 
 const KidsDashboard = () => {
@@ -107,19 +90,6 @@ const KidsDashboard = () => {
           onGameClick={handleGameClick}
         />
 
-        <GameCarousel
-          title="Fun with Letters"
-          titleEmoji="📚"
-          games={funWithLettersGames}
-          onGameClick={handleGameClick}
-        />
-
-        <GameCarousel
-          title="Number Fun"
-          titleEmoji="🔢"
-          games={numberFunGames}
-          onGameClick={handleGameClick}
-        />
       </main>
 
       {/* Learning Path Map Modal */}

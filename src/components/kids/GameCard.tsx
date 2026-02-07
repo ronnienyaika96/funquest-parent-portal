@@ -20,7 +20,7 @@ const GameCard = ({ title, emoji, color, progress, isNew, onClick }: GameCardPro
       className="relative cursor-pointer flex-shrink-0"
     >
       <div 
-        className={`w-40 h-48 sm:w-48 sm:h-56 rounded-3xl shadow-xl flex flex-col items-center justify-center relative overflow-hidden ${color}`}
+        className={`w-52 h-60 sm:w-60 sm:h-72 rounded-3xl shadow-xl flex flex-col items-center justify-center relative overflow-hidden ${color}`}
       >
         {/* Decorative circles */}
         <div className="absolute top-4 left-4 w-8 h-8 bg-white/20 rounded-full" />
