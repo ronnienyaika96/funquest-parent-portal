@@ -56,9 +56,9 @@ const GameCarousel = ({ title, titleEmoji, games, onGameClick }: GameCarouselPro
         </button>
 
         {/* Scrollable Container */}
-        <div
+         <div
           ref={scrollRef}
-          className="flex gap-4 sm:gap-5 overflow-x-auto scrollbar-hide px-4 sm:px-6 py-2"
+          className="flex gap-4 sm:gap-6 overflow-x-auto scrollbar-hide px-4 sm:px-6 py-2 sm:flex-wrap sm:overflow-x-visible sm:justify-center"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {games.map((game, index) => (
