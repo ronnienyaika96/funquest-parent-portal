@@ -46,7 +46,7 @@ export function useActivities() {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Check if user is admin
+  // Check if user is admin using the has_role function
   useEffect(() => {
     const checkAdmin = async () => {
       if (!user) {
@@ -54,13 +54,10 @@ export function useActivities() {
         return;
       }
 
-      const { data, error } = await supabase
-        .from('admin_roles')
-        .select('id')
-        .eq('user_id', user.id)
-        .maybeSingle();
+      const { data, error } = await (supabase as any)
+        .rpc('has_role', { _user_id: user.id, _role: 'admin' });
 
-      setIsAdmin(!error && !!data);
+      setIsAdmin(!error && data === true);
     };
 
     checkAdmin();
@@ -70,7 +67,7 @@ export function useActivities() {
   const fetchActivities = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('activities')
         .select('*')
         .order('created_at', { ascending: false });
@@ -87,11 +84,6 @@ export function useActivities() {
       setActivities(mapped);
     } catch (error: any) {
       console.error('Error fetching activities:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to fetch activities',
-        variant: 'destructive',
-      });
     } finally {
       setLoading(false);
     }
@@ -103,12 +95,11 @@ export function useActivities() {
     }
   }, [isAdmin]);
 
-  // Create activity
   const createActivity = async (input: CreateActivityInput) => {
     if (!user) return null;
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('activities')
         .insert({
           name: input.name,
@@ -127,28 +118,18 @@ export function useActivities() {
 
       if (error) throw error;
 
-      toast({
-        title: 'Success',
-        description: 'Activity created successfully',
-      });
-
+      toast({ title: 'Success', description: 'Activity created successfully' });
       await fetchActivities();
       return data;
     } catch (error: any) {
       console.error('Error creating activity:', error);
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to create activity',
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: error.message || 'Failed to create activity', variant: 'destructive' });
       return null;
     }
   };
 
-  // Update activity
   const updateActivity = async (id: string, updates: Partial<CreateActivityInput>) => {
     try {
-      // Convert to JSON-safe format for Supabase
       const dbUpdates: Record<string, any> = {};
       if (updates.name !== undefined) dbUpdates.name = updates.name;
       if (updates.description !== undefined) dbUpdates.description = updates.description;
@@ -160,66 +141,47 @@ export function useActivities() {
       if (updates.images !== undefined) dbUpdates.images = JSON.parse(JSON.stringify(updates.images));
       if (updates.audio_urls !== undefined) dbUpdates.audio_urls = JSON.parse(JSON.stringify(updates.audio_urls));
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('activities')
         .update(dbUpdates)
         .eq('id', id);
 
       if (error) throw error;
 
-      toast({
-        title: 'Success',
-        description: 'Activity updated successfully',
-      });
-
+      toast({ title: 'Success', description: 'Activity updated successfully' });
       await fetchActivities();
       return true;
     } catch (error: any) {
       console.error('Error updating activity:', error);
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to update activity',
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: error.message || 'Failed to update activity', variant: 'destructive' });
       return false;
     }
   };
 
-  // Delete activity
   const deleteActivity = async (id: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('activities')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
 
-      toast({
-        title: 'Success',
-        description: 'Activity deleted successfully',
-      });
-
+      toast({ title: 'Success', description: 'Activity deleted successfully' });
       await fetchActivities();
       return true;
     } catch (error: any) {
       console.error('Error deleting activity:', error);
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to delete activity',
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: error.message || 'Failed to delete activity', variant: 'destructive' });
       return false;
     }
   };
 
-  // Toggle publish status
   const togglePublish = async (id: string, currentStatus: string) => {
     const newStatus = currentStatus === 'published' ? 'draft' : 'published';
     return updateActivity(id, { status: newStatus });
   };
 
-  // Upload file to storage
   const uploadFile = async (file: File, folder: string = 'activities') => {
     if (!user) return null;
 
@@ -240,11 +202,7 @@ export function useActivities() {
       return publicUrl;
     } catch (error: any) {
       console.error('Error uploading file:', error);
-      toast({
-        title: 'Upload Error',
-        description: error.message || 'Failed to upload file',
-        variant: 'destructive',
-      });
+      toast({ title: 'Upload Error', description: error.message || 'Failed to upload file', variant: 'destructive' });
       return null;
     }
   };

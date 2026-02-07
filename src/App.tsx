@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
 import NotFound from "./pages/NotFound";
+import AuthPage from "./pages/AuthPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import OrderConfirmation from "./pages/OrderConfirmation";
 import ResetPassword from "./pages/ResetPassword";
@@ -35,6 +36,9 @@ const App = () => (
             
             {/* Admin Panel */}
             <Route path="/admin" element={<AdminPanel />} />
+            
+            {/* Auth */}
+            <Route path="/auth" element={<AuthPage />} />
             
             {/* Public Routes */}
             <Route path="/checkout" element={<CheckoutPage />} />
