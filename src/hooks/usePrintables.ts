@@ -23,7 +23,6 @@ export interface Printable {
 export function usePrintables() {
   const queryClient = useQueryClient();
 
-  // Fetch all active printables
   const {
     data: printables,
     isLoading,
@@ -31,33 +30,29 @@ export function usePrintables() {
   } = useQuery({
     queryKey: ['printables'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('printables')
         .select('*')
         .eq('status', 'active')
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as Printable[];
+      return (data || []) as Printable[];
     },
   });
 
-  // Get printables by category
   const getPrintablesByCategory = (category: string) => {
     return printables?.filter(printable => 
       category === 'All' || printable.category === category
     ) || [];
   };
 
-  // Get printable by ID
   const getPrintableById = (id: string) => {
     return printables?.find(printable => printable.id === id);
   };
 
-  // Search printables
   const searchPrintables = (searchTerm: string) => {
     if (!searchTerm.trim()) return printables || [];
-    
     const term = searchTerm.toLowerCase();
     return printables?.filter(printable =>
       printable.title.toLowerCase().includes(term) ||
@@ -67,22 +62,18 @@ export function usePrintables() {
     ) || [];
   };
 
-  // Get categories
   const getCategories = () => {
     if (!printables) return ['All'];
-    
     const categories = Array.from(new Set(printables.map(p => p.category)));
     return ['All', ...categories];
   };
 
-  // Increment download count
   const incrementDownloads = useMutation({
     mutationFn: async (printableId: string) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('printables')
-        .update({ downloads: printables?.find(p => p.id === printableId)?.downloads + 1 || 1 })
+        .update({ downloads: (printables?.find(p => p.id === printableId)?.downloads || 0) + 1 })
         .eq('id', printableId);
-      
       if (error) throw error;
     },
     onSuccess: () => {

@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -17,7 +16,6 @@ export interface ChildProfile {
 export function useChildProfiles() {
   const queryClient = useQueryClient();
 
-  // Fetch all children for the current user
   const {
     data: children,
     isLoading,
@@ -25,30 +23,24 @@ export function useChildProfiles() {
   } = useQuery({
     queryKey: ['child_profiles'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('child_profiles')
         .select('*')
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data || [];
+      return (data || []) as ChildProfile[];
     },
   });
 
-  // Add child profile
   const addChild = useMutation({
     mutationFn: async (profile: Omit<ChildProfile, 'id' | 'created_at' | 'updated_at' | 'parent_id'>) => {
-      // Get current user ID
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError) throw userError;
       if (!user || !user.id) throw new Error('User not authenticated');
 
-      // Insert the child with parent_id = user.id
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('child_profiles')
-        .insert([{
-          ...profile,
-          parent_id: user.id
-        }])
+        .insert([{ ...profile, parent_id: user.id }])
         .select();
       if (error) throw error;
       return data?.[0];
@@ -58,10 +50,9 @@ export function useChildProfiles() {
     }
   });
 
-  // Delete child profile
   const deleteChild = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('child_profiles').delete().eq('id', id);
+      const { error } = await (supabase as any).from('child_profiles').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -71,4 +62,3 @@ export function useChildProfiles() {
 
   return { children, isLoading, error, addChild, deleteChild };
 }
-

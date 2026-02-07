@@ -5,26 +5,32 @@ import { supabase } from '@/integrations/supabase/client';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { TrendingUp, Star, Clock, Target } from 'lucide-react';
 
+interface ProgressItem {
+  id: string;
+  letter: string;
+  score: number;
+  attempts: number;
+  completed: boolean;
+}
+
 const ProgressStats = () => {
-  // Fetch tracing progress data
   const { data: progressData, isLoading } = useQuery({
     queryKey: ['tracing-progress-stats'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('tracing_progress')
         .select('*')
         .eq('user_id', user.id)
         .order('letter', { ascending: true });
 
       if (error) throw error;
-      return data || [];
+      return (data || []) as ProgressItem[];
     }
   });
 
-  // Transform data for chart
   const chartData = progressData?.slice(0, 10).map(item => ({
     name: item.letter.toUpperCase(),
     score: item.score,
@@ -32,15 +38,12 @@ const ProgressStats = () => {
     completed: item.completed
   })) || [];
 
-  // Calculate summary stats
   const totalLetters = progressData?.length || 0;
   const completedLetters = progressData?.filter(p => p.completed).length || 0;
   const avgScore = progressData?.length 
     ? Math.round(progressData.reduce((sum, p) => sum + p.score, 0) / progressData.length)
     : 0;
   const totalAttempts = progressData?.reduce((sum, p) => sum + p.attempts, 0) || 0;
-
-  const colors = ['#0ea5e9', '#22c55e', '#eab308', '#f97316'];
 
   const statCards = [
     { label: 'Letters Learned', value: `${completedLetters}/${totalLetters || 26}`, icon: Target, color: 'bg-sky-100 text-sky-600' },
@@ -59,7 +62,6 @@ const ProgressStats = () => {
 
   return (
     <div className="space-y-8">
-      {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {statCards.map((stat, index) => (
           <motion.div
@@ -78,7 +80,6 @@ const ProgressStats = () => {
         ))}
       </div>
 
-      {/* Bar Chart */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -91,34 +92,15 @@ const ProgressStats = () => {
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={chartData} margin={{ top: 20, right: 20, bottom: 20, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis 
-                dataKey="name" 
-                tick={{ fill: '#6b7280', fontSize: 12 }}
-                axisLine={{ stroke: '#e5e7eb' }}
-              />
-              <YAxis 
-                tick={{ fill: '#6b7280', fontSize: 12 }}
-                axisLine={{ stroke: '#e5e7eb' }}
-                domain={[0, 100]}
-              />
+              <XAxis dataKey="name" tick={{ fill: '#6b7280', fontSize: 12 }} axisLine={{ stroke: '#e5e7eb' }} />
+              <YAxis tick={{ fill: '#6b7280', fontSize: 12 }} axisLine={{ stroke: '#e5e7eb' }} domain={[0, 100]} />
               <Tooltip
-                contentStyle={{
-                  backgroundColor: 'white',
-                  border: 'none',
-                  borderRadius: '12px',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
-                }}
-                formatter={(value: number, name: string) => [
-                  `${value}${name === 'score' ? '%' : ''}`,
-                  name === 'score' ? 'Score' : 'Attempts'
-                ]}
+                contentStyle={{ backgroundColor: 'white', border: 'none', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
+                formatter={(value: number, name: string) => [`${value}${name === 'score' ? '%' : ''}`, name === 'score' ? 'Score' : 'Attempts']}
               />
               <Bar dataKey="score" radius={[8, 8, 0, 0]}>
                 {chartData.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={entry.completed ? '#22c55e' : '#0ea5e9'} 
-                  />
+                  <Cell key={`cell-${index}`} fill={entry.completed ? '#22c55e' : '#0ea5e9'} />
                 ))}
               </Bar>
             </BarChart>
@@ -132,7 +114,6 @@ const ProgressStats = () => {
         )}
       </motion.div>
 
-      {/* Recent Activity */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -144,10 +125,7 @@ const ProgressStats = () => {
         {progressData && progressData.length > 0 ? (
           <div className="space-y-3">
             {progressData.slice(0, 5).map((item) => (
-              <div 
-                key={item.id}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-xl"
-              >
+              <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg ${
                     item.completed ? 'bg-emerald-100 text-emerald-600' : 'bg-sky-100 text-sky-600'

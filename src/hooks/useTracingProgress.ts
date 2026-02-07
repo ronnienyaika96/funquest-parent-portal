@@ -18,7 +18,6 @@ export function useTracingProgress(letter?: string) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  // Fetch progress for a specific letter or all letters
   const {
     data: progress,
     isLoading,
@@ -28,7 +27,7 @@ export function useTracingProgress(letter?: string) {
     queryFn: async () => {
       if (!user?.id) throw new Error('User not authenticated');
       
-      let query = supabase
+      let query = (supabase as any)
         .from('tracing_progress')
         .select('*')
         .eq('user_id', user.id);
@@ -40,12 +39,11 @@ export function useTracingProgress(letter?: string) {
       const { data, error } = await query.order('last_traced', { ascending: false });
       
       if (error) throw error;
-      return data || [];
+      return (data || []) as TracingProgress[];
     },
     enabled: !!user?.id,
   });
 
-  // Save or update progress for a letter
   const saveProgress = useMutation({
     mutationFn: async ({
       letter,
@@ -58,16 +56,14 @@ export function useTracingProgress(letter?: string) {
     }) => {
       if (!user?.id) throw new Error('User not authenticated');
 
-      // Check if progress already exists for this letter
       const existingProgress = progress?.find(p => p.letter === letter);
       
       if (existingProgress) {
-        // Update existing progress
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('tracing_progress')
           .update({
             completed,
-            score: Math.max(score, existingProgress.score), // Keep the best score
+            score: Math.max(score, existingProgress.score),
             attempts: existingProgress.attempts + 1,
             last_traced: new Date().toISOString(),
             updated_at: new Date().toISOString(),
@@ -78,8 +74,7 @@ export function useTracingProgress(letter?: string) {
         if (error) throw error;
         return data?.[0];
       } else {
-        // Create new progress record
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('tracing_progress')
           .insert({
             user_id: user.id,
@@ -100,18 +95,14 @@ export function useTracingProgress(letter?: string) {
     },
   });
 
-  // Get progress stats
   const getProgressStats = () => {
     if (!progress) return { completed: 0, total: 26, percentage: 0 };
-    
     const completed = progress.filter(p => p.completed).length;
-    const total = 26; // 26 letters in alphabet
+    const total = 26;
     const percentage = Math.round((completed / total) * 100);
-    
     return { completed, total, percentage };
   };
 
-  // Get progress for specific letter
   const getLetterProgress = (letter: string) => {
     return progress?.find(p => p.letter.toLowerCase() === letter.toLowerCase());
   };
