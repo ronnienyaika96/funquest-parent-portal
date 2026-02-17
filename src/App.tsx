@@ -14,6 +14,7 @@ import LandingPage from "./pages/LandingPage";
 import KidsDashboard from "./pages/KidsDashboard";
 import ParentDashboard from "./pages/ParentDashboard";
 import AdminPanel from "./pages/AdminPanel";
+import AdminAuthPage from "./pages/AdminAuthPage";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ const App = () => (
             
             {/* Admin Panel */}
             <Route path="/admin" element={<AdminPanel />} />
+            <Route path="/admin/login" element={<AdminAuthPage />} />
             
             {/* Auth */}
             <Route path="/auth" element={<AuthPage />} />

@@ -14,6 +14,184 @@ export type Database = {
   }
   public: {
     Tables: {
+      activities: {
+        Row: {
+          age_max: number | null
+          age_min: number | null
+          created_at: string | null
+          id: string
+          is_published: boolean | null
+          title: string
+          type: string
+          value: string | null
+        }
+        Insert: {
+          age_max?: number | null
+          age_min?: number | null
+          created_at?: string | null
+          id?: string
+          is_published?: boolean | null
+          title: string
+          type: string
+          value?: string | null
+        }
+        Update: {
+          age_max?: number | null
+          age_min?: number | null
+          created_at?: string | null
+          id?: string
+          is_published?: boolean | null
+          title?: string
+          type?: string
+          value?: string | null
+        }
+        Relationships: []
+      }
+      activity_steps: {
+        Row: {
+          activity_id: string | null
+          created_at: string | null
+          data: Json
+          game_type: string
+          id: string
+          instruction_audio_url: string | null
+          step_order: number
+        }
+        Insert: {
+          activity_id?: string | null
+          created_at?: string | null
+          data: Json
+          game_type: string
+          id?: string
+          instruction_audio_url?: string | null
+          step_order: number
+        }
+        Update: {
+          activity_id?: string | null
+          created_at?: string | null
+          data?: Json
+          game_type?: string
+          id?: string
+          instruction_audio_url?: string | null
+          step_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_steps_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "activities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admins: {
+        Row: {
+          created_at: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      badges: {
+        Row: {
+          condition: Json
+          icon: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          condition: Json
+          icon?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          condition?: Json
+          icon?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      child_badges: {
+        Row: {
+          badge_id: string | null
+          child_id: string | null
+          earned_at: string | null
+          id: string
+        }
+        Insert: {
+          badge_id?: string | null
+          child_id?: string | null
+          earned_at?: string | null
+          id?: string
+        }
+        Update: {
+          badge_id?: string | null
+          child_id?: string | null
+          earned_at?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "child_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "child_badges_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "child_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      child_profiles: {
+        Row: {
+          age: number
+          avatar: string | null
+          created_at: string | null
+          id: string
+          name: string
+          parent_id: string | null
+        }
+        Insert: {
+          age: number
+          avatar?: string | null
+          created_at?: string | null
+          id?: string
+          name: string
+          parent_id?: string | null
+        }
+        Update: {
+          age?: number
+          avatar?: string | null
+          created_at?: string | null
+          id?: string
+          name?: string
+          parent_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "child_profiles_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -44,6 +222,83 @@ export type Database = {
         }
         Relationships: []
       }
+      progress: {
+        Row: {
+          activity_id: string | null
+          child_id: string | null
+          completed: boolean | null
+          id: string
+          stars_earned: number | null
+          time_spent_seconds: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          activity_id?: string | null
+          child_id?: string | null
+          completed?: boolean | null
+          id?: string
+          stars_earned?: number | null
+          time_spent_seconds?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          activity_id?: string | null
+          child_id?: string | null
+          completed?: boolean | null
+          id?: string
+          stars_earned?: number | null
+          time_spent_seconds?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "progress_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "activities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "progress_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "child_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscriptions: {
+        Row: {
+          expires_at: string | null
+          id: string
+          plan: string | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          expires_at?: string | null
+          id?: string
+          plan?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          expires_at?: string | null
+          id?: string
+          plan?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -59,6 +314,27 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      users: {
+        Row: {
+          created_at: string | null
+          full_name: string | null
+          id: string
+          role: string
+        }
+        Insert: {
+          created_at?: string | null
+          full_name?: string | null
+          id: string
+          role?: string
+        }
+        Update: {
+          created_at?: string | null
+          full_name?: string | null
+          id?: string
+          role?: string
         }
         Relationships: []
       }
