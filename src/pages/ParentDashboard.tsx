@@ -2,14 +2,16 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, CreditCard, BarChart3, Settings, Sparkles } from 'lucide-react';
+import { ArrowLeft, CreditCard, BarChart3, Settings, Sparkles, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 import PricingSection from '@/components/parent/PricingSection';
 import ProgressStats from '@/components/parent/ProgressStats';
 import SettingsSection from '@/components/parent/SettingsSection';
 
 const ParentDashboard = () => {
   const navigate = useNavigate();
+  const { signOut } = useAuth();
   const [activeTab, setActiveTab] = useState('progress');
 
   return (
@@ -36,6 +38,15 @@ const ParentDashboard = () => {
               </div>
             </div>
           </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => signOut(() => navigate('/auth'))}
+            className="text-gray-600 hover:text-gray-800 hover:bg-sky-100 rounded-xl"
+          >
+            <LogOut className="w-4 h-4 mr-1" />
+            Sign Out
+          </Button>
         </div>
       </header>
 

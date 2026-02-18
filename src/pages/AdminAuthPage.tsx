@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, ShieldCheck, User } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ShieldCheck, User, KeyRound } from 'lucide-react';
 import { z } from 'zod';
 
 const loginSchema = z.object({
@@ -30,6 +30,8 @@ const AdminAuthPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [forgotMode, setForgotMode] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
 
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -52,6 +54,22 @@ const AdminAuthPage = () => {
       checkAdmin();
     }
   }, [user, navigate]);
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotEmail) return;
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setLoading(false);
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Check your email 📧', description: 'A password reset link has been sent.' });
+      setForgotMode(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -149,108 +167,154 @@ const AdminAuthPage = () => {
           </div>
           <h1 className="text-3xl font-bold text-white">Admin Portal</h1>
           <p className="text-slate-400 mt-1">
-            {isSignUp ? 'Create an admin account' : 'Sign in to access the admin panel'}
+            {forgotMode ? 'Enter your email to reset your password.' : isSignUp ? 'Create an admin account' : 'Sign in to access the admin panel'}
           </p>
         </div>
 
         {/* Card */}
         <div className="bg-slate-800/80 backdrop-blur-sm rounded-2xl border border-slate-700 p-8 shadow-2xl">
-          {/* Toggle */}
-          <div className="flex rounded-xl bg-slate-700/50 p-1 mb-6">
-            <button
-              type="button"
-              onClick={() => { setIsSignUp(false); setErrors({}); }}
-              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${!isSignUp ? 'bg-emerald-500 text-white shadow' : 'text-slate-400 hover:text-white'}`}
-            >
-              Sign In
-            </button>
-            <button
-              type="button"
-              onClick={() => { setIsSignUp(true); setErrors({}); }}
-              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${isSignUp ? 'bg-emerald-500 text-white shadow' : 'text-slate-400 hover:text-white'}`}
-            >
-              Sign Up
-            </button>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {isSignUp && (
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <Input
-                      type="text"
-                      placeholder="First name"
-                      value={firstName}
-                      onChange={e => setFirstName(e.target.value)}
-                      className="pl-10 rounded-xl bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500/20"
-                    />
-                  </div>
-                  {errors.firstName && <p className="text-red-400 text-xs mt-1">{errors.firstName}</p>}
-                </div>
-                <div>
-                  <Input
-                    type="text"
-                    placeholder="Last name"
-                    value={lastName}
-                    onChange={e => setLastName(e.target.value)}
-                    className="rounded-xl bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500/20"
-                  />
-                  {errors.lastName && <p className="text-red-400 text-xs mt-1">{errors.lastName}</p>}
-                </div>
+          {forgotMode ? (
+            <form onSubmit={handleForgotPassword} className="space-y-4">
+              <div className="flex items-center gap-2 mb-4">
+                <KeyRound className="w-5 h-5 text-emerald-400" />
+                <h2 className="text-lg font-semibold text-white">Reset Password</h2>
               </div>
-            )}
-
-            <div>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <Input
                   type="email"
                   placeholder="Admin email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  value={forgotEmail}
+                  onChange={e => setForgotEmail(e.target.value)}
                   className="pl-10 rounded-xl bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500/20"
+                  required
                 />
               </div>
-              {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email}</p>}
-            </div>
-
-            <div>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <Input
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  className="pl-10 pr-10 rounded-xl bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500/20"
-                />
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-lg py-6 shadow-lg shadow-emerald-500/25"
+              >
+                {loading ? 'Sending...' : 'Send Reset Link'}
+              </Button>
+              <p className="text-center text-sm text-slate-400">
+                <button type="button" onClick={() => setForgotMode(false)} className="text-emerald-400 font-semibold hover:underline">
+                  ← Back to Sign In
+                </button>
+              </p>
+            </form>
+          ) : (
+            <>
+              {/* Toggle */}
+              <div className="flex rounded-xl bg-slate-700/50 p-1 mb-6">
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                  onClick={() => { setIsSignUp(false); setErrors({}); }}
+                  className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${!isSignUp ? 'bg-emerald-500 text-white shadow' : 'text-slate-400 hover:text-white'}`}
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  Sign In
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setIsSignUp(true); setErrors({}); }}
+                  className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${isSignUp ? 'bg-emerald-500 text-white shadow' : 'text-slate-400 hover:text-white'}`}
+                >
+                  Sign Up
                 </button>
               </div>
-              {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password}</p>}
-            </div>
 
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-lg py-6 shadow-lg shadow-emerald-500/25"
-            >
-              {loading ? 'Processing...' : isSignUp ? 'Create Account' : 'Sign In as Admin'}
-            </Button>
-          </form>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {isSignUp && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Input
+                          type="text"
+                          placeholder="First name"
+                          value={firstName}
+                          onChange={e => setFirstName(e.target.value)}
+                          className="pl-10 rounded-xl bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500/20"
+                        />
+                      </div>
+                      {errors.firstName && <p className="text-red-400 text-xs mt-1">{errors.firstName}</p>}
+                    </div>
+                    <div>
+                      <Input
+                        type="text"
+                        placeholder="Last name"
+                        value={lastName}
+                        onChange={e => setLastName(e.target.value)}
+                        className="rounded-xl bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500/20"
+                      />
+                      {errors.lastName && <p className="text-red-400 text-xs mt-1">{errors.lastName}</p>}
+                    </div>
+                  </div>
+                )}
 
-          <p className="text-center text-xs text-slate-500 mt-6">
-            {isSignUp
-              ? 'After signup, an existing admin must assign you the admin role.'
-              : 'This portal is restricted to authorized administrators only.'}
-          </p>
+                <div>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Input
+                      type="email"
+                      placeholder="Admin email"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      className="pl-10 rounded-xl bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500/20"
+                    />
+                  </div>
+                  {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email}</p>}
+                </div>
+
+                <div>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Input
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Password"
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      className="pl-10 pr-10 rounded-xl bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500/20"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password}</p>}
+                </div>
+
+                {!isSignUp && (
+                  <div className="text-right">
+                    <button
+                      type="button"
+                      onClick={() => setForgotMode(true)}
+                      className="text-sm text-emerald-400 hover:underline"
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+                )}
+
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-lg py-6 shadow-lg shadow-emerald-500/25"
+                >
+                  {loading ? 'Processing...' : isSignUp ? 'Create Account' : 'Sign In as Admin'}
+                </Button>
+              </form>
+
+              <p className="text-center text-xs text-slate-500 mt-6">
+                {isSignUp
+                  ? 'After signup, an existing admin must assign you the admin role.'
+                  : 'This portal is restricted to authorized administrators only.'}
+              </p>
+            </>
+          )}
         </div>
 
         {/* Back to home */}
