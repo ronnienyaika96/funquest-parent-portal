@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ActivityList } from '@/components/admin/ActivityList';
 import { ActivityForm } from '@/components/admin/ActivityForm';
+import { AdminOverview } from '@/components/admin/AdminOverview';
 import { 
   Plus, 
   LayoutDashboard, 
@@ -15,7 +16,8 @@ import {
   LogOut,
   Loader2,
   ShieldX,
-  ArrowLeft
+  ArrowLeft,
+  BarChart3
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -132,8 +134,12 @@ export default function AdminPanel() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs defaultValue="activities" className="space-y-6">
+        <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="bg-white shadow-sm">
+            <TabsTrigger value="overview" className="gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Overview
+            </TabsTrigger>
             <TabsTrigger value="activities" className="gap-2">
               <FileText className="h-4 w-4" />
               Activities
@@ -143,6 +149,11 @@ export default function AdminPanel() {
               Settings
             </TabsTrigger>
           </TabsList>
+
+          {/* Overview Tab */}
+          <TabsContent value="overview">
+            <AdminOverview />
+          </TabsContent>
 
           {/* Activities Tab */}
           <TabsContent value="activities" className="space-y-6">
