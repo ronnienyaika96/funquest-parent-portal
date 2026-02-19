@@ -8,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ActivityList } from '@/components/admin/ActivityList';
 import { ActivityForm } from '@/components/admin/ActivityForm';
 import { AdminOverview } from '@/components/admin/AdminOverview';
+import { AssetsManager } from '@/components/admin/AssetsManager';
+import { UsersManager } from '@/components/admin/UsersManager';
 import { 
   Plus, 
   LayoutDashboard, 
@@ -17,7 +19,9 @@ import {
   Loader2,
   ShieldX,
   ArrowLeft,
-  BarChart3
+  BarChart3,
+  FolderOpen,
+  Users,
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -144,6 +148,14 @@ export default function AdminPanel() {
               <FileText className="h-4 w-4" />
               Activities
             </TabsTrigger>
+            <TabsTrigger value="assets" className="gap-2">
+              <FolderOpen className="h-4 w-4" />
+              Assets
+            </TabsTrigger>
+            <TabsTrigger value="users" className="gap-2">
+              <Users className="h-4 w-4" />
+              Users
+            </TabsTrigger>
             <TabsTrigger value="settings" className="gap-2">
               <Settings className="h-4 w-4" />
               Settings
@@ -207,6 +219,16 @@ export default function AdminPanel() {
               onDelete={(id) => setDeleteId(id)}
               onTogglePublish={togglePublish}
             />
+          </TabsContent>
+
+          {/* Assets Tab */}
+          <TabsContent value="assets">
+            <AssetsManager />
+          </TabsContent>
+
+          {/* Users Tab */}
+          <TabsContent value="users">
+            <UsersManager />
           </TabsContent>
 
           {/* Settings Tab */}
