@@ -4,9 +4,24 @@ import { useChildProfiles } from '@/hooks/useChildProfiles';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { User, Palette, CreditCard, Bell, Shield, Trash2, Plus, Save } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  User, Palette, CreditCard, Bell, Shield, Trash2, Plus, Save,
+  Volume2, VolumeX, Clock, Gauge, AlertTriangle
+} from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 const avatarOptions = ['🦁', '🐯', '🐻', '🐼', '🦊', '🐰', '🐸', '🦄', '🐲', '🦋', '🌟', '🎈'];
 
@@ -17,6 +32,11 @@ const SettingsSection = () => {
   const [childName, setChildName] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState('🦁');
   const [showAddChild, setShowAddChild] = useState(false);
+
+  // Parent Controls State
+  const [playtimeLimit, setPlaytimeLimit] = useState([30]);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [difficulty, setDifficulty] = useState<'easy' | 'normal'>('easy');
 
   const handleSaveChild = async () => {
     if (!childName.trim()) {
@@ -32,7 +52,7 @@ const SettingsSection = () => {
         school: null,
         interests: null
       });
-      
+
       toast({ title: 'Child profile added! 🎉' });
       setChildName('');
       setSelectedAvatar('🦁');
@@ -51,26 +71,9 @@ const SettingsSection = () => {
     }
   };
 
-  const settingsSections = [
-    {
-      icon: Bell,
-      title: 'Notifications',
-      description: 'Manage email and push notifications',
-      action: 'Configure'
-    },
-    {
-      icon: Shield,
-      title: 'Privacy & Safety',
-      description: 'Parental controls and content filters',
-      action: 'Manage'
-    },
-    {
-      icon: Palette,
-      title: 'Appearance',
-      description: 'Theme and display preferences',
-      action: 'Customize'
-    }
-  ];
+  const handleResetProgress = () => {
+    toast({ title: 'Progress has been reset', description: 'All learning data has been cleared.' });
+  };
 
   return (
     <div className="space-y-8">
@@ -206,16 +209,132 @@ const SettingsSection = () => {
         )}
       </motion.div>
 
-      {/* Other Settings */}
+      {/* Parent Controls */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
         className="bg-white rounded-3xl p-6 shadow-md border border-gray-100"
       >
+        <h3 className="text-lg font-bold text-gray-800 mb-5">Parent Controls</h3>
+        <div className="space-y-6">
+          {/* Daily Playtime Limit */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-sky-600" />
+                <Label className="text-gray-700 font-medium">Daily Playtime Limit</Label>
+              </div>
+              <span className="text-sm font-semibold text-sky-600">{playtimeLimit[0]} min</span>
+            </div>
+            <Slider
+              value={playtimeLimit}
+              onValueChange={setPlaytimeLimit}
+              min={10}
+              max={120}
+              step={5}
+              className="w-full"
+            />
+            <div className="flex justify-between text-xs text-gray-400">
+              <span>10 min</span>
+              <span>120 min</span>
+            </div>
+          </div>
+
+          {/* Sound Toggle */}
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+            <div className="flex items-center gap-3">
+              {soundEnabled ? (
+                <Volume2 className="w-5 h-5 text-emerald-600" />
+              ) : (
+                <VolumeX className="w-5 h-5 text-gray-400" />
+              )}
+              <div>
+                <p className="font-medium text-gray-800">Sound Effects</p>
+                <p className="text-xs text-gray-500">Game sounds and audio feedback</p>
+              </div>
+            </div>
+            <Switch
+              checked={soundEnabled}
+              onCheckedChange={setSoundEnabled}
+              className="data-[state=checked]:bg-emerald-500"
+            />
+          </div>
+
+          {/* Difficulty Preference */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Gauge className="w-4 h-4 text-purple-600" />
+              <Label className="text-gray-700 font-medium">Difficulty</Label>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {(['easy', 'normal'] as const).map(level => (
+                <button
+                  key={level}
+                  onClick={() => setDifficulty(level)}
+                  className={`p-3 rounded-xl border-2 text-sm font-medium transition-all ${
+                    difficulty === level
+                      ? 'border-sky-500 bg-sky-50 text-sky-700'
+                      : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                  }`}
+                >
+                  {level === 'easy' ? '🌱 Easy' : '🌟 Normal'}
+                  <p className="text-xs text-gray-500 mt-1">
+                    {level === 'easy' ? 'Gentle guidance & hints' : 'Standard challenge level'}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Reset Progress */}
+          <div className="pt-4 border-t border-gray-100">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="rounded-xl text-red-500 border-red-200 hover:bg-red-50 w-full"
+                >
+                  <AlertTriangle className="w-4 h-4 mr-2" />
+                  Reset All Progress
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Reset All Progress?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently delete all learning progress, scores, and achievements. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleResetProgress}
+                    className="bg-red-500 hover:bg-red-600"
+                  >
+                    Yes, Reset Everything
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Account Settings */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="bg-white rounded-3xl p-6 shadow-md border border-gray-100"
+      >
         <h3 className="text-lg font-bold text-gray-800 mb-4">Account Settings</h3>
         <div className="space-y-3">
-          {settingsSections.map((section, index) => (
+          {[
+            { icon: Bell, title: 'Notifications', description: 'Manage email and push notifications', action: 'Configure' },
+            { icon: Shield, title: 'Privacy & Safety', description: 'Parental controls and content filters', action: 'Manage' },
+            { icon: Palette, title: 'Appearance', description: 'Theme and display preferences', action: 'Customize' },
+          ].map((section) => (
             <div
               key={section.title}
               className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-colors cursor-pointer"
@@ -237,11 +356,11 @@ const SettingsSection = () => {
         </div>
       </motion.div>
 
-      {/* Subscription Management */}
+      {/* Subscription */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
+        transition={{ delay: 0.3 }}
         className="bg-white rounded-3xl p-6 shadow-md border border-gray-100"
       >
         <div className="flex items-center gap-3 mb-4">
@@ -253,27 +372,18 @@ const SettingsSection = () => {
             <p className="text-sm text-gray-500">Manage your billing and plan</p>
           </div>
         </div>
-
         <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 mb-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="font-semibold text-emerald-800">Free Plan</p>
               <p className="text-sm text-emerald-600">Basic access with limited games</p>
             </div>
-            <span className="bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-              Active
-            </span>
+            <span className="bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-full">Active</span>
           </div>
         </div>
-
         <div className="flex gap-3">
-          <Button className="bg-sky-500 hover:bg-sky-600 rounded-xl flex-1">
-            Upgrade Plan
-          </Button>
-          <Button 
-            variant="outline" 
-            className="rounded-xl text-red-500 border-red-200 hover:bg-red-50"
-          >
+          <Button className="bg-sky-500 hover:bg-sky-600 rounded-xl flex-1">Upgrade Plan</Button>
+          <Button variant="outline" className="rounded-xl text-red-500 border-red-200 hover:bg-red-50">
             Cancel Subscription
           </Button>
         </div>

@@ -5,14 +5,27 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, CreditCard, BarChart3, Settings, Sparkles, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useChildProfiles } from '@/hooks/useChildProfiles';
 import PricingSection from '@/components/parent/PricingSection';
 import ProgressStats from '@/components/parent/ProgressStats';
 import SettingsSection from '@/components/parent/SettingsSection';
+import ChildSelector from '@/components/parent/ChildSelector';
 
 const ParentDashboard = () => {
   const navigate = useNavigate();
   const { signOut } = useAuth();
+  const { children: childProfiles, isLoading: childrenLoading } = useChildProfiles();
   const [activeTab, setActiveTab] = useState('progress');
+  const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
+
+  // Auto-select first child
+  React.useEffect(() => {
+    if (childProfiles && childProfiles.length > 0 && !selectedChildId) {
+      setSelectedChildId(childProfiles[0].id);
+    }
+  }, [childProfiles, selectedChildId]);
+
+  const selectedChild = childProfiles?.find((c: any) => c.id === selectedChildId);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white">
@@ -51,7 +64,20 @@ const ParentDashboard = () => {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 py-8">
+      <main className="max-w-6xl mx-auto px-4 py-6 space-y-6">
+        {/* Child Selector - Top Priority */}
+        <ChildSelector
+          children={(childProfiles || []).map((c: any) => ({
+            id: c.id,
+            name: c.name,
+            avatar: c.avatar,
+            age: c.age_range ? parseInt(c.age_range) : (c.age || 4),
+          }))}
+          selectedChildId={selectedChildId}
+          onSelectChild={setSelectedChildId}
+          isLoading={childrenLoading}
+        />
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           {/* Tab Navigation */}
           <TabsList className="bg-white rounded-2xl p-1.5 shadow-md border border-gray-100 w-full md:w-auto">
@@ -86,7 +112,7 @@ const ParentDashboard = () => {
             transition={{ duration: 0.2 }}
           >
             <TabsContent value="progress" className="mt-0">
-              <ProgressStats />
+              <ProgressStats childId={selectedChildId} childName={selectedChild?.name} />
             </TabsContent>
 
             <TabsContent value="pricing" className="mt-0">
