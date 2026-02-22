@@ -305,6 +305,8 @@ export type Database = {
           activity_id: string | null
           child_id: string | null
           completed: boolean | null
+          completed_steps: Json
+          current_step_order: number
           id: string
           stars_earned: number | null
           time_spent_seconds: number | null
@@ -314,6 +316,8 @@ export type Database = {
           activity_id?: string | null
           child_id?: string | null
           completed?: boolean | null
+          completed_steps?: Json
+          current_step_order?: number
           id?: string
           stars_earned?: number | null
           time_spent_seconds?: number | null
@@ -323,6 +327,8 @@ export type Database = {
           activity_id?: string | null
           child_id?: string | null
           completed?: boolean | null
+          completed_steps?: Json
+          current_step_order?: number
           id?: string
           stars_earned?: number | null
           time_spent_seconds?: number | null
