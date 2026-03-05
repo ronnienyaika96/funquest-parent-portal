@@ -15,6 +15,8 @@ import KidsDashboard from "./pages/KidsDashboard";
 import ParentDashboard from "./pages/ParentDashboard";
 import AdminPanel from "./pages/AdminPanel";
 import AdminAuthPage from "./pages/AdminAuthPage";
+import ActivitiesPage from "./pages/ActivitiesPage";
+import PlayActivityPage from "./pages/PlayActivityPage";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +33,10 @@ const App = () => (
             
             {/* Kids Dashboard */}
             <Route path="/play" element={<KidsDashboard />} />
+            
+            {/* Activities & Game Player */}
+            <Route path="/activities" element={<ActivitiesPage />} />
+            <Route path="/play/:activityId" element={<PlayActivityPage />} />
             
             {/* Parent Dashboard */}
             <Route path="/parent" element={<ParentDashboard />} />
