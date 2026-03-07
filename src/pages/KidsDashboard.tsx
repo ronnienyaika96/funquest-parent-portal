@@ -39,11 +39,12 @@ interface ActivityWithSteps {
 const KidsDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { children: childProfiles, isLoading: childrenLoading } = useChildProfiles();
+  const { children: childProfiles, isLoading: childrenLoading, error: childrenError } = useChildProfiles();
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
   const [activities, setActivities] = useState<ActivityWithSteps[]>([]);
   const [progressMap, setProgressMap] = useState<Record<string, { completed: boolean; current_step_order: number; stars_earned: number }>>({});
-  const [loading, setLoading] = useState(true);
+  const [activitiesLoading, setActivitiesLoading] = useState(true);
+  const [activitiesError, setActivitiesError] = useState<string | null>(null);
   const [showLearningPath, setShowLearningPath] = useState(false);
   const [showParentalGate, setShowParentalGate] = useState(false);
 
@@ -58,41 +59,38 @@ const KidsDashboard = () => {
   useEffect(() => {
     if (!user) return;
     const fetchActivities = async () => {
-      setLoading(true);
+      setActivitiesLoading(true);
+      setActivitiesError(null);
       try {
-        // Fetch all activities
         const { data: allActivities, error: actErr } = await supabase
           .from('activities')
           .select('*')
           .order('created_at', { ascending: false });
 
-        if (actErr) { console.error('Error fetching activities:', actErr); setLoading(false); return; }
+        if (actErr) { console.error('Error fetching activities:', actErr); setActivitiesError(actErr.message); setActivitiesLoading(false); return; }
 
-        // Fetch step counts per activity
         const { data: steps, error: stepErr } = await supabase
           .from('activity_steps')
           .select('activity_id');
 
-        if (stepErr) { console.error('Error fetching steps:', stepErr); setLoading(false); return; }
+        if (stepErr) { console.error('Error fetching activity_steps:', stepErr); setActivitiesError(stepErr.message); setActivitiesLoading(false); return; }
 
-        // Count steps per activity
         const stepCounts: Record<string, number> = {};
         (steps || []).forEach((s: any) => {
           if (s.activity_id) stepCounts[s.activity_id] = (stepCounts[s.activity_id] || 0) + 1;
         });
 
-        // Filter: only activities with ≥1 step
         const withSteps = (allActivities || [])
           .filter((a: any) => (stepCounts[a.id] || 0) > 0)
           .map((a: any) => ({ ...a, step_count: stepCounts[a.id] || 0 }));
 
-        // Prefer published; if none published have steps, show all with steps
         const published = withSteps.filter((a: any) => a.is_published);
         setActivities(published.length > 0 ? published : withSteps);
-      } catch (err) {
+      } catch (err: any) {
         console.error('Unexpected error fetching activities:', err);
+        setActivitiesError(err?.message || 'Unknown error');
       } finally {
-        setLoading(false);
+        setActivitiesLoading(false);
       }
     };
     fetchActivities();
@@ -118,8 +116,8 @@ const KidsDashboard = () => {
   }, [selectedChildId]);
 
   const selectedChild = childProfiles?.find(c => c.id === selectedChildId);
+  const childName = selectedChild?.name;
 
-  // Split activities into continue playing vs new
   const continuePlaying = selectedChildId
     ? activities.filter(a => progressMap[a.id] && !progressMap[a.id].completed)
     : [];
@@ -150,17 +148,30 @@ const KidsDashboard = () => {
 
   const handleParentalSuccess = () => navigate('/parent');
 
+  // Log children error
+  if (childrenError) console.error('Error fetching child_profiles:', childrenError);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-100 via-white to-green-50">
       <KidsHeader
         onLearningPathClick={() => setShowLearningPath(true)}
         onGrownUpsClick={() => setShowParentalGate(true)}
-        childName={selectedChild?.name || 'Little Star'}
+        childName={childName || (childrenLoading ? '...' : 'Explorer')}
       />
 
       <main className="py-6 pb-24">
         {/* Child Selector */}
-        {childProfiles && childProfiles.length > 1 && (
+        {childrenLoading ? (
+          <div className="px-4 sm:px-6 mb-6">
+            <Skeleton className="h-20 w-full rounded-2xl" />
+          </div>
+        ) : childrenError ? (
+          <div className="px-4 sm:px-6 mb-6">
+            <div className="bg-red-50 border border-red-200 rounded-2xl p-4 text-red-600 text-sm">
+              Could not load child profiles. Please try refreshing.
+            </div>
+          </div>
+        ) : childProfiles && childProfiles.length > 1 ? (
           <div className="px-4 sm:px-6 mb-6">
             <ChildSelector
               children={(childProfiles || []).map((c: any) => ({
@@ -174,7 +185,15 @@ const KidsDashboard = () => {
               isLoading={childrenLoading}
             />
           </div>
-        )}
+        ) : childProfiles && childProfiles.length === 0 ? (
+          <div className="px-4 sm:px-6 mb-6">
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-center">
+              <span className="text-4xl block mb-2">👶</span>
+              <p className="text-amber-800 font-medium">No child profiles found.</p>
+              <p className="text-amber-600 text-sm">Add a child profile in the parent dashboard to get started.</p>
+            </div>
+          </div>
+        ) : null}
 
         {/* Welcome Banner */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mx-4 sm:mx-6 mb-8">
@@ -191,7 +210,8 @@ const KidsDashboard = () => {
           </div>
         </motion.div>
 
-        {loading ? (
+        {/* Activities */}
+        {activitiesLoading ? (
           <div className="px-4 sm:px-6 space-y-6">
             <Skeleton className="h-8 w-48 rounded-full" />
             <div className="flex gap-4 overflow-hidden">
@@ -199,6 +219,12 @@ const KidsDashboard = () => {
                 <Skeleton key={i} className="w-[200px] h-[240px] rounded-3xl flex-shrink-0" />
               ))}
             </div>
+          </div>
+        ) : activitiesError ? (
+          <div className="text-center py-16 px-4">
+            <span className="text-6xl block mb-4">⚠️</span>
+            <h3 className="text-xl font-bold text-gray-700 mb-2">Something went wrong</h3>
+            <p className="text-gray-500">Could not load activities. Please try refreshing the page.</p>
           </div>
         ) : activities.length === 0 ? (
           <div className="text-center py-16 px-4">
@@ -216,7 +242,6 @@ const KidsDashboard = () => {
                 onGameClick={handleGameClick}
               />
             )}
-
             {newAdventures.length > 0 && (
               <GameCarousel
                 title={continuePlaying.length > 0 ? 'New Adventures' : 'All Adventures'}
@@ -232,7 +257,7 @@ const KidsDashboard = () => {
       <LearningPathMap
         isOpen={showLearningPath}
         onClose={() => setShowLearningPath(false)}
-        onLevelClick={(levelId) => { setShowLearningPath(false); }}
+        onLevelClick={() => setShowLearningPath(false)}
       />
       <ParentalGate
         isOpen={showParentalGate}
