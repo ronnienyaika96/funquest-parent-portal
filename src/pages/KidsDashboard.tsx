@@ -1,108 +1,239 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useChildProfiles } from '@/hooks/useChildProfiles';
 import KidsHeader from '@/components/kids/KidsHeader';
 import GameCarousel from '@/components/kids/GameCarousel';
 import LearningPathMap from '@/components/kids/LearningPathMap';
 import ParentalGate from '@/components/kids/ParentalGate';
+import ChildSelector from '@/components/parent/ChildSelector';
+import { Skeleton } from '@/components/ui/skeleton';
 
-// Game data with playful colors
-const continuePlayingGames = [
-  { id: 'tracing-a', title: 'Letter A', emoji: '🔤', color: 'bg-gradient-to-br from-sky-400 to-sky-600', progress: 75 },
-  { id: 'numbers-123', title: 'Count 1-2-3', emoji: '🔢', color: 'bg-gradient-to-br from-green-400 to-green-600', progress: 40 },
-  { id: 'colors-rainbow', title: 'Rainbow Colors', emoji: '🌈', color: 'bg-gradient-to-br from-purple-400 to-pink-500', progress: 90 },
-  { id: 'animals-farm', title: 'Farm Animals', emoji: '🐄', color: 'bg-gradient-to-br from-yellow-400 to-orange-500', progress: 20 },
-  { id: 'shapes-fun', title: 'Shape Hunt', emoji: '⭐', color: 'bg-gradient-to-br from-red-400 to-red-600', progress: 55 },
+const TYPE_CONFIG: Record<string, { emoji: string; subtitle: string; color: string }> = {
+  letter: { emoji: '🔤', subtitle: 'Letter Fun', color: 'bg-gradient-to-br from-sky-400 to-sky-600' },
+  number: { emoji: '🔢', subtitle: 'Number Play', color: 'bg-gradient-to-br from-green-400 to-green-600' },
+  word: { emoji: '📝', subtitle: 'Word Builder', color: 'bg-gradient-to-br from-purple-400 to-pink-500' },
+  story: { emoji: '📖', subtitle: 'Story Time', color: 'bg-gradient-to-br from-yellow-400 to-orange-500' },
+  game: { emoji: '🎮', subtitle: 'Game Time', color: 'bg-gradient-to-br from-red-400 to-red-600' },
+};
+
+const FALLBACK_COLORS = [
+  'bg-gradient-to-br from-pink-400 to-rose-600',
+  'bg-gradient-to-br from-indigo-500 to-purple-600',
+  'bg-gradient-to-br from-cyan-400 to-blue-600',
+  'bg-gradient-to-br from-emerald-400 to-teal-600',
+  'bg-gradient-to-br from-amber-400 to-orange-500',
 ];
 
-const newAdventuresGames = [
-  { id: 'music-beats', title: 'Music Maker', emoji: '🎵', color: 'bg-gradient-to-br from-pink-400 to-rose-600', isNew: true },
-  { id: 'space-explore', title: 'Space Trip', emoji: '🚀', color: 'bg-gradient-to-br from-indigo-500 to-purple-600', isNew: true },
-  { id: 'ocean-dive', title: 'Ocean World', emoji: '🐠', color: 'bg-gradient-to-br from-cyan-400 to-blue-600', isNew: true },
-  { id: 'dino-adventure', title: 'Dino Land', emoji: '🦕', color: 'bg-gradient-to-br from-emerald-400 to-teal-600', isNew: true },
-  { id: 'cooking-fun', title: 'Cooking Time', emoji: '🍳', color: 'bg-gradient-to-br from-amber-400 to-orange-500', isNew: true },
-];
+interface ActivityWithSteps {
+  id: string;
+  title: string;
+  type: string;
+  is_published: boolean;
+  step_count: number;
+}
 
 const KidsDashboard = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { children: childProfiles, isLoading: childrenLoading } = useChildProfiles();
+  const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
+  const [activities, setActivities] = useState<ActivityWithSteps[]>([]);
+  const [progressMap, setProgressMap] = useState<Record<string, { completed: boolean; current_step_order: number; stars_earned: number }>>({});
+  const [loading, setLoading] = useState(true);
   const [showLearningPath, setShowLearningPath] = useState(false);
   const [showParentalGate, setShowParentalGate] = useState(false);
 
-  const handleGameClick = (gameId: string) => {
-    // Navigate to game or start gaming mode
-    console.log('Starting game:', gameId);
-    // For now, you can integrate with your existing gaming interface
-    navigate(`/?startGame=tracing`);
+  // Auto-select first child
+  useEffect(() => {
+    if (childProfiles && childProfiles.length > 0 && !selectedChildId) {
+      setSelectedChildId(childProfiles[0].id);
+    }
+  }, [childProfiles, selectedChildId]);
+
+  // Fetch activities with step counts
+  useEffect(() => {
+    if (!user) return;
+    const fetchActivities = async () => {
+      setLoading(true);
+      try {
+        // Fetch all activities
+        const { data: allActivities, error: actErr } = await supabase
+          .from('activities')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (actErr) { console.error('Error fetching activities:', actErr); setLoading(false); return; }
+
+        // Fetch step counts per activity
+        const { data: steps, error: stepErr } = await supabase
+          .from('activity_steps')
+          .select('activity_id');
+
+        if (stepErr) { console.error('Error fetching steps:', stepErr); setLoading(false); return; }
+
+        // Count steps per activity
+        const stepCounts: Record<string, number> = {};
+        (steps || []).forEach((s: any) => {
+          if (s.activity_id) stepCounts[s.activity_id] = (stepCounts[s.activity_id] || 0) + 1;
+        });
+
+        // Filter: only activities with ≥1 step
+        const withSteps = (allActivities || [])
+          .filter((a: any) => (stepCounts[a.id] || 0) > 0)
+          .map((a: any) => ({ ...a, step_count: stepCounts[a.id] || 0 }));
+
+        // Prefer published; if none published have steps, show all with steps
+        const published = withSteps.filter((a: any) => a.is_published);
+        setActivities(published.length > 0 ? published : withSteps);
+      } catch (err) {
+        console.error('Unexpected error fetching activities:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchActivities();
+  }, [user]);
+
+  // Fetch progress for selected child
+  useEffect(() => {
+    if (!selectedChildId) { setProgressMap({}); return; }
+    const fetchProgress = async () => {
+      const { data, error } = await supabase
+        .from('progress')
+        .select('activity_id, completed, current_step_order, stars_earned')
+        .eq('child_id', selectedChildId);
+
+      if (error) { console.error('Error fetching progress:', error); return; }
+      const map: Record<string, any> = {};
+      (data || []).forEach((p: any) => {
+        if (p.activity_id) map[p.activity_id] = { completed: p.completed, current_step_order: p.current_step_order, stars_earned: p.stars_earned };
+      });
+      setProgressMap(map);
+    };
+    fetchProgress();
+  }, [selectedChildId]);
+
+  const selectedChild = childProfiles?.find(c => c.id === selectedChildId);
+
+  // Split activities into continue playing vs new
+  const continuePlaying = selectedChildId
+    ? activities.filter(a => progressMap[a.id] && !progressMap[a.id].completed)
+    : [];
+  const newAdventures = selectedChildId
+    ? activities.filter(a => !progressMap[a.id] || progressMap[a.id].completed)
+    : activities;
+
+  const toGameCard = (activity: ActivityWithSteps, index: number) => {
+    const config = TYPE_CONFIG[activity.type] || { emoji: '📚', subtitle: activity.type, color: FALLBACK_COLORS[index % FALLBACK_COLORS.length] };
+    const prog = progressMap[activity.id];
+    const progressPct = prog && !prog.completed && activity.step_count > 0
+      ? Math.round(((prog.current_step_order - 1) / activity.step_count) * 100)
+      : undefined;
+    return {
+      id: activity.id,
+      title: activity.title,
+      emoji: config.emoji,
+      color: config.color,
+      progress: progressPct,
+      isNew: !prog,
+    };
   };
 
-  const handleParentalSuccess = () => {
-    // Navigate to parent area
-    navigate('/');
+  const handleGameClick = (activityId: string) => {
+    const params = selectedChildId ? `?childId=${selectedChildId}` : '';
+    navigate(`/play/${activityId}${params}`);
   };
+
+  const handleParentalSuccess = () => navigate('/parent');
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-100 via-white to-green-50">
-      {/* Header */}
       <KidsHeader
         onLearningPathClick={() => setShowLearningPath(true)}
         onGrownUpsClick={() => setShowParentalGate(true)}
-        childName="Little Star"
+        childName={selectedChild?.name || 'Little Star'}
       />
 
-      {/* Main Content */}
       <main className="py-6 pb-24">
+        {/* Child Selector */}
+        {childProfiles && childProfiles.length > 1 && (
+          <div className="px-4 sm:px-6 mb-6">
+            <ChildSelector
+              children={(childProfiles || []).map((c: any) => ({
+                id: c.id,
+                name: c.name,
+                avatar: c.avatar,
+                age: c.age || 4,
+              }))}
+              selectedChildId={selectedChildId}
+              onSelectChild={setSelectedChildId}
+              isLoading={childrenLoading}
+            />
+          </div>
+        )}
+
         {/* Welcome Banner */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mx-4 sm:mx-6 mb-8"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mx-4 sm:mx-6 mb-8">
           <div className="bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-500 rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
-            {/* Decorative elements */}
             <div className="absolute top-4 right-8 text-6xl opacity-20">⭐</div>
             <div className="absolute bottom-4 right-24 text-4xl opacity-20">🌟</div>
             <div className="absolute top-8 right-32 text-3xl opacity-20">✨</div>
-            
             <div className="relative z-10">
               <h2 className="text-white text-2xl sm:text-3xl font-bold mb-2 drop-shadow-md">
                 🎉 What shall we learn today?
               </h2>
-              <p className="text-white/90 text-lg">
-                Pick a game and start your adventure!
-              </p>
+              <p className="text-white/90 text-lg">Pick a game and start your adventure!</p>
             </div>
           </div>
         </motion.div>
 
-        {/* Game Carousels */}
-        <GameCarousel
-          title="Continue Playing"
-          titleEmoji="🎮"
-          games={continuePlayingGames}
-          onGameClick={handleGameClick}
-        />
+        {loading ? (
+          <div className="px-4 sm:px-6 space-y-6">
+            <Skeleton className="h-8 w-48 rounded-full" />
+            <div className="flex gap-4 overflow-hidden">
+              {[1, 2, 3].map(i => (
+                <Skeleton key={i} className="w-[200px] h-[240px] rounded-3xl flex-shrink-0" />
+              ))}
+            </div>
+          </div>
+        ) : activities.length === 0 ? (
+          <div className="text-center py-16 px-4">
+            <span className="text-6xl block mb-4">🎨</span>
+            <h3 className="text-xl font-bold text-gray-700 mb-2">No activities yet!</h3>
+            <p className="text-gray-500">New learning adventures are coming soon. Check back later!</p>
+          </div>
+        ) : (
+          <>
+            {continuePlaying.length > 0 && (
+              <GameCarousel
+                title="Continue Playing"
+                titleEmoji="🎮"
+                games={continuePlaying.map(toGameCard)}
+                onGameClick={handleGameClick}
+              />
+            )}
 
-        <GameCarousel
-          title="New Adventures"
-          titleEmoji="✨"
-          games={newAdventuresGames}
-          onGameClick={handleGameClick}
-        />
-
+            {newAdventures.length > 0 && (
+              <GameCarousel
+                title={continuePlaying.length > 0 ? 'New Adventures' : 'All Adventures'}
+                titleEmoji="✨"
+                games={newAdventures.map(toGameCard)}
+                onGameClick={handleGameClick}
+              />
+            )}
+          </>
+        )}
       </main>
 
-      {/* Learning Path Map Modal */}
       <LearningPathMap
         isOpen={showLearningPath}
         onClose={() => setShowLearningPath(false)}
-        onLevelClick={(levelId) => {
-          console.log('Level clicked:', levelId);
-          setShowLearningPath(false);
-        }}
+        onLevelClick={(levelId) => { setShowLearningPath(false); }}
       />
-
-      {/* Parental Gate Modal */}
       <ParentalGate
         isOpen={showParentalGate}
         onClose={() => setShowParentalGate(false)}
