@@ -64,7 +64,7 @@ const ContinueLearningCard = ({ lastLetter, completedLetters, childId }: Continu
           </div>
         </div>
         <Button
-          onClick={() => navigate('/play')}
+          onClick={() => navigate('/activities')}
           className="bg-white text-sky-600 hover:bg-white/90 rounded-xl font-bold shadow-md"
         >
           <Play className="w-4 h-4 mr-1" />

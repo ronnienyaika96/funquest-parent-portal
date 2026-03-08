@@ -48,7 +48,7 @@ const ParentDashboard = () => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate('/play')}
+              onClick={() => navigate('/activities')}
               className="rounded-xl hover:bg-sky-100"
             >
               <ArrowLeft className="w-5 h-5 text-gray-600" />
