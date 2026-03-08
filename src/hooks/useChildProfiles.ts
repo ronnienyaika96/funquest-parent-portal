@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 export interface ChildProfile {
   id: string;
@@ -12,13 +13,14 @@ export interface ChildProfile {
 
 export function useChildProfiles() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const {
     data: children,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['child_profiles'],
+    queryKey: ['child_profiles', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('child_profiles')
@@ -30,13 +32,12 @@ export function useChildProfiles() {
       }
       return (data || []) as ChildProfile[];
     },
+    enabled: !!user,
   });
 
   const addChild = useMutation({
     mutationFn: async (profile: { name: string; age: number; avatar?: string | null }) => {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
-      if (!user || !user.id) throw new Error('User not authenticated');
+      if (!user?.id) throw new Error('You must be logged in to add a child.');
 
       const { data, error } = await supabase
         .from('child_profiles')

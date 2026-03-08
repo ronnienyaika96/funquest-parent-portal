@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { Loader2 } from 'lucide-react';
 import { useChildProfiles } from '@/hooks/useChildProfiles';
 import KidsHeader from '@/components/kids/KidsHeader';
 import GameCarousel from '@/components/kids/GameCarousel';
@@ -38,7 +39,7 @@ interface ActivityWithSteps {
 
 const KidsDashboard = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { children: childProfiles, isLoading: childrenLoading, error: childrenError } = useChildProfiles();
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
   const [activities, setActivities] = useState<ActivityWithSteps[]>([]);
@@ -150,6 +151,18 @@ const KidsDashboard = () => {
 
   // Log children error
   if (childrenError) console.error('Error fetching child_profiles:', childrenError);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-100 via-white to-green-50">

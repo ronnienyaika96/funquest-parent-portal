@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, CreditCard, BarChart3, Settings, Sparkles, LogOut } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, CreditCard, BarChart3, Settings, Sparkles, LogOut, Loader2 } from 'lucide-react';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useChildProfiles } from '@/hooks/useChildProfiles';
 import PricingSection from '@/components/parent/PricingSection';
@@ -13,7 +13,7 @@ import ChildSelector from '@/components/parent/ChildSelector';
 
 const ParentDashboard = () => {
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
   const { children: childProfiles, isLoading: childrenLoading } = useChildProfiles();
   const [activeTab, setActiveTab] = useState('progress');
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
@@ -26,6 +26,18 @@ const ParentDashboard = () => {
   }, [childProfiles, selectedChildId]);
 
   const selectedChild = childProfiles?.find((c: any) => c.id === selectedChildId);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white">
