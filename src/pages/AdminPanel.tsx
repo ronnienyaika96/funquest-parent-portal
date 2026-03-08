@@ -245,16 +245,7 @@ export default function AdminPanel() {
 
           {/* Settings Tab */}
           <TabsContent value="settings">
-            <Card className="bg-white">
-              <CardHeader>
-                <CardTitle>Admin Settings</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Additional admin settings will be available here.
-                </p>
-              </CardContent>
-            </Card>
+            <AdminSettings />
           </TabsContent>
         </Tabs>
       </main>
