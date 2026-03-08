@@ -110,8 +110,8 @@ export default function AdminPanel() {
   }
 
   // Stats
-  const publishedCount = activities.filter(a => a.status === 'published').length;
-  const draftCount = activities.filter(a => a.status === 'draft').length;
+  const publishedCount = activities.filter(a => a.is_published).length;
+  const draftCount = activities.filter(a => !a.is_published).length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
