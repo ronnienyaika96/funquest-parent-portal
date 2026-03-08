@@ -152,6 +152,18 @@ const KidsDashboard = () => {
   // Log children error
   if (childrenError) console.error('Error fetching child_profiles:', childrenError);
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-100 via-white to-green-50">
       <KidsHeader
