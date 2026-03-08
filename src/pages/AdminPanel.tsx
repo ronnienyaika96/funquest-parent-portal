@@ -237,12 +237,24 @@ export default function AdminPanel() {
             <UsersManager />
           </TabsContent>
 
+          {/* Subscriptions Tab */}
+          <TabsContent value="subscriptions">
+            <SubscriptionsManager />
+          </TabsContent>
+
           {/* Settings Tab */}
           <TabsContent value="settings">
             <Card className="bg-white">
               <CardHeader>
                 <CardTitle>Admin Settings</CardTitle>
               </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Additional admin settings will be available here.
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
               <CardContent>
                 <p className="text-muted-foreground">
                   Additional admin settings will be available here.
