@@ -11,7 +11,7 @@ import CheckoutPage from "./pages/CheckoutPage";
 import OrderConfirmation from "./pages/OrderConfirmation";
 import ResetPassword from "./pages/ResetPassword";
 import LandingPage from "./pages/LandingPage";
-import KidsDashboard from "./pages/KidsDashboard";
+import { Navigate } from "react-router-dom";
 import ParentDashboard from "./pages/ParentDashboard";
 import AdminPanel from "./pages/AdminPanel";
 import AdminAuthPage from "./pages/AdminAuthPage";

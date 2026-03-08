@@ -54,7 +54,7 @@ const ActivitiesPage = () => {
     <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white">
       <header className="bg-white/80 backdrop-blur-md border-b border-border sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/play')} className="rounded-xl">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="rounded-xl">
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex items-center gap-2">
