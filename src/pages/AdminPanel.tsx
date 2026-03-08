@@ -22,7 +22,9 @@ import {
   BarChart3,
   FolderOpen,
   Users,
+  CreditCard,
 } from 'lucide-react';
+import SubscriptionsManager from '@/components/admin/SubscriptionsManager';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -156,6 +158,10 @@ export default function AdminPanel() {
               <Users className="h-4 w-4" />
               Users
             </TabsTrigger>
+            <TabsTrigger value="subscriptions" className="gap-2">
+              <CreditCard className="h-4 w-4" />
+              Subscriptions
+            </TabsTrigger>
             <TabsTrigger value="settings" className="gap-2">
               <Settings className="h-4 w-4" />
               Settings
@@ -229,6 +235,11 @@ export default function AdminPanel() {
           {/* Users Tab */}
           <TabsContent value="users">
             <UsersManager />
+          </TabsContent>
+
+          {/* Subscriptions Tab */}
+          <TabsContent value="subscriptions">
+            <SubscriptionsManager />
           </TabsContent>
 
           {/* Settings Tab */}
