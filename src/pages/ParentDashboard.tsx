@@ -71,7 +71,7 @@ const ParentDashboard = () => {
             id: c.id,
             name: c.name,
             avatar: c.avatar,
-            age: c.age_range ? parseInt(c.age_range) : (c.age || 4),
+            age: c.age || 4,
           }))}
           selectedChildId={selectedChildId}
           onSelectChild={setSelectedChildId}
