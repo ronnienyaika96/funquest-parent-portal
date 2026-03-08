@@ -25,6 +25,7 @@ import {
   CreditCard,
 } from 'lucide-react';
 import SubscriptionsManager from '@/components/admin/SubscriptionsManager';
+import AdminSettings from '@/components/admin/AdminSettings';
 import {
   AlertDialog,
   AlertDialogAction,
