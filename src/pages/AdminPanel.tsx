@@ -48,6 +48,9 @@ export default function AdminPanel() {
     updateActivity, 
     deleteActivity, 
     togglePublish,
+    createStep,
+    updateStep,
+    deleteStep,
     uploadFile 
   } = useActivities();
 
