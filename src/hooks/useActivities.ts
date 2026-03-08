@@ -1,42 +1,37 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
-import { useToast } from './use-toast';
+import { toast } from 'sonner';
 
 export interface ActivityStep {
   id: string;
-  title: string;
-  instruction: string;
-  mediaUrl?: string;
-  audioUrl?: string;
+  activity_id: string | null;
+  step_order: number;
+  game_type: string;
+  data: Record<string, any>;
+  instruction_audio_url: string | null;
+  created_at: string | null;
 }
 
 export interface Activity {
   id: string;
-  name: string;
-  description: string | null;
-  category: string;
-  age_range: string;
+  title: string;
+  type: string;
+  value: string | null;
+  age_min: number | null;
+  age_max: number | null;
+  is_published: boolean;
+  created_at: string | null;
   steps: ActivityStep[];
-  thumbnail_url: string | null;
-  images: string[];
-  audio_urls: string[];
-  status: 'draft' | 'published';
-  created_by: string;
-  created_at: string;
-  updated_at: string;
 }
 
 export interface CreateActivityInput {
-  name: string;
-  description?: string;
-  category: string;
-  age_range: string;
-  steps?: ActivityStep[];
-  thumbnail_url?: string;
-  images?: string[];
-  audio_urls?: string[];
-  status?: 'draft' | 'published';
+  title: string;
+  type: string;
+  value?: string;
+  age_min?: number | null;
+  age_max?: number | null;
+  is_published?: boolean;
 }
 
 export function useActivities() {
@@ -44,41 +39,53 @@ export function useActivities() {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const { user } = useAuth();
-  const { toast } = useToast();
 
-  // Check if user is admin using the has_role function
+  // Check admin
   useEffect(() => {
     const checkAdmin = async () => {
-      if (!user) {
-        setIsAdmin(false);
-        return;
-      }
-
-      const { data, error } = await (supabase as any)
-        .rpc('has_role', { _user_id: user.id, _role: 'admin' });
-
+      if (!user) { setIsAdmin(false); return; }
+      const { data, error } = await supabase.rpc('has_role', { _user_id: user.id, _role: 'admin' });
       setIsAdmin(!error && data === true);
     };
-
     checkAdmin();
   }, [user]);
 
-  // Fetch activities
-  const fetchActivities = async () => {
+  // Fetch activities with their steps
+  const fetchActivities = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await (supabase as any)
+      const { data: acts, error } = await supabase
         .from('activities')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      const mapped = (data || []).map((item: any) => ({
-        ...item,
-        steps: item.steps || [],
-        images: item.images || [],
-        audio_urls: item.audio_urls || [],
+      // Fetch all steps
+      const { data: steps, error: stepsError } = await supabase
+        .from('activity_steps')
+        .select('*')
+        .order('step_order', { ascending: true });
+
+      if (stepsError) throw stepsError;
+
+      const stepsByActivity = (steps || []).reduce((acc: Record<string, ActivityStep[]>, step: any) => {
+        const aid = step.activity_id;
+        if (!acc[aid]) acc[aid] = [];
+        acc[aid].push(step);
+        return acc;
+      }, {});
+
+      const mapped: Activity[] = (acts || []).map((a: any) => ({
+        id: a.id,
+        title: a.title,
+        type: a.type,
+        value: a.value,
+        age_min: a.age_min,
+        age_max: a.age_max,
+        is_published: a.is_published ?? false,
+        created_at: a.created_at,
+        steps: stepsByActivity[a.id] || [],
       }));
 
       setActivities(mapped);
@@ -87,43 +94,35 @@ export function useActivities() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    if (isAdmin) {
-      fetchActivities();
-    }
-  }, [isAdmin]);
+    if (isAdmin) fetchActivities();
+  }, [isAdmin, fetchActivities]);
 
   const createActivity = async (input: CreateActivityInput) => {
     if (!user) return null;
-
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('activities')
         .insert({
-          name: input.name,
-          description: input.description,
-          category: input.category,
-          age_range: input.age_range,
-          steps: JSON.parse(JSON.stringify(input.steps || [])),
-          images: JSON.parse(JSON.stringify(input.images || [])),
-          audio_urls: JSON.parse(JSON.stringify(input.audio_urls || [])),
-          thumbnail_url: input.thumbnail_url,
-          status: input.status || 'draft',
-          created_by: user.id,
+          title: input.title,
+          type: input.type,
+          value: input.value || null,
+          age_min: input.age_min ?? null,
+          age_max: input.age_max ?? null,
+          is_published: input.is_published ?? false,
         })
         .select()
         .single();
 
       if (error) throw error;
-
-      toast({ title: 'Success', description: 'Activity created successfully' });
+      toast.success('Activity created successfully');
       await fetchActivities();
       return data;
     } catch (error: any) {
       console.error('Error creating activity:', error);
-      toast({ title: 'Error', description: error.message || 'Failed to create activity', variant: 'destructive' });
+      toast.error(error.message || 'Failed to create activity');
       return null;
     }
   };
@@ -131,78 +130,111 @@ export function useActivities() {
   const updateActivity = async (id: string, updates: Partial<CreateActivityInput>) => {
     try {
       const dbUpdates: Record<string, any> = {};
-      if (updates.name !== undefined) dbUpdates.name = updates.name;
-      if (updates.description !== undefined) dbUpdates.description = updates.description;
-      if (updates.category !== undefined) dbUpdates.category = updates.category;
-      if (updates.age_range !== undefined) dbUpdates.age_range = updates.age_range;
-      if (updates.thumbnail_url !== undefined) dbUpdates.thumbnail_url = updates.thumbnail_url;
-      if (updates.status !== undefined) dbUpdates.status = updates.status;
-      if (updates.steps !== undefined) dbUpdates.steps = JSON.parse(JSON.stringify(updates.steps));
-      if (updates.images !== undefined) dbUpdates.images = JSON.parse(JSON.stringify(updates.images));
-      if (updates.audio_urls !== undefined) dbUpdates.audio_urls = JSON.parse(JSON.stringify(updates.audio_urls));
+      if (updates.title !== undefined) dbUpdates.title = updates.title;
+      if (updates.type !== undefined) dbUpdates.type = updates.type;
+      if (updates.value !== undefined) dbUpdates.value = updates.value;
+      if (updates.age_min !== undefined) dbUpdates.age_min = updates.age_min;
+      if (updates.age_max !== undefined) dbUpdates.age_max = updates.age_max;
+      if (updates.is_published !== undefined) dbUpdates.is_published = updates.is_published;
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('activities')
         .update(dbUpdates)
         .eq('id', id);
 
       if (error) throw error;
-
-      toast({ title: 'Success', description: 'Activity updated successfully' });
+      toast.success('Activity updated successfully');
       await fetchActivities();
       return true;
     } catch (error: any) {
       console.error('Error updating activity:', error);
-      toast({ title: 'Error', description: error.message || 'Failed to update activity', variant: 'destructive' });
+      toast.error(error.message || 'Failed to update activity');
       return false;
     }
   };
 
   const deleteActivity = async (id: string) => {
     try {
-      const { error } = await (supabase as any)
-        .from('activities')
-        .delete()
-        .eq('id', id);
-
+      // Delete steps first
+      await supabase.from('activity_steps').delete().eq('activity_id', id);
+      const { error } = await supabase.from('activities').delete().eq('id', id);
       if (error) throw error;
-
-      toast({ title: 'Success', description: 'Activity deleted successfully' });
+      toast.success('Activity deleted');
       await fetchActivities();
       return true;
     } catch (error: any) {
       console.error('Error deleting activity:', error);
-      toast({ title: 'Error', description: error.message || 'Failed to delete activity', variant: 'destructive' });
+      toast.error(error.message || 'Failed to delete activity');
       return false;
     }
   };
 
-  const togglePublish = async (id: string, currentStatus: string) => {
-    const newStatus = currentStatus === 'published' ? 'draft' : 'published';
-    return updateActivity(id, { status: newStatus });
+  const togglePublish = async (id: string, currentlyPublished: boolean) => {
+    return updateActivity(id, { is_published: !currentlyPublished });
   };
 
-  const uploadFile = async (file: File, folder: string = 'activities') => {
-    if (!user) return null;
+  // Step CRUD
+  const createStep = async (activityId: string, step: { game_type: string; data: Record<string, any>; instruction_audio_url?: string; step_order: number }) => {
+    try {
+      const { data, error } = await supabase
+        .from('activity_steps')
+        .insert({
+          activity_id: activityId,
+          game_type: step.game_type,
+          data: step.data,
+          instruction_audio_url: step.instruction_audio_url || null,
+          step_order: step.step_order,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      await fetchActivities();
+      return data;
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to create step');
+      return null;
+    }
+  };
 
+  const updateStep = async (stepId: string, updates: { game_type?: string; data?: Record<string, any>; instruction_audio_url?: string | null; step_order?: number }) => {
+    try {
+      const { error } = await supabase
+        .from('activity_steps')
+        .update(updates)
+        .eq('id', stepId);
+      if (error) throw error;
+      await fetchActivities();
+      return true;
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update step');
+      return false;
+    }
+  };
+
+  const deleteStep = async (stepId: string) => {
+    try {
+      const { error } = await supabase.from('activity_steps').delete().eq('id', stepId);
+      if (error) throw error;
+      await fetchActivities();
+      return true;
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete step');
+      return false;
+    }
+  };
+
+  const uploadFile = async (file: File, bucket: string = 'game assets') => {
+    if (!user) return null;
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('assets')
-        .upload(fileName, file);
-
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage.from(bucket).upload(fileName, file);
       if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('assets')
-        .getPublicUrl(fileName);
-
+      const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(fileName);
       return publicUrl;
     } catch (error: any) {
       console.error('Error uploading file:', error);
-      toast({ title: 'Upload Error', description: error.message || 'Failed to upload file', variant: 'destructive' });
+      toast.error(error.message || 'Failed to upload file');
       return null;
     }
   };
@@ -215,6 +247,9 @@ export function useActivities() {
     updateActivity,
     deleteActivity,
     togglePublish,
+    createStep,
+    updateStep,
+    deleteStep,
     uploadFile,
     refetch: fetchActivities,
   };

@@ -48,6 +48,9 @@ export default function AdminPanel() {
     updateActivity, 
     deleteActivity, 
     togglePublish,
+    createStep,
+    updateStep,
+    deleteStep,
     uploadFile 
   } = useActivities();
 
@@ -107,8 +110,8 @@ export default function AdminPanel() {
   }
 
   // Stats
-  const publishedCount = activities.filter(a => a.status === 'published').length;
-  const draftCount = activities.filter(a => a.status === 'draft').length;
+  const publishedCount = activities.filter(a => a.is_published).length;
+  const draftCount = activities.filter(a => !a.is_published).length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -258,6 +261,23 @@ export default function AdminPanel() {
         onUpdate={updateActivity}
         onUpload={uploadFile}
         editingActivity={editingActivity}
+        onSaveSteps={async (activityId, steps) => {
+          // Delete existing steps for the activity, then recreate
+          const existing = activities.find(a => a.id === activityId);
+          if (existing) {
+            for (const s of existing.steps) {
+              await deleteStep(s.id);
+            }
+          }
+          for (const s of steps) {
+            await createStep(activityId, {
+              game_type: s.game_type,
+              data: s.data,
+              instruction_audio_url: s.instruction_audio_url || undefined,
+              step_order: s.step_order,
+            });
+          }
+        }}
       />
 
       {/* Delete Confirmation */}

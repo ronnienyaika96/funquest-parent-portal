@@ -2,41 +2,41 @@ import { Activity } from '@/hooks/useActivities';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from '@/components/ui/table';
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Edit, Trash2, MoreVertical, Eye, EyeOff, Image } from 'lucide-react';
+import { Edit, Trash2, MoreVertical, Eye, EyeOff, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface ActivityListProps {
   activities: Activity[];
   onEdit: (activity: Activity) => void;
   onDelete: (id: string) => void;
-  onTogglePublish: (id: string, currentStatus: string) => void;
+  onTogglePublish: (id: string, currentlyPublished: boolean) => void;
 }
 
-export function ActivityList({ 
-  activities, 
-  onEdit, 
-  onDelete, 
-  onTogglePublish 
+export function ActivityList({
+  activities,
+  onEdit,
+  onDelete,
+  onTogglePublish,
 }: ActivityListProps) {
   if (activities.length === 0) {
     return (
-      <Card className="bg-white border-2 border-dashed border-muted">
+      <Card className="bg-card border-2 border-dashed border-muted">
         <CardContent className="flex flex-col items-center justify-center py-12">
-          <Image className="h-12 w-12 text-muted-foreground mb-4" />
+          <FileText className="h-12 w-12 text-muted-foreground mb-4" />
           <p className="text-lg font-medium text-muted-foreground">No activities yet</p>
           <p className="text-sm text-muted-foreground">Create your first activity to get started</p>
         </CardContent>
@@ -44,58 +44,51 @@ export function ActivityList({
     );
   }
 
+  const ageRangeLabel = (a: Activity) => {
+    if (a.age_min != null && a.age_max != null) return `${a.age_min}–${a.age_max}`;
+    if (a.age_min != null) return `${a.age_min}+`;
+    if (a.age_max != null) return `Up to ${a.age_max}`;
+    return '—';
+  };
+
   return (
-    <Card className="bg-white">
+    <Card className="bg-card">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-16">Preview</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Category</TableHead>
+            <TableHead>Title</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Value</TableHead>
             <TableHead>Age Range</TableHead>
             <TableHead>Steps</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Updated</TableHead>
+            <TableHead>Created</TableHead>
             <TableHead className="w-16">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {activities.map((activity) => (
             <TableRow key={activity.id}>
-              <TableCell>
-                {activity.thumbnail_url ? (
-                  <img 
-                    src={activity.thumbnail_url} 
-                    alt={activity.name}
-                    className="w-12 h-12 rounded-lg object-cover"
-                  />
-                ) : (
-                  <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
-                    <Image className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                )}
-              </TableCell>
-              <TableCell className="font-medium">{activity.name}</TableCell>
+              <TableCell className="font-medium">{activity.title}</TableCell>
               <TableCell>
                 <Badge variant="secondary" className="capitalize">
-                  {activity.category}
+                  {activity.type}
                 </Badge>
               </TableCell>
-              <TableCell>{activity.age_range}</TableCell>
+              <TableCell className="text-muted-foreground text-sm max-w-[120px] truncate">
+                {activity.value || '—'}
+              </TableCell>
+              <TableCell>{ageRangeLabel(activity)}</TableCell>
               <TableCell>{activity.steps.length} steps</TableCell>
               <TableCell>
-                <Badge 
-                  variant={activity.status === 'published' ? 'default' : 'outline'}
-                  className={activity.status === 'published' 
-                    ? 'bg-green-500 hover:bg-green-600' 
-                    : ''
-                  }
-                >
-                  {activity.status}
+                <Badge variant={activity.is_published ? 'default' : 'outline'}>
+                  {activity.is_published ? 'Published' : 'Draft'}
                 </Badge>
               </TableCell>
               <TableCell className="text-muted-foreground text-sm">
-                {format(new Date(activity.updated_at), 'MMM d, yyyy')}
+                {activity.created_at
+                  ? format(new Date(activity.created_at), 'MMM d, yyyy')
+                  : '—'}
               </TableCell>
               <TableCell>
                 <DropdownMenu>
@@ -109,10 +102,8 @@ export function ActivityList({
                       <Edit className="h-4 w-4 mr-2" />
                       Edit
                     </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => onTogglePublish(activity.id, activity.status)}
-                    >
-                      {activity.status === 'published' ? (
+                    <DropdownMenuItem onClick={() => onTogglePublish(activity.id, activity.is_published)}>
+                      {activity.is_published ? (
                         <>
                           <EyeOff className="h-4 w-4 mr-2" />
                           Unpublish
@@ -124,7 +115,7 @@ export function ActivityList({
                         </>
                       )}
                     </DropdownMenuItem>
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       onClick={() => onDelete(activity.id)}
                       className="text-destructive"
                     >
