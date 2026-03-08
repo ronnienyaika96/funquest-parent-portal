@@ -39,7 +39,7 @@ interface ActivityWithSteps {
 
 const KidsDashboard = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { children: childProfiles, isLoading: childrenLoading, error: childrenError } = useChildProfiles();
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
   const [activities, setActivities] = useState<ActivityWithSteps[]>([]);

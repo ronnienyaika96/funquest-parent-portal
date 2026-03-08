@@ -18,6 +18,15 @@ const ParentDashboard = () => {
   const [activeTab, setActiveTab] = useState('progress');
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
 
+  // Auto-select first child
+  React.useEffect(() => {
+    if (childProfiles && childProfiles.length > 0 && !selectedChildId) {
+      setSelectedChildId(childProfiles[0].id);
+    }
+  }, [childProfiles, selectedChildId]);
+
+  const selectedChild = childProfiles?.find((c: any) => c.id === selectedChildId);
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -29,15 +38,6 @@ const ParentDashboard = () => {
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
-
-  // Auto-select first child
-  React.useEffect(() => {
-    if (childProfiles && childProfiles.length > 0 && !selectedChildId) {
-      setSelectedChildId(childProfiles[0].id);
-    }
-  }, [childProfiles, selectedChildId]);
-
-  const selectedChild = childProfiles?.find((c: any) => c.id === selectedChildId);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white">
