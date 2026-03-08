@@ -98,7 +98,7 @@ const ChildProfiles = ({
                 <div className="text-4xl">{child.avatar || '🧒'}</div>
                 <div>
                   <h3 className="font-bold text-lg text-gray-900">{child.name}</h3>
-                  <p className="text-gray-500">{child.age_range || 'N/A'} years</p>
+                  <p className="text-gray-500">Age: {child.age ?? 'N/A'}</p>
                 </div>
               </div>
               {!preview && (
