@@ -77,9 +77,12 @@ export function AdminOverview() {
                     <div className="min-w-0">
                       <p className="font-medium text-sm truncate">{item.title}</p>
                       <p className="text-xs text-muted-foreground">
-                        {item.type} · {item.created_at
-                          ? formatDistanceToNow(new Date(item.created_at), { addSuffix: true })
-                          : 'Unknown'}
+                        {item.type} · {(() => {
+                          try {
+                            const d = item.created_at ? new Date(item.created_at) : null;
+                            return d && !isNaN(d.getTime()) ? formatDistanceToNow(d, { addSuffix: true }) : 'Unknown';
+                          } catch { return 'Unknown'; }
+                        })()}
                       </p>
                     </div>
                   </div>
