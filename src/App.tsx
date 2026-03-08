@@ -31,8 +31,8 @@ const App = () => (
             {/* Main Landing Page */}
             <Route path="/" element={<LandingPage />} />
             
-            {/* Kids Dashboard */}
-            <Route path="/play" element={<KidsDashboard />} />
+            {/* Redirect /play to /activities */}
+            <Route path="/play" element={<Navigate to="/activities" replace />} />
             
             {/* Activities & Game Player */}
             <Route path="/activities" element={<ActivitiesPage />} />
