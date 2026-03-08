@@ -255,13 +255,6 @@ export default function AdminPanel() {
               </CardContent>
             </Card>
           </TabsContent>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Additional admin settings will be available here.
-                </p>
-              </CardContent>
-            </Card>
-          </TabsContent>
         </Tabs>
       </main>
 
