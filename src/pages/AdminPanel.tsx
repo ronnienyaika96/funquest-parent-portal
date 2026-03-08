@@ -22,7 +22,9 @@ import {
   BarChart3,
   FolderOpen,
   Users,
+  CreditCard,
 } from 'lucide-react';
+import SubscriptionsManager from '@/components/admin/SubscriptionsManager';
 import {
   AlertDialog,
   AlertDialogAction,
