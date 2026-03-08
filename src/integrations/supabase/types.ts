@@ -212,15 +212,7 @@ export type Database = {
           name?: string
           parent_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "child_profiles_parent_id_fkey"
-            columns: ["parent_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       game_sessions: {
         Row: {
