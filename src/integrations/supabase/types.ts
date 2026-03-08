@@ -345,24 +345,63 @@ export type Database = {
       }
       subscriptions: {
         Row: {
+          audience: string | null
+          billing_period: string | null
+          currency: string | null
+          description: string | null
           expires_at: string | null
+          features: Json | null
+          games_per_day: number | null
           id: string
+          is_active: boolean | null
+          is_popular: boolean | null
+          max_child_profiles: number | null
           plan: string | null
+          price: number | null
+          slug: string | null
+          sort_order: number | null
           status: string | null
+          updated_at: string | null
           user_id: string | null
         }
         Insert: {
+          audience?: string | null
+          billing_period?: string | null
+          currency?: string | null
+          description?: string | null
           expires_at?: string | null
+          features?: Json | null
+          games_per_day?: number | null
           id?: string
+          is_active?: boolean | null
+          is_popular?: boolean | null
+          max_child_profiles?: number | null
           plan?: string | null
+          price?: number | null
+          slug?: string | null
+          sort_order?: number | null
           status?: string | null
+          updated_at?: string | null
           user_id?: string | null
         }
         Update: {
+          audience?: string | null
+          billing_period?: string | null
+          currency?: string | null
+          description?: string | null
           expires_at?: string | null
+          features?: Json | null
+          games_per_day?: number | null
           id?: string
+          is_active?: boolean | null
+          is_popular?: boolean | null
+          max_child_profiles?: number | null
           plan?: string | null
+          price?: number | null
+          slug?: string | null
+          sort_order?: number | null
           status?: string | null
+          updated_at?: string | null
           user_id?: string | null
         }
         Relationships: [
@@ -392,6 +431,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_subscriptions: {
+        Row: {
+          billing_period: string | null
+          created_at: string | null
+          ends_at: string | null
+          id: string
+          started_at: string | null
+          status: string
+          subscription_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          billing_period?: string | null
+          created_at?: string | null
+          ends_at?: string | null
+          id?: string
+          started_at?: string | null
+          status?: string
+          subscription_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          billing_period?: string | null
+          created_at?: string | null
+          ends_at?: string | null
+          id?: string
+          started_at?: string | null
+          status?: string
+          subscription_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_subscriptions_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       users: {
         Row: {
