@@ -18,6 +18,18 @@ const ParentDashboard = () => {
   const [activeTab, setActiveTab] = useState('progress');
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+
   // Auto-select first child
   React.useEffect(() => {
     if (childProfiles && childProfiles.length > 0 && !selectedChildId) {
