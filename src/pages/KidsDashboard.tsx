@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { Loader2 } from 'lucide-react';
 import { useChildProfiles } from '@/hooks/useChildProfiles';
 import KidsHeader from '@/components/kids/KidsHeader';
 import GameCarousel from '@/components/kids/GameCarousel';
