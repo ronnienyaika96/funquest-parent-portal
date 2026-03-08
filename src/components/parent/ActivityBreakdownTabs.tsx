@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BookOpen, Hash, Gamepad2, BookMarked, RotateCcw } from 'lucide-react';
@@ -13,42 +13,10 @@ interface ActivityBreakdownTabsProps {
 
 const ActivityBreakdownTabs = ({ lettersCompleted, totalLetters, numbersCompleted, totalNumbers }: ActivityBreakdownTabsProps) => {
   const categories = [
-    {
-      id: 'letters',
-      label: 'Letters',
-      icon: BookOpen,
-      completed: lettersCompleted,
-      total: totalLetters,
-      lastPlayed: lettersCompleted > 0 ? 'Recently' : 'Never',
-      color: 'sky'
-    },
-    {
-      id: 'numbers',
-      label: 'Numbers',
-      icon: Hash,
-      completed: numbersCompleted,
-      total: totalNumbers,
-      lastPlayed: numbersCompleted > 0 ? 'Recently' : 'Never',
-      color: 'emerald'
-    },
-    {
-      id: 'games',
-      label: 'Games',
-      icon: Gamepad2,
-      completed: 0,
-      total: 5,
-      lastPlayed: 'Coming soon',
-      color: 'purple'
-    },
-    {
-      id: 'stories',
-      label: 'Stories',
-      icon: BookMarked,
-      completed: 0,
-      total: 3,
-      lastPlayed: 'Coming soon',
-      color: 'amber'
-    },
+    { id: 'letters', label: 'Letters', icon: BookOpen, completed: lettersCompleted, total: totalLetters, lastPlayed: lettersCompleted > 0 ? 'Recently' : 'Never', barColor: 'bg-blue-500', bgColor: 'bg-blue-50', dotColor: 'bg-blue-500' },
+    { id: 'numbers', label: 'Numbers', icon: Hash, completed: numbersCompleted, total: totalNumbers, lastPlayed: numbersCompleted > 0 ? 'Recently' : 'Never', barColor: 'bg-orange-500', bgColor: 'bg-orange-50', dotColor: 'bg-orange-500' },
+    { id: 'games', label: 'Games', icon: Gamepad2, completed: 0, total: 5, lastPlayed: 'Coming soon', barColor: 'bg-purple-500', bgColor: 'bg-purple-50', dotColor: 'bg-purple-500' },
+    { id: 'stories', label: 'Stories', icon: BookMarked, completed: 0, total: 3, lastPlayed: 'Coming soon', barColor: 'bg-green-500', bgColor: 'bg-green-50', dotColor: 'bg-green-500' },
   ];
 
   return (
@@ -59,6 +27,16 @@ const ActivityBreakdownTabs = ({ lettersCompleted, totalLetters, numbersComplete
       className="bg-white rounded-3xl p-6 shadow-md border border-gray-100"
     >
       <h3 className="text-lg font-bold text-gray-800 mb-4">Activity Breakdown</h3>
+
+      {/* Color legend */}
+      <div className="flex flex-wrap gap-3 mb-4">
+        {categories.map(cat => (
+          <span key={cat.id} className="flex items-center gap-1.5 text-xs text-gray-600">
+            <span className={`w-2.5 h-2.5 rounded-full ${cat.dotColor}`} />
+            {cat.label}
+          </span>
+        ))}
+      </div>
       
       <Tabs defaultValue="letters">
         <TabsList className="bg-gray-100 rounded-xl p-1 w-full">
@@ -90,18 +68,12 @@ const ActivityBreakdownTabs = ({ lettersCompleted, totalLetters, numbersComplete
                   </div>
                 </div>
 
-                {/* Progress bar */}
                 <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${pct}%` }}
                     transition={{ duration: 0.8, ease: 'easeOut' }}
-                    className={`h-full rounded-full ${
-                      cat.color === 'sky' ? 'bg-sky-500' :
-                      cat.color === 'emerald' ? 'bg-emerald-500' :
-                      cat.color === 'purple' ? 'bg-purple-500' :
-                      'bg-amber-500'
-                    }`}
+                    className={`h-full rounded-full ${cat.barColor}`}
                   />
                 </div>
 

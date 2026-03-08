@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, Star, Flame, Award, Heart } from 'lucide-react';
+import { Trophy, Heart, Lock } from 'lucide-react';
 
 interface AchievementsPanelProps {
   completedLetters: number;
@@ -11,12 +11,12 @@ interface AchievementsPanelProps {
 
 const AchievementsPanel = ({ completedLetters, totalAttempts, currentStreak, childName = 'Your child' }: AchievementsPanelProps) => {
   const badges = [
-    { name: 'First Letter', icon: '🅰️', earned: completedLetters >= 1, desc: 'Completed first letter' },
-    { name: 'Five Star', icon: '⭐', earned: completedLetters >= 5, desc: 'Completed 5 letters' },
-    { name: 'Half Way', icon: '🏆', earned: completedLetters >= 13, desc: 'Completed half the alphabet' },
-    { name: 'Alphabet Pro', icon: '🎓', earned: completedLetters >= 26, desc: 'Mastered all letters' },
-    { name: 'Practice Pro', icon: '💪', earned: totalAttempts >= 50, desc: '50 practice sessions' },
-    { name: 'Hot Streak', icon: '🔥', earned: currentStreak >= 3, desc: '3-day streak' },
+    { name: 'First Letter', icon: '🅰️', earned: completedLetters >= 1, desc: 'Complete first letter', threshold: 1, current: completedLetters, unit: 'letter' },
+    { name: 'Five Star', icon: '⭐', earned: completedLetters >= 5, desc: 'Complete 5 letters', threshold: 5, current: completedLetters, unit: 'letters' },
+    { name: 'Half Way', icon: '🏆', earned: completedLetters >= 13, desc: 'Complete half the alphabet', threshold: 13, current: completedLetters, unit: 'letters' },
+    { name: 'Alphabet Pro', icon: '🎓', earned: completedLetters >= 26, desc: 'Master all letters', threshold: 26, current: completedLetters, unit: 'letters' },
+    { name: 'Practice Pro', icon: '💪', earned: totalAttempts >= 50, desc: '50 practice sessions', threshold: 50, current: totalAttempts, unit: 'sessions' },
+    { name: 'Hot Streak', icon: '🔥', earned: currentStreak >= 3, desc: '3-day streak', threshold: 3, current: currentStreak, unit: 'days' },
   ];
 
   const earnedCount = badges.filter(b => b.earned).length;
@@ -41,28 +41,55 @@ const AchievementsPanel = ({ completedLetters, totalAttempts, currentStreak, chi
         </div>
         <div>
           <h3 className="text-lg font-bold text-gray-800">Achievements & Rewards</h3>
-          <p className="text-sm text-gray-500">{earnedCount} badges earned · {starsCollected} ⭐ collected</p>
+          <p className="text-sm text-gray-500">{earnedCount}/{badges.length} badges earned · {starsCollected} ⭐ collected</p>
         </div>
       </div>
 
-      {/* Badges Grid */}
+      {/* Badges Grid with locked/unlocked states */}
       <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-5">
-        {badges.map((badge, index) => (
-          <motion.div
-            key={badge.name}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1 + index * 0.05 }}
-            className={`flex flex-col items-center gap-1 p-3 rounded-2xl text-center ${
-              badge.earned
-                ? 'bg-amber-50 border border-amber-200'
-                : 'bg-gray-50 border border-gray-100 opacity-50'
-            }`}
-          >
-            <span className="text-2xl">{badge.icon}</span>
-            <p className="text-xs font-medium text-gray-700 leading-tight">{badge.name}</p>
-          </motion.div>
-        ))}
+        {badges.map((badge, index) => {
+          const progress = badge.earned ? 1 : Math.min(badge.current / badge.threshold, 0.99);
+          return (
+            <motion.div
+              key={badge.name}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1 + index * 0.05 }}
+              className={`relative flex flex-col items-center gap-1 p-3 rounded-2xl text-center transition-all ${
+                badge.earned
+                  ? 'bg-amber-50 border-2 border-amber-300 shadow-sm'
+                  : 'bg-gray-50 border border-gray-100'
+              }`}
+            >
+              {!badge.earned && (
+                <div className="absolute top-1 right-1">
+                  <Lock className="w-3 h-3 text-gray-300" />
+                </div>
+              )}
+              <span className={`text-2xl ${badge.earned ? '' : 'grayscale opacity-40'}`}>{badge.icon}</span>
+              <p className={`text-xs font-medium leading-tight ${badge.earned ? 'text-gray-800' : 'text-gray-400'}`}>
+                {badge.name}
+              </p>
+              {/* Progress indicator for locked badges */}
+              {!badge.earned && (
+                <div className="w-full mt-1">
+                  <div className="w-full h-1 bg-gray-200 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${progress * 100}%` }}
+                      transition={{ duration: 0.6, delay: 0.3 + index * 0.05 }}
+                      className="h-full bg-amber-400 rounded-full"
+                    />
+                  </div>
+                  <p className="text-[10px] text-gray-400 mt-0.5">{badge.current}/{badge.threshold}</p>
+                </div>
+              )}
+              {badge.earned && (
+                <span className="text-[10px] text-amber-600 font-bold">✓ Earned</span>
+              )}
+            </motion.div>
+          );
+        })}
       </div>
 
       {/* Encouraging Message */}

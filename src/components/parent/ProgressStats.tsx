@@ -6,6 +6,9 @@ import { Target, Star, Clock, TrendingUp, Flame, Gamepad2 } from 'lucide-react';
 import AlphabetProgressGrid from './AlphabetProgressGrid';
 import ActivityBreakdownTabs from './ActivityBreakdownTabs';
 import AchievementsPanel from './AchievementsPanel';
+import LearningInsights from './LearningInsights';
+import ContinueLearningCard from './ContinueLearningCard';
+import WeeklyPracticeChart from './WeeklyPracticeChart';
 
 interface ProgressItem {
   id: string;
@@ -34,7 +37,10 @@ const ProgressStats = ({ childId, childName }: ProgressStatsProps) => {
         .eq('user_id', user.id)
         .order('letter', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error('tracing_progress query error:', error);
+        throw error;
+      }
       return (data || []) as ProgressItem[];
     }
   });
@@ -48,7 +54,6 @@ const ProgressStats = ({ childId, childName }: ProgressStatsProps) => {
     new Date(b.last_traced).getTime() - new Date(a.last_traced).getTime()
   )[0];
 
-  // Simple streak calculation (consecutive days)
   const currentStreak = (() => {
     if (!progressData || progressData.length === 0) return 0;
     const dates = [...new Set(progressData.map(p => 
@@ -67,13 +72,14 @@ const ProgressStats = ({ childId, childName }: ProgressStatsProps) => {
     return streak;
   })();
 
+  // Color-coded stat cards: Letters=blue, Numbers=orange, Games=purple, Stories=green
   const statCards = [
-    { label: 'Letters Learned', value: `${completedLetters}/26`, icon: Target, color: 'bg-sky-100 text-sky-600', emoji: '🔤' },
-    { label: 'Numbers Done', value: '0/10', icon: Star, color: 'bg-emerald-100 text-emerald-600', emoji: '🔢' },
-    { label: 'Practice Sessions', value: totalAttempts, icon: Clock, color: 'bg-purple-100 text-purple-600', emoji: '📚' },
-    { label: 'Current Streak', value: `${currentStreak} day${currentStreak !== 1 ? 's' : ''}`, icon: Flame, color: 'bg-orange-100 text-orange-600', emoji: '🔥' },
-    { label: 'Average Score', value: `${avgScore}%`, icon: TrendingUp, color: 'bg-amber-100 text-amber-600', emoji: '⭐' },
-    { label: 'Last Activity', value: lastActivity ? `Letter ${lastActivity.letter.toUpperCase()}` : 'None', icon: Gamepad2, color: 'bg-pink-100 text-pink-600', emoji: '🎮' },
+    { label: 'Letters Learned', value: `${completedLetters}/26`, icon: Target, bgColor: 'bg-blue-100', textColor: 'text-blue-600', emoji: '🔤', progress: completedLetters / 26 },
+    { label: 'Numbers Done', value: '0/10', icon: Star, bgColor: 'bg-orange-100', textColor: 'text-orange-600', emoji: '🔢', progress: 0 },
+    { label: 'Practice Sessions', value: totalAttempts, icon: Clock, bgColor: 'bg-purple-100', textColor: 'text-purple-600', emoji: '📚', progress: Math.min(totalAttempts / 50, 1) },
+    { label: 'Current Streak', value: `${currentStreak} day${currentStreak !== 1 ? 's' : ''}`, icon: Flame, bgColor: 'bg-orange-100', textColor: 'text-orange-600', emoji: '🔥', progress: Math.min(currentStreak / 7, 1) },
+    { label: 'Average Score', value: `${avgScore}%`, icon: TrendingUp, bgColor: 'bg-blue-100', textColor: 'text-blue-600', emoji: '⭐', progress: avgScore / 100 },
+    { label: 'Last Activity', value: lastActivity ? `Letter ${lastActivity.letter.toUpperCase()}` : 'None', icon: Gamepad2, bgColor: 'bg-purple-100', textColor: 'text-purple-600', emoji: '🎮', progress: null },
   ];
 
   if (isLoading) {
@@ -86,7 +92,14 @@ const ProgressStats = ({ childId, childName }: ProgressStatsProps) => {
 
   return (
     <div className="space-y-6">
-      {/* Enhanced Stat Cards */}
+      {/* Continue Learning Card */}
+      <ContinueLearningCard
+        lastLetter={lastActivity?.letter}
+        completedLetters={completedLetters}
+        childId={childId}
+      />
+
+      {/* Stat Cards with Progress Bars */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         {statCards.map((stat, index) => (
           <motion.div
@@ -97,7 +110,7 @@ const ProgressStats = ({ childId, childName }: ProgressStatsProps) => {
             className="bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-lg transition-shadow"
           >
             <div className="flex items-center gap-2 mb-2">
-              <div className={`w-9 h-9 rounded-xl ${stat.color} flex items-center justify-center`}>
+              <div className={`w-9 h-9 rounded-xl ${stat.bgColor} ${stat.textColor} flex items-center justify-center`}>
                 <stat.icon className="w-4 h-4" />
               </div>
               <span className="text-lg">{stat.emoji}</span>
@@ -113,7 +126,22 @@ const ProgressStats = ({ childId, childName }: ProgressStatsProps) => {
                 {stat.value}
               </motion.p>
             </AnimatePresence>
-            <p className="text-xs text-gray-500 mt-0.5">{stat.label}</p>
+            <p className="text-xs text-gray-500 mt-0.5 mb-2">{stat.label}</p>
+            {/* Progress bar inside card */}
+            {stat.progress !== null && (
+              <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.round(stat.progress * 100)}%` }}
+                  transition={{ duration: 0.8, delay: 0.3 + index * 0.05, ease: 'easeOut' }}
+                  className={`h-full rounded-full ${
+                    stat.bgColor === 'bg-blue-100' ? 'bg-blue-500' :
+                    stat.bgColor === 'bg-orange-100' ? 'bg-orange-500' :
+                    'bg-purple-500'
+                  }`}
+                />
+              </div>
+            )}
           </motion.div>
         ))}
       </div>
@@ -136,6 +164,18 @@ const ProgressStats = ({ childId, childName }: ProgressStatsProps) => {
           </p>
         </motion.div>
       )}
+
+      {/* Weekly Practice Chart */}
+      <WeeklyPracticeChart progressData={progressData || []} />
+
+      {/* Learning Insights */}
+      <LearningInsights
+        completedLetters={completedLetters}
+        totalAttempts={totalAttempts}
+        avgScore={avgScore}
+        currentStreak={currentStreak}
+        childName={childName}
+      />
 
       {/* Alphabet Progress Grid */}
       <AlphabetProgressGrid progressData={progressData || []} />
