@@ -95,7 +95,12 @@ export function ActivityList({
                 </Badge>
               </TableCell>
               <TableCell className="text-muted-foreground text-sm">
-                {format(new Date(activity.updated_at), 'MMM d, yyyy')}
+                {(() => {
+                  try {
+                    const d = new Date(activity.updated_at || activity.created_at);
+                    return isNaN(d.getTime()) ? '—' : format(d, 'MMM d, yyyy');
+                  } catch { return '—'; }
+                })()}
               </TableCell>
               <TableCell>
                 <DropdownMenu>
