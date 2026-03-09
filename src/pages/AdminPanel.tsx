@@ -237,6 +237,11 @@ export default function AdminPanel() {
             />
           </TabsContent>
 
+          {/* Stories Tab */}
+          <TabsContent value="stories">
+            <StoryEditor />
+          </TabsContent>
+
           {/* Assets Tab */}
           <TabsContent value="assets">
             <AssetsManager />
