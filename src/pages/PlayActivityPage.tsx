@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import TracingGame from '@/components/games/TracingGame';
 import TapIdentifyGame from '@/components/games/TapIdentifyGame';
 import DragDropMatchGame from '@/components/games/DragDropMatchGame';
+import StoryInteractiveGame from '@/components/games/StoryInteractiveGame';
 
 const STORAGE_BUCKET = 'game assets';
 
