@@ -23,9 +23,11 @@ import {
   FolderOpen,
   Users,
   CreditCard,
+  BookOpen,
 } from 'lucide-react';
 import SubscriptionsManager from '@/components/admin/SubscriptionsManager';
 import AdminSettings from '@/components/admin/AdminSettings';
+import StoryEditor from '@/components/admin/StoryEditor';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -154,6 +156,10 @@ export default function AdminPanel() {
               <FileText className="h-4 w-4" />
               Activities
             </TabsTrigger>
+            <TabsTrigger value="stories" className="gap-2">
+              <BookOpen className="h-4 w-4" />
+              Stories
+            </TabsTrigger>
             <TabsTrigger value="assets" className="gap-2">
               <FolderOpen className="h-4 w-4" />
               Assets
@@ -229,6 +235,11 @@ export default function AdminPanel() {
               onDelete={(id) => setDeleteId(id)}
               onTogglePublish={togglePublish}
             />
+          </TabsContent>
+
+          {/* Stories Tab */}
+          <TabsContent value="stories">
+            <StoryEditor />
           </TabsContent>
 
           {/* Assets Tab */}
