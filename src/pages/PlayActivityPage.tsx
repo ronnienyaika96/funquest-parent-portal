@@ -209,6 +209,9 @@ function GameRenderer({ step, onSuccess }: { step: any; onSuccess: () => void })
   if (gameType === 'tracing') {
     return <TracingGame step={step} onSuccess={onSuccess} />;
   }
+  if (gameType === 'tap_identify' && data.mode === 'story_interactive') {
+    return <StoryInteractiveGame step={step} onSuccess={onSuccess} />;
+  }
   if (gameType === 'tap_identify' && data.mode === 'drag_drop_match') {
     return <DragDropMatchGame step={step} onSuccess={onSuccess} />;
   }

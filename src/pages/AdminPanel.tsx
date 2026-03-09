@@ -23,6 +23,7 @@ import {
   FolderOpen,
   Users,
   CreditCard,
+  BookOpen,
 } from 'lucide-react';
 import SubscriptionsManager from '@/components/admin/SubscriptionsManager';
 import AdminSettings from '@/components/admin/AdminSettings';
