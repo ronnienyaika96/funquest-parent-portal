@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { getAssetUrl } from '@/pages/PlayActivityPage';
 import LetterTraceCanvas from '@/components/gaming/LetterTraceCanvas';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, RotateCcw } from 'lucide-react';
+import { RotateCcw } from 'lucide-react';
 import { motion } from 'framer-motion';
+import FeedbackOverlay from './FeedbackOverlay';
+import InstructionBar from './InstructionBar';
 
 interface TracingGameProps {
   step: any;
@@ -27,7 +29,6 @@ const TracingGame: React.FC<TracingGameProps> = ({ step, onSuccess }) => {
     fetch(url).then(r => r.text()).then(setSvgContent).catch(() => setSvgContent(null));
   }, [svgPath]);
 
-  // Play instruction audio
   useEffect(() => {
     if (instructionAudio) {
       const audio = new Audio(getAssetUrl(instructionAudio));
@@ -49,39 +50,42 @@ const TracingGame: React.FC<TracingGameProps> = ({ step, onSuccess }) => {
   };
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-5">
       {data.instruction && (
-        <p className="text-center text-lg font-medium text-foreground">{data.instruction}</p>
+        <InstructionBar text={data.instruction} audioUrl={instructionAudio} />
       )}
 
-      <LetterTraceCanvas
-        svgContent={svgContent}
-        svgBounds={svgBounds}
-        tracing={tracing}
-        setTracing={setTracing}
-        currentStroke={currentStroke}
-        setCurrentStroke={setCurrentStroke}
-        onSvgBoundsDetected={setSvgBounds}
-        onTraceComplete={handleTraceComplete}
+      {/* Tracing area wrapped in a premium card */}
+      <div className="bg-card rounded-3xl shadow-medium border border-border/50 p-3 sm:p-4">
+        <LetterTraceCanvas
+          svgContent={svgContent}
+          svgBounds={svgBounds}
+          tracing={tracing}
+          setTracing={setTracing}
+          currentStroke={currentStroke}
+          setCurrentStroke={setCurrentStroke}
+          onSvgBoundsDetected={setSvgBounds}
+          onTraceComplete={handleTraceComplete}
+        />
+      </div>
+
+      <FeedbackOverlay
+        show={result !== 'idle'}
+        correct={result === 'success' ? true : result === 'fail' ? false : null}
+        correctText="Great tracing! ⭐"
+        wrongText="Follow the shape carefully"
+        onRetry={result === 'fail' ? handleRetry : undefined}
       />
 
-      {result === 'success' && (
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          className="flex items-center gap-2 text-green-600 font-bold text-lg"
+      {result === 'idle' && tracing.length > 0 && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleRetry}
+          className="rounded-full gap-1.5 text-muted-foreground hover:text-foreground"
         >
-          <CheckCircle className="w-6 h-6" /> Great tracing! ⭐
-        </motion.div>
-      )}
-
-      {result === 'fail' && (
-        <div className="flex flex-col items-center gap-2">
-          <p className="text-muted-foreground text-sm">Try again! Follow the shape carefully.</p>
-          <Button variant="outline" size="sm" onClick={handleRetry}>
-            <RotateCcw className="w-4 h-4 mr-1" /> Retry
-          </Button>
-        </div>
+          <RotateCcw className="w-4 h-4" /> Clear
+        </Button>
       )}
     </div>
   );
