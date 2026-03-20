@@ -4,29 +4,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useChildProfiles } from '@/hooks/useChildProfiles';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import KidsHeader from '@/components/kids/KidsHeader';
 import GameCarousel from '@/components/kids/GameCarousel';
 import LearningPathMap from '@/components/kids/LearningPathMap';
 import ParentalGate from '@/components/kids/ParentalGate';
 import ChildSelector from '@/components/parent/ChildSelector';
-
-const TYPE_CONFIG: Record<string, { emoji: string; color: string }> = {
-  letter: { emoji: '🔤', color: 'bg-gradient-to-br from-sky-400 to-sky-600' },
-  number: { emoji: '🔢', color: 'bg-gradient-to-br from-green-400 to-green-600' },
-  word: { emoji: '📝', color: 'bg-gradient-to-br from-purple-400 to-pink-500' },
-  story: { emoji: '📖', color: 'bg-gradient-to-br from-yellow-400 to-orange-500' },
-  game: { emoji: '🎮', color: 'bg-gradient-to-br from-red-400 to-red-600' },
-};
-
-const FALLBACK_COLORS = [
-  'bg-gradient-to-br from-pink-400 to-rose-600',
-  'bg-gradient-to-br from-indigo-500 to-purple-600',
-  'bg-gradient-to-br from-cyan-400 to-blue-600',
-  'bg-gradient-to-br from-emerald-400 to-teal-600',
-  'bg-gradient-to-br from-amber-400 to-orange-500',
-];
+import GameShell from '@/components/games/GameShell';
+import { getCategoryConfig } from '@/lib/funquest-assets';
 
 interface ActivityWithSteps {
   id: string;
@@ -121,7 +107,7 @@ const ActivitiesPage = () => {
     : activities;
 
   const toGameCard = (activity: ActivityWithSteps, index: number) => {
-    const config = TYPE_CONFIG[activity.type] || { emoji: '📚', color: FALLBACK_COLORS[index % FALLBACK_COLORS.length] };
+    const config = getCategoryConfig(activity.type);
     const prog = progressMap[activity.id];
     const progressPct = prog && !prog.completed && activity.step_count > 0
       ? Math.round(((prog.current_step_order - 1) / activity.step_count) * 100)
@@ -130,7 +116,7 @@ const ActivitiesPage = () => {
       id: activity.id,
       title: activity.title,
       emoji: config.emoji,
-      color: config.color,
+      color: `bg-gradient-to-br ${config.gradient}`,
       progress: progressPct,
       isNew: !prog,
     };
@@ -151,12 +137,10 @@ const ActivitiesPage = () => {
     );
   }
 
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
+  if (!user) return <Navigate to="/auth" replace />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-100 via-white to-green-50">
+    <GameShell>
       <KidsHeader
         onLearningPathClick={() => setShowLearningPath(true)}
         onGrownUpsClick={() => setShowParentalGate(true)}
@@ -167,7 +151,7 @@ const ActivitiesPage = () => {
         {/* Child Selector */}
         {childrenLoading ? (
           <div className="px-4 sm:px-6 mb-6">
-            <Skeleton className="h-20 w-full rounded-2xl" />
+            <Skeleton className="h-20 w-full rounded-3xl" />
           </div>
         ) : childrenError ? (
           <div className="px-4 sm:px-6 mb-6">
@@ -191,25 +175,35 @@ const ActivitiesPage = () => {
           </div>
         ) : childProfiles && childProfiles.length === 0 ? (
           <div className="px-4 sm:px-6 mb-6">
-            <div className="bg-accent/50 border border-accent rounded-2xl p-6 text-center">
-              <span className="text-4xl block mb-2">👶</span>
-              <p className="text-foreground font-medium">No child profiles found.</p>
-              <p className="text-muted-foreground text-sm">Add a child profile in the parent dashboard to get started.</p>
+            <div className="bg-card border border-border rounded-3xl p-8 text-center shadow-soft">
+              <span className="text-5xl block mb-3">👶</span>
+              <p className="text-foreground font-bold text-lg mb-1">No child profiles found</p>
+              <p className="text-muted-foreground text-sm">Add a child in the parent dashboard to get started.</p>
             </div>
           </div>
         ) : null}
 
         {/* Welcome Banner */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mx-4 sm:mx-6 mb-8">
-          <div className="bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-500 rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
-            <div className="absolute top-4 right-8 text-6xl opacity-20">⭐</div>
-            <div className="absolute bottom-4 right-24 text-4xl opacity-20">🌟</div>
-            <div className="absolute top-8 right-32 text-3xl opacity-20">✨</div>
-            <div className="relative z-10">
-              <h1 className="text-white text-2xl sm:text-3xl font-bold mb-2 drop-shadow-md">
-                🎉 What shall we learn today?
-              </h1>
-              <p className="text-white/90 text-lg">Pick a game and start your adventure!</p>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="mx-4 sm:mx-6 mb-8"
+        >
+          <div className="bg-gradient-to-r from-funquest-purple via-funquest-pink to-funquest-orange rounded-3xl p-6 sm:p-8 shadow-strong relative overflow-hidden">
+            {/* Decorative */}
+            <div className="absolute top-3 right-6 w-16 h-16 bg-white/8 rounded-full blur-sm" />
+            <div className="absolute bottom-2 right-20 w-10 h-10 bg-white/6 rounded-full blur-sm" />
+            <div className="relative z-10 flex items-center gap-4">
+              <div className="hidden sm:flex w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-sm items-center justify-center flex-shrink-0">
+                <Sparkles className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-white text-2xl sm:text-3xl font-bold mb-1 drop-shadow-md" style={{ lineHeight: '1.2' }}>
+                  What shall we learn today?
+                </h1>
+                <p className="text-white/80 text-base sm:text-lg">Pick a game and start your adventure!</p>
+              </div>
             </div>
           </div>
         </motion.div>
@@ -228,13 +222,13 @@ const ActivitiesPage = () => {
           <div className="text-center py-16 px-4">
             <span className="text-6xl block mb-4">⚠️</span>
             <h3 className="text-xl font-bold text-foreground mb-2">Something went wrong</h3>
-            <p className="text-muted-foreground">Could not load activities. Please try refreshing the page.</p>
+            <p className="text-muted-foreground">Could not load activities. Please try refreshing.</p>
           </div>
         ) : activities.length === 0 ? (
           <div className="text-center py-16 px-4">
             <span className="text-6xl block mb-4">🎨</span>
             <h3 className="text-xl font-bold text-foreground mb-2">No activities yet!</h3>
-            <p className="text-muted-foreground">New learning adventures are coming soon. Check back later!</p>
+            <p className="text-muted-foreground">New learning adventures are coming soon.</p>
           </div>
         ) : (
           <>
@@ -268,7 +262,7 @@ const ActivitiesPage = () => {
         onClose={() => setShowParentalGate(false)}
         onSuccess={handleParentalSuccess}
       />
-    </div>
+    </GameShell>
   );
 };
 

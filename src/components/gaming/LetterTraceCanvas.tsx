@@ -246,18 +246,16 @@ const LetterTraceCanvas: React.FC<TraceCanvasProps> = ({
   return (
     <div
       ref={svgContainer}
-      className="relative letter-trace-canvas mx-auto flex items-center justify-center border-4 border-blue-300 bg-white"
+      className="relative letter-trace-canvas mx-auto flex items-center justify-center rounded-2xl border-2 border-border/40"
       style={{
-        width: isMobile ? '90vw' : '380px',
-        height: isMobile ? '90vw' : '380px',
-        maxWidth: isMobile ? 360 : 400,
-        maxHeight: isMobile ? 360 : 400,
+        width: isMobile ? '85vw' : '360px',
+        height: isMobile ? '85vw' : '360px',
+        maxWidth: 380,
+        maxHeight: 380,
         aspectRatio: '1/1',
-        boxShadow: isMobile
-          ? "0 2px 18px #38bdf833"
-          : '0 2px 24px 0px #bae6fd60',
-        background: isMobile ? 'rgba(255,255,255,0.93)' : 'rgba(255,255,255,0.96)',
-        padding: isMobile ? 8 : 18,
+        boxShadow: '0 4px 24px rgba(0,0,0,0.06), inset 0 2px 8px rgba(0,0,0,0.03)',
+        background: 'hsl(0 0% 100% / 0.97)',
+        padding: isMobile ? 10 : 16,
         overflow: 'hidden',
         touchAction: 'none'
       }}

@@ -9,11 +9,16 @@ import {
   PointerSensor,
   TouchSensor,
   closestCenter,
+  useDraggable,
+  useDroppable,
 } from '@dnd-kit/core';
 import { getAssetUrl } from '@/pages/PlayActivityPage';
 import { motion } from 'framer-motion';
-import { CheckCircle, RotateCcw, Volume2 } from 'lucide-react';
+import { CheckCircle, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { getGameAssetUrl, TILE_ASSETS } from '@/lib/funquest-assets';
+import FeedbackOverlay from './FeedbackOverlay';
+import InstructionBar from './InstructionBar';
 
 interface Draggable {
   id: string;
@@ -25,7 +30,7 @@ interface Target {
   id: string;
   label: string;
   image?: string;
-  accepts: string[]; // draggable ids that are correct for this target
+  accepts: string[];
 }
 
 interface DragDropMatchGameProps {
@@ -33,22 +38,19 @@ interface DragDropMatchGameProps {
   onSuccess: () => void;
 }
 
-// ---------- Draggable Item ----------
-function DraggableItem({
-  item,
-  isMatched,
-  isDragging,
-}: {
-  item: Draggable;
-  isMatched: boolean;
-  isDragging: boolean;
-}) {
+function DraggableItem({ item, isMatched, isDragging }: { item: Draggable; isMatched: boolean; isDragging: boolean }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: item.id });
+
+  const tileBg = getGameAssetUrl(isMatched ? TILE_ASSETS.choiceCorrect : TILE_ASSETS.draggable);
 
   const style: React.CSSProperties = {
     transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
-    opacity: isDragging ? 0.4 : isMatched ? 0.5 : 1,
+    opacity: isDragging ? 0.4 : isMatched ? 0.7 : 1,
     touchAction: 'none',
+    backgroundImage: `url(${tileBg})`,
+    backgroundSize: 'contain',
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'center',
   };
 
   return (
@@ -57,61 +59,48 @@ function DraggableItem({
       {...listeners}
       {...attributes}
       style={style}
-      className={`p-3 rounded-xl border-2 transition-colors flex flex-col items-center gap-1 min-w-[80px] select-none cursor-grab active:cursor-grabbing ${
-        isMatched
-          ? 'border-green-400 bg-green-50'
-          : 'border-border bg-card hover:shadow-md'
-      }`}
+      className={`p-4 rounded-2xl flex flex-col items-center gap-2 min-w-[90px] min-h-[90px] select-none cursor-grab active:cursor-grabbing justify-center shadow-soft transition-shadow hover:shadow-medium`}
     >
       {item.image && (
-        <img src={getAssetUrl(item.image)} alt={item.label} className="w-14 h-14 object-contain pointer-events-none" />
+        <img src={getAssetUrl(item.image)} alt={item.label} className="w-12 h-12 object-contain pointer-events-none drop-shadow-md" />
       )}
-      <span className="text-sm font-semibold text-foreground pointer-events-none">{item.label}</span>
+      <span className="text-sm font-bold text-foreground pointer-events-none">{item.label}</span>
     </div>
   );
 }
 
-// ---------- Droppable Target ----------
-function DroppableTarget({
-  target,
-  matchedItem,
-  isOver,
-}: {
-  target: Target;
-  matchedItem: Draggable | null;
-  isOver: boolean;
-}) {
+function DroppableTarget({ target, matchedItem, isOver }: { target: Target; matchedItem: Draggable | null; isOver: boolean }) {
   const { setNodeRef, isOver: over } = useDroppable({ id: target.id });
   const active = isOver || over;
+
+  const tileBg = getGameAssetUrl(matchedItem ? TILE_ASSETS.dropZoneCorrect : TILE_ASSETS.dropZoneEmpty);
 
   return (
     <div
       ref={setNodeRef}
-      className={`p-3 rounded-xl border-2 border-dashed transition-all flex flex-col items-center gap-1 min-w-[80px] min-h-[90px] justify-center ${
-        matchedItem
-          ? 'border-green-400 bg-green-50'
-          : active
-          ? 'border-primary bg-primary/10 scale-105'
-          : 'border-muted-foreground/30 bg-muted/30'
+      className={`p-4 rounded-2xl flex flex-col items-center gap-2 min-w-[90px] min-h-[90px] justify-center transition-all ${
+        active ? 'scale-105 shadow-medium' : 'shadow-soft'
       }`}
+      style={{
+        backgroundImage: `url(${tileBg})`,
+        backgroundSize: 'contain',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+      }}
     >
       {target.image && (
-        <img src={getAssetUrl(target.image)} alt={target.label} className="w-14 h-14 object-contain" />
+        <img src={getAssetUrl(target.image)} alt={target.label} className="w-12 h-12 object-contain" />
       )}
-      <span className="text-sm font-medium text-foreground">{target.label}</span>
+      <span className="text-sm font-semibold text-foreground">{target.label}</span>
       {matchedItem && (
-        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="mt-1">
-          <CheckCircle className="w-4 h-4 text-green-500" />
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+          <CheckCircle className="w-5 h-5 text-funquest-success" />
         </motion.div>
       )}
     </div>
   );
 }
 
-// ---------- dnd-kit hooks (inline to avoid extra files) ----------
-import { useDraggable, useDroppable } from '@dnd-kit/core';
-
-// ---------- Main Component ----------
 const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }) => {
   const data = step.data || {};
   const instruction = data.instruction || 'Drag items to their match!';
@@ -119,7 +108,6 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
   const targets: Target[] = data.targets || [];
   const instructionAudio = step.instruction_audio_url;
 
-  // matches: targetId -> draggableId
   const [matches, setMatches] = useState<Record<string, string>>({});
   const [activeId, setActiveId] = useState<string | null>(null);
   const [wrongTarget, setWrongTarget] = useState<string | null>(null);
@@ -139,9 +127,7 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
   const allMatched = targets.length > 0 && targets.every(t => !!matches[t.id]);
 
   useEffect(() => {
-    if (allMatched) {
-      setTimeout(onSuccess, 900);
-    }
+    if (allMatched) setTimeout(onSuccess, 900);
   }, [allMatched, onSuccess]);
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -176,21 +162,14 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
   const activeDraggable = draggables.find(d => d.id === activeId);
 
   return (
-    <div className="flex flex-col items-center gap-5">
-      <div className="flex items-center gap-2">
-        <p className="text-lg font-bold text-foreground text-center">{instruction}</p>
-        {instructionAudio && (
-          <button onClick={() => new Audio(getAssetUrl(instructionAudio)).play().catch(() => {})} className="text-primary">
-            <Volume2 className="w-5 h-5" />
-          </button>
-        )}
-      </div>
+    <div className="flex flex-col items-center gap-6">
+      <InstructionBar text={instruction} audioUrl={instructionAudio} />
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <div className="flex flex-col sm:flex-row gap-8 w-full max-w-md justify-center items-start">
           {/* Draggables */}
           <div className="flex flex-col gap-3">
-            <p className="text-xs font-semibold text-muted-foreground text-center">Drag</p>
+            <p className="text-xs font-bold text-muted-foreground text-center uppercase tracking-wide">Drag</p>
             {draggables.map(item => (
               <DraggableItem
                 key={item.id}
@@ -203,7 +182,7 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
 
           {/* Targets */}
           <div className="flex flex-col gap-3">
-            <p className="text-xs font-semibold text-muted-foreground text-center">Drop Here</p>
+            <p className="text-xs font-bold text-muted-foreground text-center uppercase tracking-wide">Drop Here</p>
             {targets.map(target => (
               <motion.div
                 key={target.id}
@@ -221,25 +200,33 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
 
         <DragOverlay>
           {activeDraggable ? (
-            <div className="p-3 rounded-xl border-2 border-primary bg-card shadow-lg flex flex-col items-center gap-1 min-w-[80px]">
+            <div
+              className="p-4 rounded-2xl shadow-strong flex flex-col items-center gap-2 min-w-[90px]"
+              style={{
+                backgroundImage: `url(${getGameAssetUrl(TILE_ASSETS.choiceSelected)})`,
+                backgroundSize: 'contain',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'center',
+              }}
+            >
               {activeDraggable.image && (
-                <img src={getAssetUrl(activeDraggable.image)} alt={activeDraggable.label} className="w-14 h-14 object-contain" />
+                <img src={getAssetUrl(activeDraggable.image)} alt={activeDraggable.label} className="w-12 h-12 object-contain" />
               )}
-              <span className="text-sm font-semibold text-foreground">{activeDraggable.label}</span>
+              <span className="text-sm font-bold text-foreground">{activeDraggable.label}</span>
             </div>
           ) : null}
         </DragOverlay>
       </DndContext>
 
-      {allMatched && (
-        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="flex items-center gap-2 text-green-600 font-bold text-lg">
-          <CheckCircle className="w-6 h-6" /> All matched! 🎉
-        </motion.div>
-      )}
+      <FeedbackOverlay
+        show={allMatched}
+        correct={allMatched ? true : null}
+        correctText="All matched! 🎉"
+      />
 
       {!allMatched && Object.keys(matches).length > 0 && (
-        <Button variant="ghost" size="sm" onClick={handleReset}>
-          <RotateCcw className="w-4 h-4 mr-1" /> Reset
+        <Button variant="ghost" size="sm" onClick={handleReset} className="rounded-full gap-1.5 text-muted-foreground hover:text-foreground">
+          <RotateCcw className="w-4 h-4" /> Reset
         </Button>
       )}
     </div>
