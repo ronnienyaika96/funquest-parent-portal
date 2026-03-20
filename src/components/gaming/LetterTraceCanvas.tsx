@@ -258,7 +258,7 @@ const LetterTraceCanvas: React.FC<TraceCanvasProps> = ({
         padding: isMobile ? 10 : 16,
         overflow: 'hidden',
         touchAction: 'none'
-      }
+      }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
