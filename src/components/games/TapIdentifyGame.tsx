@@ -2,28 +2,29 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { getAssetUrl } from '@/pages/PlayActivityPage';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Volume2 } from 'lucide-react';
-import { getGameAssetUrl, TILE_ASSETS } from '@/lib/funquest-assets';
+import { getChoiceAssetByState, TileState } from '@/lib/gameAssets';
+import { getInstructionText, resolveOptionAsset } from '@/lib/gameHelpers';
 
 interface TapIdentifyGameProps {
   step: any;
   onSuccess: () => void;
 }
 
-/* Cloud decoration */
 const Cloud: React.FC<{ className?: string }> = ({ className = '' }) => (
   <div className={`absolute rounded-full bg-white/20 pointer-events-none ${className}`} />
 );
 
 const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) => {
   const data = step.data || {};
-  const rawQuestion = data.question || data.instruction || 'Tap the correct answer!';
-  const question = typeof rawQuestion === 'string' ? rawQuestion : JSON.stringify(rawQuestion);
+  const question = getInstructionText(data);
+
   const rawOptions: any[] = Array.isArray(data.options) ? data.options : [];
   const options = rawOptions.map((opt: any) => ({
     label: typeof opt === 'string' ? opt : typeof opt?.label === 'string' ? opt.label : String(opt?.label ?? ''),
     image: opt?.image,
     correct: !!opt?.correct,
   }));
+
   const instructionAudio = step.instruction_audio_url;
 
   const [selected, setSelected] = useState<number | null>(null);
@@ -64,18 +65,18 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
 
   const isCorrect = selected !== null && options[selected]?.correct;
 
+  // Pre-resolve tile state URLs
   const tileUrls = useMemo(() => ({
-    default: getGameAssetUrl(TILE_ASSETS.choiceDefault),
-    selected: getGameAssetUrl(TILE_ASSETS.choiceSelected),
-    correct: getGameAssetUrl(TILE_ASSETS.choiceCorrect),
-    wrong: getGameAssetUrl(TILE_ASSETS.choiceWrong),
+    default: getChoiceAssetByState('default'),
+    selected: getChoiceAssetByState('selected'),
+    correct: getChoiceAssetByState('correct'),
+    wrong: getChoiceAssetByState('wrong'),
   }), []);
 
-  const getTileBg = (index: number) => {
-    if (!showResult && selected === index) return tileUrls.selected;
-    if (!showResult) return tileUrls.default;
-    if (selected !== index) return tileUrls.default;
-    return options[index]?.correct ? tileUrls.correct : tileUrls.wrong;
+  const getTileState = (index: number): TileState => {
+    if (!showResult) return selected === index ? 'selected' : 'default';
+    if (selected !== index) return 'default';
+    return options[index]?.correct ? 'correct' : 'wrong';
   };
 
   const playAudio = () => {
@@ -83,7 +84,6 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
     new Audio(getAssetUrl(instructionAudio)).play().catch(() => {});
   };
 
-  // Color palette for number labels to match the reference
   const labelColors = ['#E8A735', '#4A90D9', '#34B87A', '#E05C7A', '#7B61D9', '#E8753A'];
 
   return (
@@ -103,37 +103,27 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
 
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center w-full max-w-xl px-5 pt-8 pb-4 gap-5 flex-1">
-
-        {/* 1. Title */}
+        {/* Title */}
         <motion.h1
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-4xl sm:text-5xl font-extrabold text-white text-center tracking-wide"
-          style={{
-            textShadow: '0 2px 8px rgba(0,0,0,0.12)',
-            fontFamily: "'Nunito', 'Comic Sans MS', sans-serif",
-          }}
+          style={{ textShadow: '0 2px 8px rgba(0,0,0,0.12)', fontFamily: "'Nunito', 'Comic Sans MS', sans-serif" }}
         >
           Tap to Identify
         </motion.h1>
 
-        {/* 2. Instruction panel */}
+        {/* Instruction panel */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
           className="w-full rounded-full px-8 py-3.5 flex items-center justify-center gap-3"
-          style={{
-            background: 'rgba(255,255,255,0.45)',
-            backdropFilter: 'blur(8px)',
-          }}
+          style={{ background: 'rgba(255,255,255,0.45)', backdropFilter: 'blur(8px)' }}
         >
           <p
             className="text-center text-lg sm:text-xl font-bold leading-snug"
-            style={{
-              color: 'hsl(215 40% 30%)',
-              fontFamily: "'Nunito', sans-serif",
-            }}
+            style={{ color: 'hsl(215 40% 30%)', fontFamily: "'Nunito', sans-serif" }}
           >
             {question}
           </p>
@@ -148,7 +138,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
           )}
         </motion.div>
 
-        {/* 3. Prompt image area */}
+        {/* Prompt image */}
         {data.image && (
           <motion.div
             initial={{ opacity: 0, scale: 0.85 }}
@@ -163,24 +153,25 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
             />
           </motion.div>
         )}
-
-        {/* If no image, add spacer */}
         {!data.image && <div className="flex-1" />}
 
-        {/* 4. Answer tiles on a shelf */}
+        {/* Answer tiles on shelf */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
           className="w-full"
         >
-          {/* Tiles row */}
           <div className="flex items-center justify-center gap-3 sm:gap-4 px-2 mb-[-20px] relative z-10">
             {options.map((opt, i) => {
-              const tileBg = getTileBg(i);
+              const state = getTileState(i);
+              const tileBg = tileUrls[state];
               const isThisSelected = selected === i;
               const isThisCorrect = showResult && isThisSelected && opt.correct;
               const isThisWrong = showResult && isThisSelected && !opt.correct;
+
+              // Try to resolve an SVG asset for this label
+              const assetUrl = opt.image ? getAssetUrl(opt.image) : resolveOptionAsset(opt.label);
 
               return (
                 <motion.button
@@ -202,18 +193,18 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
                     filter: showResult && !isThisSelected ? 'opacity(0.45)' : 'none',
                   }}
                 >
-                  {/* Tile SVG bg */}
+                  {/* Tile SVG background */}
                   <img
                     src={tileBg}
                     alt=""
                     className="absolute inset-0 w-full h-full object-contain pointer-events-none"
                     draggable={false}
                   />
-                  {/* Label */}
+                  {/* Content: SVG asset or text fallback */}
                   <div className="absolute inset-0 flex items-center justify-center">
-                    {opt.image ? (
+                    {assetUrl ? (
                       <img
-                        src={getAssetUrl(opt.image)}
+                        src={assetUrl}
                         alt={opt.label}
                         className="w-14 h-14 sm:w-16 sm:h-16 object-contain drop-shadow-md"
                       />
@@ -235,7 +226,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
             })}
           </div>
 
-          {/* Blue shelf / platform */}
+          {/* Blue shelf */}
           <div
             className="w-full rounded-[1.5rem] h-16 sm:h-20"
             style={{
@@ -245,7 +236,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
           />
         </motion.div>
 
-        {/* 5. Reinforcement / feedback */}
+        {/* Feedback */}
         <AnimatePresence mode="wait">
           {reinforcement && (
             <motion.div
@@ -283,10 +274,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
                   <button
                     onClick={handleRetry}
                     className="px-8 py-3 rounded-full bg-white/90 font-bold text-lg shadow-md hover:shadow-lg transition-shadow active:scale-95"
-                    style={{
-                      color: 'hsl(215 50% 30%)',
-                      fontFamily: "'Nunito', sans-serif",
-                    }}
+                    style={{ color: 'hsl(215 50% 30%)', fontFamily: "'Nunito', sans-serif" }}
                   >
                     Try Again
                   </button>
