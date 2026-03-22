@@ -9,19 +9,11 @@ interface TapIdentifyGameProps {
   onSuccess: () => void;
 }
 
-/* ------------------------------------------------------------------ */
-/*  Cloud shape – pure CSS decorative element                         */
-/* ------------------------------------------------------------------ */
-const Cloud: React.FC<{ className?: string; style?: React.CSSProperties }> = ({ className = '', style }) => (
-  <div
-    className={`absolute rounded-full bg-white/30 blur-xl pointer-events-none ${className}`}
-    style={{ ...style }}
-  />
+/* Cloud decoration */
+const Cloud: React.FC<{ className?: string }> = ({ className = '' }) => (
+  <div className={`absolute rounded-full bg-white/20 pointer-events-none ${className}`} />
 );
 
-/* ------------------------------------------------------------------ */
-/*  Main component                                                     */
-/* ------------------------------------------------------------------ */
 const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) => {
   const data = step.data || {};
   const rawQuestion = data.question || data.instruction || 'Tap the correct answer!';
@@ -38,15 +30,12 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
   const [showResult, setShowResult] = useState(false);
   const [reinforcement, setReinforcement] = useState<string | null>(null);
 
-  // Play instruction audio on mount
   useEffect(() => {
     if (instructionAudio) {
-      const audio = new Audio(getAssetUrl(instructionAudio));
-      audio.play().catch(() => {});
+      new Audio(getAssetUrl(instructionAudio)).play().catch(() => {});
     }
   }, [instructionAudio]);
 
-  // Reset state when step changes
   useEffect(() => {
     setSelected(null);
     setShowResult(false);
@@ -60,9 +49,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
 
     const opt = options[index];
     if (opt?.correct) {
-      // Build reinforcement text
-      const label = opt.label || '';
-      setReinforcement(data.reinforcement_text || `Great job! 🌟`);
+      setReinforcement(data.reinforcement_text || 'Great job! 🌟');
       setTimeout(onSuccess, 1200);
     } else {
       setReinforcement('Try again! You can do it! 💪');
@@ -77,7 +64,6 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
 
   const isCorrect = selected !== null && options[selected]?.correct;
 
-  // Tile asset URLs
   const tileUrls = useMemo(() => ({
     default: getGameAssetUrl(TILE_ASSETS.choiceDefault),
     selected: getGameAssetUrl(TILE_ASSETS.choiceSelected),
@@ -86,8 +72,9 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
   }), []);
 
   const getTileBg = (index: number) => {
-    if (selected === index && !showResult) return tileUrls.selected;
-    if (!showResult || selected !== index) return tileUrls.default;
+    if (!showResult && selected === index) return tileUrls.selected;
+    if (!showResult) return tileUrls.default;
+    if (selected !== index) return tileUrls.default;
     return options[index]?.correct ? tileUrls.correct : tileUrls.wrong;
   };
 
@@ -96,159 +83,196 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
     new Audio(getAssetUrl(instructionAudio)).play().catch(() => {});
   };
 
-  /* Determine grid columns based on option count */
-  const gridCols = options.length <= 2
-    ? 'grid-cols-2'
-    : options.length === 3
-    ? 'grid-cols-3'
-    : 'grid-cols-2 sm:grid-cols-4';
+  // Color palette for number labels to match the reference
+  const labelColors = ['#E8A735', '#4A90D9', '#34B87A', '#E05C7A', '#7B61D9', '#E8753A'];
 
   return (
-    <div className="relative w-full min-h-[80vh] flex flex-col items-center overflow-hidden rounded-[2rem]"
+    <div
+      className="relative w-full min-h-[80vh] flex flex-col items-center overflow-hidden rounded-[2rem]"
       style={{
-        background: 'linear-gradient(180deg, hsl(205 85% 72%) 0%, hsl(210 80% 82%) 50%, hsl(215 75% 90%) 100%)',
+        background: 'linear-gradient(180deg, hsl(205 80% 68%) 0%, hsl(207 78% 74%) 40%, hsl(210 75% 80%) 100%)',
       }}
     >
-      {/* ---- Decorative clouds ---- */}
-      <Cloud className="w-48 h-20 top-8 -left-10 opacity-50" />
-      <Cloud className="w-64 h-24 top-16 right-[-2rem] opacity-40" />
-      <Cloud className="w-40 h-16 top-[45%] left-4 opacity-30" />
-      <Cloud className="w-56 h-20 bottom-24 right-8 opacity-35" />
-      <Cloud className="w-32 h-14 bottom-40 left-12 opacity-25" />
+      {/* Clouds */}
+      <Cloud className="w-36 h-12 top-[10%] left-[5%] blur-lg opacity-40" />
+      <Cloud className="w-52 h-16 top-[8%] right-[2%] blur-xl opacity-35" />
+      <Cloud className="w-28 h-10 top-[25%] left-[60%] blur-lg opacity-30" />
+      <Cloud className="w-44 h-14 top-[50%] left-[-2%] blur-xl opacity-25" />
+      <Cloud className="w-32 h-10 bottom-[30%] right-[10%] blur-lg opacity-30" />
+      <Cloud className="w-56 h-18 bottom-[5%] left-[20%] blur-xl opacity-20" />
 
-      {/* ---- Content ---- */}
-      <div className="relative z-10 flex flex-col items-center w-full max-w-lg px-5 py-8 gap-6 flex-1">
+      {/* Content */}
+      <div className="relative z-10 flex flex-col items-center w-full max-w-xl px-5 pt-8 pb-4 gap-5 flex-1">
 
         {/* 1. Title */}
         <motion.h1
-          initial={{ opacity: 0, y: -16 }}
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-3xl sm:text-4xl font-extrabold text-white drop-shadow-md text-center font-nunito tracking-wide"
+          className="text-4xl sm:text-5xl font-extrabold text-white text-center tracking-wide"
+          style={{
+            textShadow: '0 2px 8px rgba(0,0,0,0.12)',
+            fontFamily: "'Nunito', 'Comic Sans MS', sans-serif",
+          }}
         >
           Tap to Identify
         </motion.h1>
 
-        {/* 2. Instruction Panel */}
+        {/* 2. Instruction panel */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
-          className="w-full bg-white/90 backdrop-blur-sm rounded-3xl shadow-medium px-6 py-4 flex items-center gap-3"
+          className="w-full rounded-full px-8 py-3.5 flex items-center justify-center gap-3"
+          style={{
+            background: 'rgba(255,255,255,0.45)',
+            backdropFilter: 'blur(8px)',
+          }}
         >
-          <p className="flex-1 text-center text-lg sm:text-xl font-bold text-[hsl(220,60%,30%)] font-nunito leading-snug">
+          <p
+            className="text-center text-lg sm:text-xl font-bold leading-snug"
+            style={{
+              color: 'hsl(215 40% 30%)',
+              fontFamily: "'Nunito', sans-serif",
+            }}
+          >
             {question}
           </p>
           {instructionAudio && (
             <button
               onClick={playAudio}
-              className="flex-shrink-0 w-11 h-11 rounded-full bg-funquest-blue/15 hover:bg-funquest-blue/25 flex items-center justify-center transition-colors active:scale-90"
+              className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-transform active:scale-90"
+              style={{ background: 'rgba(255,255,255,0.5)' }}
             >
-              <Volume2 className="w-5 h-5 text-funquest-blue" />
+              <Volume2 className="w-5 h-5" style={{ color: 'hsl(215 60% 45%)' }} />
             </button>
           )}
         </motion.div>
 
-        {/* 3. Prompt image (counting visual, etc.) */}
+        {/* 3. Prompt image area */}
         {data.image && (
           <motion.div
             initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.15 }}
-            className="w-40 h-40 sm:w-48 sm:h-48 rounded-[2rem] bg-white/80 backdrop-blur-sm shadow-soft flex items-center justify-center border-4 border-white/60"
+            className="flex-1 flex items-center justify-center w-full py-4"
           >
             <img
               src={getAssetUrl(data.image)}
               alt="Question prompt"
-              className="w-[80%] h-[80%] object-contain drop-shadow-sm"
+              className="max-w-[80%] max-h-[240px] sm:max-h-[280px] object-contain drop-shadow-lg"
             />
           </motion.div>
         )}
 
-        {/* 4. Answer tiles */}
+        {/* If no image, add spacer */}
+        {!data.image && <div className="flex-1" />}
+
+        {/* 4. Answer tiles on a shelf */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className={`grid ${gridCols} gap-4 sm:gap-5 w-full`}
+          className="w-full"
         >
-          {options.map((opt, i) => {
-            const tileBg = getTileBg(i);
-            const isThisSelected = selected === i;
-            const isThisCorrect = showResult && isThisSelected && opt.correct;
-            const isThisWrong = showResult && isThisSelected && !opt.correct;
+          {/* Tiles row */}
+          <div className="flex items-center justify-center gap-3 sm:gap-4 px-2 mb-[-20px] relative z-10">
+            {options.map((opt, i) => {
+              const tileBg = getTileBg(i);
+              const isThisSelected = selected === i;
+              const isThisCorrect = showResult && isThisSelected && opt.correct;
+              const isThisWrong = showResult && isThisSelected && !opt.correct;
 
-            return (
-              <motion.button
-                key={i}
-                whileTap={{ scale: 0.9 }}
-                whileHover={{ scale: 1.04 }}
-                animate={
-                  isThisCorrect
-                    ? { scale: [1, 1.12, 1.05], transition: { duration: 0.4 } }
-                    : isThisWrong
-                    ? { x: [0, -6, 6, -4, 4, 0], transition: { duration: 0.4 } }
-                    : {}
-                }
-                onClick={() => handleTap(i)}
-                className="relative aspect-square rounded-[1.5rem] overflow-hidden cursor-pointer focus:outline-none"
-                style={{
-                  filter: showResult && !isThisSelected ? 'opacity(0.5)' : 'none',
-                }}
-              >
-                {/* Tile SVG background */}
-                <img
-                  src={tileBg}
-                  alt=""
-                  className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-                  draggable={false}
-                />
+              return (
+                <motion.button
+                  key={i}
+                  whileTap={{ scale: 0.88 }}
+                  whileHover={{ scale: 1.05 }}
+                  animate={
+                    isThisCorrect
+                      ? { scale: [1, 1.15, 1.06], transition: { duration: 0.4 } }
+                      : isThisWrong
+                      ? { x: [0, -8, 8, -5, 5, 0], transition: { duration: 0.4 } }
+                      : {}
+                  }
+                  onClick={() => handleTap(i)}
+                  className="relative cursor-pointer focus:outline-none"
+                  style={{
+                    width: `${Math.min(100, 320 / Math.max(options.length, 2))}px`,
+                    height: `${Math.min(100, 320 / Math.max(options.length, 2))}px`,
+                    filter: showResult && !isThisSelected ? 'opacity(0.45)' : 'none',
+                  }}
+                >
+                  {/* Tile SVG bg */}
+                  <img
+                    src={tileBg}
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                    draggable={false}
+                  />
+                  {/* Label */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    {opt.image ? (
+                      <img
+                        src={getAssetUrl(opt.image)}
+                        alt={opt.label}
+                        className="w-14 h-14 sm:w-16 sm:h-16 object-contain drop-shadow-md"
+                      />
+                    ) : (
+                      <span
+                        className="font-extrabold drop-shadow-sm"
+                        style={{
+                          fontSize: 'clamp(2rem, 5vw, 3rem)',
+                          color: labelColors[i % labelColors.length],
+                          fontFamily: "'Nunito', sans-serif",
+                        }}
+                      >
+                        {opt.label}
+                      </span>
+                    )}
+                  </div>
+                </motion.button>
+              );
+            })}
+          </div>
 
-                {/* Content overlay */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 p-2">
-                  {opt.image ? (
-                    <img
-                      src={getAssetUrl(opt.image)}
-                      alt={opt.label}
-                      className="w-14 h-14 sm:w-16 sm:h-16 object-contain drop-shadow-md"
-                    />
-                  ) : (
-                    <span className="text-3xl sm:text-4xl font-extrabold text-[hsl(220,55%,25%)] font-nunito drop-shadow-sm">
-                      {opt.label}
-                    </span>
-                  )}
-                </div>
-              </motion.button>
-            );
-          })}
+          {/* Blue shelf / platform */}
+          <div
+            className="w-full rounded-[1.5rem] h-16 sm:h-20"
+            style={{
+              background: 'linear-gradient(180deg, hsl(215 65% 50%) 0%, hsl(220 60% 42%) 100%)',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+            }}
+          />
         </motion.div>
 
-        {/* Spacer to push reinforcement bar to bottom */}
-        <div className="flex-1" />
-
-        {/* 5. Reinforcement panel / feedback bar */}
+        {/* 5. Reinforcement / feedback */}
         <AnimatePresence mode="wait">
           {reinforcement && (
             <motion.div
               key={reinforcement}
-              initial={{ opacity: 0, y: 24, scale: 0.95 }}
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 12 }}
+              exit={{ opacity: 0, y: 10 }}
               transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-              className="w-full"
+              className="w-full mt-2"
             >
               <div
-                className={`w-full rounded-3xl px-6 py-4 text-center shadow-medium ${
-                  isCorrect
-                    ? 'bg-gradient-to-r from-[hsl(142,70%,45%)] to-[hsl(155,65%,50%)] text-white'
-                    : 'bg-gradient-to-r from-[hsl(217,85%,55%)] to-[hsl(230,75%,60%)] text-white'
-                }`}
+                className="w-full rounded-2xl px-6 py-3 text-center"
+                style={{
+                  background: isCorrect
+                    ? 'linear-gradient(135deg, hsl(142 70% 45%), hsl(155 65% 50%))'
+                    : 'linear-gradient(135deg, hsl(215 70% 50%), hsl(225 65% 55%))',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+                }}
               >
-                <p className="text-xl sm:text-2xl font-extrabold font-nunito tracking-wide">
+                <p
+                  className="text-xl sm:text-2xl font-extrabold text-white tracking-wide"
+                  style={{ fontFamily: "'Nunito', sans-serif" }}
+                >
                   {reinforcement}
                 </p>
               </div>
 
-              {/* Retry button for wrong answers */}
               {showResult && !isCorrect && (
                 <motion.div
                   initial={{ opacity: 0 }}
@@ -258,7 +282,11 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
                 >
                   <button
                     onClick={handleRetry}
-                    className="px-8 py-3 rounded-full bg-white/90 text-[hsl(220,55%,30%)] font-bold text-lg shadow-soft hover:shadow-medium transition-shadow active:scale-95 font-nunito"
+                    className="px-8 py-3 rounded-full bg-white/90 font-bold text-lg shadow-md hover:shadow-lg transition-shadow active:scale-95"
+                    style={{
+                      color: 'hsl(215 50% 30%)',
+                      fontFamily: "'Nunito', sans-serif",
+                    }}
                   >
                     Try Again
                   </button>
@@ -267,19 +295,6 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Default bottom panel when no feedback yet */}
-        {!reinforcement && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.6 }}
-            className="w-full rounded-3xl bg-white/30 backdrop-blur-sm px-6 py-3 text-center"
-          >
-            <p className="text-base font-semibold text-white/80 font-nunito">
-              Tap an answer above ☝️
-            </p>
-          </motion.div>
-        )}
       </div>
     </div>
   );
