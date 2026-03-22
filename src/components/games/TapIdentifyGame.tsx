@@ -24,8 +24,14 @@ const Cloud: React.FC<{ className?: string; style?: React.CSSProperties }> = ({ 
 /* ------------------------------------------------------------------ */
 const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) => {
   const data = step.data || {};
-  const question = data.question || data.instruction || 'Tap the correct answer!';
-  const options: { label: string; image?: string; correct?: boolean }[] = data.options || [];
+  const rawQuestion = data.question || data.instruction || 'Tap the correct answer!';
+  const question = typeof rawQuestion === 'string' ? rawQuestion : JSON.stringify(rawQuestion);
+  const rawOptions: any[] = Array.isArray(data.options) ? data.options : [];
+  const options = rawOptions.map((opt: any) => ({
+    label: typeof opt === 'string' ? opt : typeof opt?.label === 'string' ? opt.label : String(opt?.label ?? ''),
+    image: opt?.image,
+    correct: !!opt?.correct,
+  }));
   const instructionAudio = step.instruction_audio_url;
 
   const [selected, setSelected] = useState<number | null>(null);
