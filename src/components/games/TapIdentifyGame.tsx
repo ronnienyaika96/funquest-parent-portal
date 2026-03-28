@@ -3,7 +3,7 @@ import { getAssetUrl } from '@/pages/PlayActivityPage';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Volume2 } from 'lucide-react';
 import { getChoiceAssetByState, TileState } from '@/lib/gameAssets';
-import { getInstructionText, resolveOptionAsset } from '@/lib/gameHelpers';
+import { getInstructionText, resolveOptionAsset, extractLabel, choicesMatch } from '@/lib/gameHelpers';
 
 interface TapIdentifyGameProps {
   step: any;
