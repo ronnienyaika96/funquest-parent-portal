@@ -19,11 +19,15 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
   const data = step.data || {};
   const question = getInstructionText(data);
 
-  const rawOptions: any[] = Array.isArray(data.options) ? data.options : [];
+  const rawOptions: any[] = Array.isArray(data.choices) ? data.choices
+    : Array.isArray(data.options) ? data.options
+    : Array.isArray(data.answers) ? data.answers
+    : [];
+  const answer = data.answer;
   const options = rawOptions.map((opt: any) => ({
-    label: typeof opt === 'string' ? opt : typeof opt?.label === 'string' ? opt.label : String(opt?.label ?? ''),
+    label: extractLabel(opt),
     image: opt?.image,
-    correct: !!opt?.correct,
+    correct: choicesMatch(opt, answer),
   }));
 
   const instructionAudio = step.instruction_audio_url;
