@@ -133,7 +133,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
           }}
         >
           <p
-            className="text-center text-base sm:text-lg md:text-xl font-bold leading-snug"
+            className="text-center text-lg sm:text-xl md:text-2xl font-bold leading-snug"
             style={{ color: '#2C5F7C', fontFamily: "'Nunito', sans-serif" }}
           >
             {question}
