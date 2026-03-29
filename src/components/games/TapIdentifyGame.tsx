@@ -126,7 +126,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
-          className="w-full max-w-lg rounded-full px-6 sm:px-8 py-3 flex items-center justify-center gap-3"
+          className="w-full max-w-2xl rounded-full px-8 sm:px-12 py-4 flex items-center justify-center gap-4"
           style={{
             background: 'rgba(173, 216, 240, 0.55)',
             backdropFilter: 'blur(6px)',
