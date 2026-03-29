@@ -183,7 +183,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
 
               const assetUrl = opt.image ? getAssetUrl(opt.image) : resolveOptionAsset(opt.label);
 
-              const tileSize = options.length <= 3 ? 130 : options.length <= 4 ? 110 : 90;
+              const tileSize = options.length <= 3 ? 200 : options.length <= 4 ? 175 : 150;
 
               return (
                 <motion.button
