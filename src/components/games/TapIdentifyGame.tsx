@@ -92,9 +92,10 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
 
   return (
     <div
-      className="relative w-full h-full min-h-[70vh] flex flex-col items-center overflow-hidden"
+      className="relative w-full flex flex-col items-center overflow-hidden"
       style={{
         background: 'linear-gradient(180deg, #7EC8E3 0%, #A8D8F0 40%, #BDE3F5 100%)',
+        minHeight: 'calc(100vh - 64px)',
       }}
     >
       {/* Clouds */}
