@@ -173,7 +173,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
           transition={{ delay: 0.2 }}
           className="w-full"
         >
-          <div className="flex items-end justify-center gap-3 sm:gap-5 px-2 mb-[-12px] relative z-10">
+          <div className="flex items-end justify-center gap-5 sm:gap-8 px-4 mb-[-12px] relative z-10">
             {options.map((opt, i) => {
               const state = getTileState(i);
               const tileBg = tileUrls[state];
