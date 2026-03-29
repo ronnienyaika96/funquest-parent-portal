@@ -112,7 +112,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
         <motion.h1
           initial={{ opacity: 0, y: -15 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white text-center tracking-wide"
+          className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white text-center tracking-wide"
           style={{
             textShadow: '0 2px 6px rgba(0,0,0,0.10)',
             fontFamily: "'Nunito', 'Comic Sans MS', cursive, sans-serif",
