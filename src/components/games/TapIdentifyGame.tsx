@@ -245,7 +245,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
 
           {/* Shelf */}
           <div
-            className="w-full h-14 sm:h-16"
+            className="w-full h-16 sm:h-20"
             style={{
               background: 'linear-gradient(180deg, #4A8DBF 0%, #3A6F9A 100%)',
               borderRadius: '0 0 1.5rem 1.5rem',
