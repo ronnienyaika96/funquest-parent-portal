@@ -263,7 +263,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 8 }}
               transition={{ type: 'spring', stiffness: 280, damping: 20 }}
-              className="w-full mt-1 mb-4"
+              className="w-full mt-2 mb-6"
             >
               <div
                 className="w-full rounded-2xl px-6 py-3 flex items-center justify-center gap-3"
