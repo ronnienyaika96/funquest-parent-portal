@@ -275,7 +275,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
                 }}
               >
                 <p
-                  className="text-lg sm:text-xl font-extrabold text-white tracking-wide"
+                  className="text-xl sm:text-2xl font-extrabold text-white tracking-wide"
                   style={{ fontFamily: "'Nunito', sans-serif" }}
                 >
                   {reinforcement}
