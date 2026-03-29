@@ -266,7 +266,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
               className="w-full mt-2 mb-6"
             >
               <div
-                className="w-full rounded-2xl px-6 py-3 flex items-center justify-center gap-3"
+                className="w-full max-w-3xl mx-auto rounded-2xl px-8 py-5 flex items-center justify-center gap-4"
                 style={{
                   background: isCorrect
                     ? 'linear-gradient(135deg, #34D399, #10B981)'
