@@ -92,9 +92,10 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
 
   return (
     <div
-      className="relative w-full h-full min-h-[70vh] flex flex-col items-center overflow-hidden"
+      className="relative w-full flex flex-col items-center overflow-hidden"
       style={{
         background: 'linear-gradient(180deg, #7EC8E3 0%, #A8D8F0 40%, #BDE3F5 100%)',
+        minHeight: 'calc(100vh - 64px)',
       }}
     >
       {/* Clouds */}
@@ -106,13 +107,13 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
       <Cloud className="w-72 h-16 bottom-[8%] left-[15%] blur-lg rounded-[60px]" />
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col items-center w-full max-w-2xl px-4 pt-6 pb-0 gap-4 flex-1">
+      <div className="relative z-10 flex flex-col items-center w-full max-w-5xl px-6 sm:px-10 pt-8 pb-4 gap-5 flex-1">
 
         {/* Title */}
         <motion.h1
           initial={{ opacity: 0, y: -15 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white text-center tracking-wide"
+          className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white text-center tracking-wide"
           style={{
             textShadow: '0 2px 6px rgba(0,0,0,0.10)',
             fontFamily: "'Nunito', 'Comic Sans MS', cursive, sans-serif",
@@ -126,14 +127,14 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
-          className="w-full max-w-lg rounded-full px-6 sm:px-8 py-3 flex items-center justify-center gap-3"
+          className="w-full max-w-2xl rounded-full px-8 sm:px-12 py-4 flex items-center justify-center gap-4"
           style={{
             background: 'rgba(173, 216, 240, 0.55)',
             backdropFilter: 'blur(6px)',
           }}
         >
           <p
-            className="text-center text-base sm:text-lg md:text-xl font-bold leading-snug"
+            className="text-center text-lg sm:text-xl md:text-2xl font-bold leading-snug"
             style={{ color: '#2C5F7C', fontFamily: "'Nunito', sans-serif" }}
           >
             {question}
@@ -173,7 +174,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
           transition={{ delay: 0.2 }}
           className="w-full"
         >
-          <div className="flex items-end justify-center gap-3 sm:gap-5 px-2 mb-[-12px] relative z-10">
+          <div className="flex items-end justify-center gap-5 sm:gap-8 px-4 mb-[-12px] relative z-10">
             {options.map((opt, i) => {
               const state = getTileState(i);
               const tileBg = tileUrls[state];
@@ -183,7 +184,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
 
               const assetUrl = opt.image ? getAssetUrl(opt.image) : resolveOptionAsset(opt.label);
 
-              const tileSize = options.length <= 3 ? 130 : options.length <= 4 ? 110 : 90;
+              const tileSize = options.length <= 3 ? 200 : options.length <= 4 ? 175 : 150;
 
               return (
                 <motion.button
@@ -245,7 +246,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
 
           {/* Shelf */}
           <div
-            className="w-full h-14 sm:h-16"
+            className="w-full h-16 sm:h-20"
             style={{
               background: 'linear-gradient(180deg, #4A8DBF 0%, #3A6F9A 100%)',
               borderRadius: '0 0 1.5rem 1.5rem',
@@ -263,10 +264,10 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 8 }}
               transition={{ type: 'spring', stiffness: 280, damping: 20 }}
-              className="w-full mt-1 mb-4"
+              className="w-full mt-2 mb-6"
             >
               <div
-                className="w-full rounded-2xl px-6 py-3 flex items-center justify-center gap-3"
+                className="w-full max-w-3xl mx-auto rounded-2xl px-8 py-5 flex items-center justify-center gap-4"
                 style={{
                   background: isCorrect
                     ? 'linear-gradient(135deg, #34D399, #10B981)'
@@ -275,7 +276,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
                 }}
               >
                 <p
-                  className="text-lg sm:text-xl font-extrabold text-white tracking-wide"
+                  className="text-xl sm:text-2xl font-extrabold text-white tracking-wide"
                   style={{ fontFamily: "'Nunito', sans-serif" }}
                 >
                   {reinforcement}

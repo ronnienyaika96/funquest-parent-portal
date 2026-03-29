@@ -2,11 +2,10 @@ import { getGameAssetUrl } from './funquest-assets';
 
 /**
  * Maps numbers 1–10 to their SVG paths in Supabase "game assets" bucket.
- * Path pattern: normal numbers/number-{n}.svg
- * If a filename differs, update the value here.
+ * Real path: Numbers/number-1.svg
  */
 export const numberAssets: Record<number, string> = Object.fromEntries(
-  Array.from({ length: 10 }, (_, i) => [i + 1, `normal numbers/number-${i + 1}.svg`])
+  Array.from({ length: 10 }, (_, i) => [i + 1, `Numbers/number-${i + 1}.svg`])
 );
 
 /** Returns the public URL for a number SVG, or empty string if not found. */
