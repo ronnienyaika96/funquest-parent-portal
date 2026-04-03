@@ -107,7 +107,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
       <Cloud className="w-72 h-16 bottom-[8%] left-[15%] blur-lg rounded-[60px]" />
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col items-center w-full max-w-5xl px-6 sm:px-10 pt-8 pb-4 gap-5 flex-1">
+      <div className="relative z-10 flex flex-col items-center w-full max-w-6xl px-4 sm:px-8 pt-6 pb-4 gap-3 flex-1">
 
         {/* Title */}
         <motion.h1
@@ -156,7 +156,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.15 }}
-            className="flex items-center justify-center w-full py-2 flex-1"
+            className="flex items-center justify-center w-full py-2"
           >
             <img
               src={getAssetUrl(data.image)}
@@ -165,7 +165,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
             />
           </motion.div>
         )}
-        {!data.image && <div className="flex-1 min-h-[40px]" />}
+        {!data.image && <div className="min-h-[8px]" />}
 
         {/* Answer tiles */}
         <motion.div
@@ -174,7 +174,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
           transition={{ delay: 0.2 }}
           className="w-full"
         >
-          <div className="flex items-end justify-center gap-5 sm:gap-8 px-4 mb-[-12px] relative z-10">
+          <div className="flex items-end justify-center gap-6 md:gap-10 lg:gap-12 px-4 mb-[-12px] relative z-10">
             {options.map((opt, i) => {
               const state = getTileState(i);
               const tileBg = tileUrls[state];
@@ -184,7 +184,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
 
               const assetUrl = opt.image ? getAssetUrl(opt.image) : resolveOptionAsset(opt.label);
 
-              const tileSize = options.length <= 3 ? 200 : options.length <= 4 ? 175 : 150;
+              const tileSize = options.length <= 3 ? 260 : options.length <= 4 ? 230 : 200;
 
               return (
                 <motion.button
@@ -207,14 +207,12 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
                     transition: 'filter 0.3s ease',
                   }}
                 >
-                  {/* Tile background SVG */}
                   <img
                     src={tileBg}
                     alt=""
                     className="absolute inset-0 w-full h-full object-contain pointer-events-none"
                     draggable={false}
                   />
-                  {/* Tile content */}
                   <div className="absolute inset-0 flex items-center justify-center">
                     {assetUrl ? (
                       <img
@@ -222,15 +220,15 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
                         alt={opt.label}
                         className="object-contain drop-shadow-md"
                         style={{
-                          width: `${tileSize * 0.55}px`,
-                          height: `${tileSize * 0.55}px`,
+                          width: `${tileSize * 0.72}px`,
+                          height: `${tileSize * 0.72}px`,
                         }}
                       />
                     ) : (
                       <span
                         className="font-extrabold drop-shadow-sm select-none"
                         style={{
-                          fontSize: `${Math.max(tileSize * 0.4, 28)}px`,
+                          fontSize: `${Math.max(tileSize * 0.45, 36)}px`,
                           color: labelColors[i % labelColors.length],
                           fontFamily: "'Nunito', 'Comic Sans MS', cursive, sans-serif",
                         }}
