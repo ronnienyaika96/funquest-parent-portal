@@ -107,7 +107,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
       <Cloud className="w-72 h-16 bottom-[8%] left-[15%] blur-lg rounded-[60px]" />
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col items-center w-full max-w-5xl px-6 sm:px-10 pt-8 pb-4 gap-5 flex-1">
+      <div className="relative z-10 flex flex-col items-center w-full max-w-6xl px-4 sm:px-8 pt-6 pb-4 gap-3 flex-1">
 
         {/* Title */}
         <motion.h1
