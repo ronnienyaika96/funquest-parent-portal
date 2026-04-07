@@ -206,21 +206,29 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
                     transition: 'filter 0.3s ease',
                   }}
                 >
+                  {/* Tile background SVG - fills entire button */}
                   <img
                     src={tileBg}
                     alt=""
-                    className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                    width={tileSize}
+                    height={tileSize}
+                    className="absolute inset-0 pointer-events-none"
+                    style={{ width: `${tileSize}px`, height: `${tileSize}px` }}
                     draggable={false}
                   />
-                  <div className="absolute inset-0 flex items-center justify-center">
+                  {/* Content layer on top */}
+                  <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 2 }}>
                     {assetUrl ? (
                       <img
                         src={assetUrl}
                         alt={opt.label}
-                        className="object-contain drop-shadow-md"
+                        width={Math.round(tileSize * 0.78)}
+                        height={Math.round(tileSize * 0.78)}
+                        className="drop-shadow-md"
                         style={{
-                          width: `${tileSize * 0.80}px`,
-                          height: `${tileSize * 0.80}px`,
+                          width: `${Math.round(tileSize * 0.78)}px`,
+                          height: `${Math.round(tileSize * 0.78)}px`,
+                          objectFit: 'contain',
                         }}
                       />
                     ) : (
