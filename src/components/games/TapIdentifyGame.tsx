@@ -227,7 +227,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
                       <span
                         className="font-extrabold drop-shadow-sm select-none"
                         style={{
-                          fontSize: `${Math.max(tileSize * 0.45, 36)}px`,
+                          fontSize: `${Math.max(tileSize * 0.50, 42)}px`,
                           color: labelColors[i % labelColors.length],
                           fontFamily: "'Nunito', 'Comic Sans MS', cursive, sans-serif",
                         }}
