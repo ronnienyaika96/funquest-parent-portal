@@ -219,8 +219,8 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
                         alt={opt.label}
                         className="object-contain drop-shadow-md"
                         style={{
-                          width: `${tileSize * 0.72}px`,
-                          height: `${tileSize * 0.72}px`,
+                          width: `${tileSize * 0.80}px`,
+                          height: `${tileSize * 0.80}px`,
                         }}
                       />
                     ) : (
