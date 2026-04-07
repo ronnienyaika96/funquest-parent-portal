@@ -173,7 +173,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
           transition={{ delay: 0.2 }}
           className="w-full"
         >
-          <div className="flex items-end justify-center gap-6 md:gap-10 lg:gap-12 px-4 mb-[-12px] relative z-10">
+          <div className="flex items-end justify-center gap-10 md:gap-14 lg:gap-20 px-4 mb-[-12px] relative z-10">
             {options.map((opt, i) => {
               const state = getTileState(i);
               const tileBg = tileUrls[state];
@@ -183,7 +183,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
 
               const assetUrl = opt.image ? getAssetUrl(opt.image) : resolveOptionAsset(opt.label);
 
-              const tileSize = options.length <= 3 ? 260 : options.length <= 4 ? 230 : 200;
+              const tileSize = options.length <= 3 ? 320 : options.length <= 4 ? 280 : 240;
 
               return (
                 <motion.button
@@ -219,15 +219,15 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
                         alt={opt.label}
                         className="object-contain drop-shadow-md"
                         style={{
-                          width: `${tileSize * 0.72}px`,
-                          height: `${tileSize * 0.72}px`,
+                          width: `${tileSize * 0.80}px`,
+                          height: `${tileSize * 0.80}px`,
                         }}
                       />
                     ) : (
                       <span
                         className="font-extrabold drop-shadow-sm select-none"
                         style={{
-                          fontSize: `${Math.max(tileSize * 0.45, 36)}px`,
+                          fontSize: `${Math.max(tileSize * 0.50, 42)}px`,
                           color: labelColors[i % labelColors.length],
                           fontFamily: "'Nunito', 'Comic Sans MS', cursive, sans-serif",
                         }}
