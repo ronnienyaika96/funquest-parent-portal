@@ -173,7 +173,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
           transition={{ delay: 0.2 }}
           className="w-full"
         >
-          <div className="flex items-end justify-center gap-10 md:gap-14 lg:gap-20 px-4 mb-[-12px] relative z-10">
+          <div className="flex justify-center items-center gap-12 md:gap-16 lg:gap-20 px-4 mb-[-12px] relative z-10">
             {options.map((opt, i) => {
               const state = getTileState(i);
               const tileBg = tileUrls[state];
@@ -183,7 +183,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
 
               const assetUrl = opt.image ? getAssetUrl(opt.image) : resolveOptionAsset(opt.label);
 
-              const tileSize = options.length <= 3 ? 320 : options.length <= 4 ? 280 : 240;
+              const tileSize = 420;
 
               return (
                 <motion.button
@@ -200,42 +200,30 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
                   onClick={() => handleTap(i)}
                   className="relative cursor-pointer focus:outline-none"
                   style={{
-                    width: `${tileSize}px`,
-                    height: `${tileSize}px`,
+                    width: tileSize,
+                    height: tileSize,
                     filter: showResult && !isThisSelected ? 'opacity(0.4)' : 'none',
                     transition: 'filter 0.3s ease',
                   }}
                 >
-                  {/* Tile background SVG - fills entire button */}
                   <img
                     src={tileBg}
                     alt=""
-                    width={tileSize}
-                    height={tileSize}
-                    className="absolute inset-0 pointer-events-none"
-                    style={{ width: `${tileSize}px`, height: `${tileSize}px` }}
+                    className="absolute inset-0 w-full h-full object-cover pointer-events-none"
                     draggable={false}
                   />
-                  {/* Content layer on top */}
                   <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 2 }}>
                     {assetUrl ? (
                       <img
                         src={assetUrl}
                         alt={opt.label}
-                        width={Math.round(tileSize * 0.78)}
-                        height={Math.round(tileSize * 0.78)}
-                        className="drop-shadow-md"
-                        style={{
-                          width: `${Math.round(tileSize * 0.78)}px`,
-                          height: `${Math.round(tileSize * 0.78)}px`,
-                          objectFit: 'contain',
-                        }}
+                        className="w-[75%] h-[75%] object-contain drop-shadow-md"
                       />
                     ) : (
                       <span
                         className="font-extrabold drop-shadow-sm select-none"
                         style={{
-                          fontSize: `${Math.max(tileSize * 0.50, 42)}px`,
+                          fontSize: `${Math.max(tileSize * 0.45, 48)}px`,
                           color: labelColors[i % labelColors.length],
                           fontFamily: "'Nunito', 'Comic Sans MS', cursive, sans-serif",
                         }}
