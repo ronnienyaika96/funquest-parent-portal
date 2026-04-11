@@ -259,7 +259,7 @@ const PlayActivityPage = () => {
       </div>
 
       {/* Game Area */}
-      <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
+      <div className="flex-1 flex items-center justify-center">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentStep.id}
@@ -267,7 +267,7 @@ const PlayActivityPage = () => {
             animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
             exit={{ opacity: 0, x: -40, filter: 'blur(4px)' }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full max-w-lg"
+            className="w-full"
           >
             <GameRenderer step={currentStep} onSuccess={handleStepSuccess} />
           </motion.div>
