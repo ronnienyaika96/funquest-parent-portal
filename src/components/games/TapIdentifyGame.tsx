@@ -92,7 +92,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
 
   return (
     <div
-      className="relative w-full flex flex-col items-center overflow-hidden"
+      className="relative w-full flex flex-col items-center overflow-visible"
       style={{
         minHeight: 'calc(100vh - 64px)',
       }}
@@ -173,7 +173,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
           transition={{ delay: 0.2 }}
           className="w-full"
         >
-          <div className="flex justify-center items-center gap-12 md:gap-16 lg:gap-20 px-4 mb-[-12px] relative z-10">
+          <div className="flex justify-center items-center gap-12 md:gap-16 lg:gap-20 px-6 mb-[-12px] relative z-10 overflow-x-auto scroll-smooth max-w-none w-full">
             {options.map((opt, i) => {
               const state = getTileState(i);
               const tileBg = tileUrls[state];
