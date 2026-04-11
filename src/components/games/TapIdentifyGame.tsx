@@ -198,7 +198,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
                       : {}
                   }
                   onClick={() => handleTap(i)}
-                  className="relative cursor-pointer focus:outline-none"
+                  className="relative cursor-pointer focus:outline-none flex-shrink-0 aspect-square"
                   style={{
                     width: tileSize,
                     height: tileSize,
