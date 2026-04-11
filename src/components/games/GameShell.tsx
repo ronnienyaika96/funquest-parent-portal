@@ -25,7 +25,7 @@ const GameShell: React.FC<GameShellProps> = ({ children, className = '' }) => {
       }}
     >
       {/* Soft overlay so content remains readable */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background/70 pointer-events-none" />
+      {/* No overlay – show the full background */}
       <div className="relative z-10 flex flex-col flex-1">{children}</div>
     </div>
   );
