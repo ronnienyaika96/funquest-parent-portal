@@ -173,7 +173,10 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
           transition={{ delay: 0.2 }}
           className="w-full"
         >
-          <div className="flex justify-center items-center gap-12 md:gap-16 lg:gap-20 px-6 mb-[-12px] relative z-10 overflow-x-auto scroll-smooth max-w-none w-full">
+          <div
+            className="flex items-center justify-evenly w-full mb-[-12px] relative z-10"
+            style={{ padding: '0 6%', gap: '20px' }}
+          >
             {options.map((opt, i) => {
               const state = getTileState(i);
               const tileBg = tileUrls[state];
@@ -182,8 +185,6 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
               const isThisWrong = showResult && isThisSelected && !opt.correct;
 
               const assetUrl = opt.image ? getAssetUrl(opt.image) : resolveOptionAsset(opt.label);
-
-              const tileSize = 420;
 
               return (
                 <motion.button
@@ -198,10 +199,10 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
                       : {}
                   }
                   onClick={() => handleTap(i)}
-                  className="relative cursor-pointer focus:outline-none flex-shrink-0 aspect-square"
+                  className="relative cursor-pointer focus:outline-none aspect-square"
                   style={{
-                    width: tileSize,
-                    height: tileSize,
+                    width: '21%',
+                    maxWidth: '280px',
                     filter: showResult && !isThisSelected ? 'opacity(0.4)' : 'none',
                     transition: 'filter 0.3s ease',
                   }}
@@ -223,7 +224,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
                       <span
                         className="font-extrabold drop-shadow-sm select-none"
                         style={{
-                          fontSize: `${Math.max(tileSize * 0.45, 48)}px`,
+                          fontSize: 'clamp(2rem, 8vw, 5rem)',
                           color: labelColors[i % labelColors.length],
                           fontFamily: "'Nunito', 'Comic Sans MS', cursive, sans-serif",
                         }}
