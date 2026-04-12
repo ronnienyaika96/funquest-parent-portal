@@ -281,56 +281,77 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
       </motion.div>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-        {/* Horizontal layout: draggables → arrow → targets */}
+        {/* Grid layout: rows of paired draggables + targets */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="flex items-center justify-center gap-6 sm:gap-10 md:gap-16 w-full px-[4%] overflow-visible"
+          className="w-full px-[3%] overflow-visible"
         >
-          {/* Draggables */}
-          <div className="flex items-center justify-center gap-4 sm:gap-6 md:gap-8">
-            {draggables.map((item) => (
-              <div key={item.id} className="flex-shrink-0" style={{ width: 'clamp(100px, 18vw, 200px)' }}>
-                <DraggableItem
-                  item={item}
-                  isMatched={matchedDraggableIds.has(item.id)}
-                  isDragging={activeId === item.id}
-                />
+          {(() => {
+            // Pair draggables with targets row by row (2 pairs per row)
+            const pairsPerRow = 2;
+            const rows: { draggables: typeof draggables; targets: typeof targets }[] = [];
+            const totalRows = Math.ceil(Math.max(draggables.length, targets.length) / pairsPerRow);
+            for (let r = 0; r < totalRows; r++) {
+              rows.push({
+                draggables: draggables.slice(r * pairsPerRow, (r + 1) * pairsPerRow),
+                targets: targets.slice(r * pairsPerRow, (r + 1) * pairsPerRow),
+              });
+            }
+            return rows.map((row, rowIdx) => (
+              <div key={rowIdx} className="flex items-center justify-center gap-4 sm:gap-8 md:gap-12 mb-6">
+                {/* Draggables for this row */}
+                <div className="flex items-center justify-center gap-3 sm:gap-5 md:gap-6">
+                  {row.draggables.map((item) => (
+                    <div key={item.id} className="flex-shrink-0" style={{ width: 'clamp(120px, 20vw, 220px)' }}>
+                      <DraggableItem
+                        item={item}
+                        isMatched={matchedDraggableIds.has(item.id)}
+                        isDragging={activeId === item.id}
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Arrow */}
+                {rowIdx === 0 && (
+                  <div className="flex-shrink-0 hidden sm:flex items-center">
+                    <motion.div
+                      animate={{ x: [0, 8, 0] }}
+                      transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
+                    >
+                      <ArrowRight
+                        className="w-8 h-8 md:w-12 md:h-12"
+                        style={{ color: 'rgba(255,255,255,0.7)' }}
+                        strokeWidth={2.5}
+                      />
+                    </motion.div>
+                  </div>
+                )}
+                {rowIdx !== 0 && (
+                  <div className="flex-shrink-0 hidden sm:flex items-center w-8 md:w-12" />
+                )}
+
+                {/* Targets for this row */}
+                <div className="flex items-center justify-center gap-3 sm:gap-5 md:gap-6">
+                  {row.targets.map((target) => (
+                    <motion.div
+                      key={target.id}
+                      className="flex-shrink-0"
+                      style={{ width: 'clamp(130px, 21vw, 230px)' }}
+                      animate={wrongTarget === target.id ? { x: [0, -6, 6, -3, 3, 0] } : {}}
+                    >
+                      <DroppableTarget
+                        target={target}
+                        matchedItem={matches[target.id] ? draggables.find(d => d.id === matches[target.id]) || null : null}
+                      />
+                    </motion.div>
+                  ))}
+                </div>
               </div>
-            ))}
-          </div>
-
-          {/* Arrow */}
-          <div className="flex-shrink-0 hidden sm:flex items-center">
-            <motion.div
-              animate={{ x: [0, 8, 0] }}
-              transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
-            >
-              <ArrowRight
-                className="w-10 h-10 md:w-14 md:h-14"
-                style={{ color: 'rgba(255,255,255,0.7)' }}
-                strokeWidth={2.5}
-              />
-            </motion.div>
-          </div>
-
-          {/* Targets */}
-          <div className="flex items-center justify-center gap-4 sm:gap-6 md:gap-8">
-            {targets.map((target) => (
-              <motion.div
-                key={target.id}
-                className="flex-shrink-0"
-                style={{ width: 'clamp(120px, 20vw, 220px)' }}
-                animate={wrongTarget === target.id ? { x: [0, -6, 6, -3, 3, 0] } : {}}
-              >
-                <DroppableTarget
-                  target={target}
-                  matchedItem={matches[target.id] ? draggables.find(d => d.id === matches[target.id]) || null : null}
-                />
-              </motion.div>
-            ))}
-          </div>
+            ));
+          })()}
         </motion.div>
 
         {/* Drag overlay */}
