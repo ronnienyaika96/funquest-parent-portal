@@ -13,11 +13,13 @@ import {
   useDroppable,
 } from '@dnd-kit/core';
 import { getAssetUrl } from '@/pages/PlayActivityPage';
+import { getDraggableAssetUrl, getDropZoneAssetUrl } from '@/lib/gameAssets';
+import { getLetterAsset } from '@/lib/letterAssets';
+import { getNumberAsset } from '@/lib/numberAssets';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, RotateCcw, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import FeedbackOverlay from './FeedbackOverlay';
-import InstructionBar from './InstructionBar';
 
 interface DraggableData {
   id: string;
@@ -37,20 +39,34 @@ interface DragDropMatchGameProps {
   onSuccess: () => void;
 }
 
-const LABEL_COLORS = ['#EF4444', '#F97316', '#22C55E', '#3B82F6', '#8B5CF6', '#EC4899'];
+/** Try to resolve a label to a Supabase letter/number SVG asset. */
+function resolveContentAsset(label: string): string | null {
+  // Check if it's a single letter
+  if (/^[a-zA-Z]$/.test(label)) {
+    const url = getLetterAsset(label);
+    if (url) return url;
+  }
+  // Check if it's a number 1-10
+  const num = parseInt(label, 10);
+  if (!isNaN(num) && num >= 1 && num <= 10) {
+    const url = getNumberAsset(num);
+    if (url) return url;
+  }
+  return null;
+}
 
-function DraggableItem({ item, isMatched, isDragging, colorIndex }: {
-  item: DraggableData; isMatched: boolean; isDragging: boolean; colorIndex: number;
+function DraggableItem({ item, isMatched, isDragging }: {
+  item: DraggableData; isMatched: boolean; isDragging: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: item.id });
+  const draggableBg = getDraggableAssetUrl();
+  const contentAsset = resolveContentAsset(item.label);
 
   const style: React.CSSProperties = {
     transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
     opacity: isDragging ? 0.3 : isMatched ? 0.5 : 1,
     touchAction: 'none',
   };
-
-  const color = LABEL_COLORS[colorIndex % LABEL_COLORS.length];
 
   return (
     <motion.div
@@ -60,37 +76,37 @@ function DraggableItem({ item, isMatched, isDragging, colorIndex }: {
       style={style}
       whileHover={!isMatched ? { scale: 1.08 } : {}}
       whileTap={!isMatched ? { scale: 0.95 } : {}}
-      className={`relative flex items-center justify-center rounded-2xl cursor-grab active:cursor-grabbing select-none transition-all
+      className={`relative aspect-square flex items-center justify-center cursor-grab active:cursor-grabbing select-none
         ${isMatched ? 'pointer-events-none' : ''}
       `}
     >
-      {/* Tile background */}
-      <div
-        className="absolute inset-0 rounded-2xl"
-        style={{
-          background: isMatched
-            ? 'linear-gradient(145deg, #D1FAE5, #A7F3D0)'
-            : 'linear-gradient(145deg, #FFFFFF, #F1F5F9)',
-          boxShadow: isMatched
-            ? '0 2px 8px rgba(34,197,94,0.3)'
-            : '0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)',
-        }}
+      {/* SVG tile background */}
+      <img
+        src={draggableBg}
+        alt=""
+        className="absolute inset-0 w-full h-full object-contain pointer-events-none"
       />
 
       {/* Content */}
-      <div className="relative z-10 flex items-center justify-center w-full h-full">
+      <div className="relative z-10 flex items-center justify-center w-[65%] h-[65%]">
         {item.image ? (
           <img
             src={getAssetUrl(item.image)}
             alt={item.label}
-            className="w-[70%] h-[70%] object-contain drop-shadow-md pointer-events-none"
+            className="w-full h-full object-contain drop-shadow-md pointer-events-none"
+          />
+        ) : contentAsset ? (
+          <img
+            src={contentAsset}
+            alt={item.label}
+            className="w-full h-full object-contain drop-shadow-md pointer-events-none"
           />
         ) : (
           <span
             className="font-extrabold pointer-events-none drop-shadow-sm"
             style={{
-              fontSize: 'clamp(2.5rem, 6vw, 5rem)',
-              color,
+              fontSize: 'clamp(2rem, 5vw, 4rem)',
+              color: '#3B82F6',
               fontFamily: "'Nunito', 'Comic Sans MS', cursive, sans-serif",
             }}
           >
@@ -112,43 +128,32 @@ function DraggableItem({ item, isMatched, isDragging, colorIndex }: {
   );
 }
 
-function DroppableTarget({ target, matchedItem, colorIndex }: {
-  target: Target; matchedItem: DraggableData | null; colorIndex: number;
+function DroppableTarget({ target, matchedItem }: {
+  target: Target; matchedItem: DraggableData | null;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: target.id });
-  const color = LABEL_COLORS[colorIndex % LABEL_COLORS.length];
+  const dropBg = getDropZoneAssetUrl(!!matchedItem);
 
   return (
     <motion.div
       ref={setNodeRef}
       animate={isOver ? { scale: 1.06 } : { scale: 1 }}
-      className="relative flex flex-col items-center justify-center rounded-2xl transition-all"
+      className="relative aspect-square flex flex-col items-center justify-center"
     >
-      {/* Card background */}
-      <div
-        className="absolute inset-0 rounded-2xl"
-        style={{
-          background: matchedItem
-            ? 'linear-gradient(145deg, #DBEAFE, #BFDBFE)'
-            : 'linear-gradient(145deg, #EFF6FF, #DBEAFE)',
-          border: matchedItem
-            ? '3px solid #60A5FA'
-            : isOver
-            ? '3px solid #93C5FD'
-            : '3px dashed #93C5FD',
-          boxShadow: isOver
-            ? '0 8px 24px rgba(59,130,246,0.2)'
-            : '0 4px 12px rgba(0,0,0,0.06)',
-        }}
+      {/* SVG drop zone background */}
+      <img
+        src={dropBg}
+        alt=""
+        className="absolute inset-0 w-full h-full object-contain pointer-events-none"
       />
 
-      {/* Image area */}
+      {/* Content */}
       <div className="relative z-10 flex flex-col items-center justify-center w-full h-full gap-1 p-3">
         {target.image && (
           <img
             src={getAssetUrl(target.image)}
             alt={target.label}
-            className="w-[65%] h-[55%] object-contain drop-shadow-md"
+            className="w-[55%] h-[50%] object-contain drop-shadow-md"
           />
         )}
         {/* Label */}
@@ -239,17 +244,7 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
   };
 
   const activeDraggable = draggables.find(d => d.id === activeId);
-
-  // Responsive tile size: ~20% of viewport width, clamped
-  const tileStyle: React.CSSProperties = {
-    width: 'clamp(100px, 18vw, 200px)',
-    height: 'clamp(100px, 18vw, 200px)',
-  };
-
-  const targetTileStyle: React.CSSProperties = {
-    width: 'clamp(120px, 20vw, 220px)',
-    height: 'clamp(140px, 22vw, 260px)',
-  };
+  const draggableBgUrl = getDraggableAssetUrl();
 
   return (
     <div className="flex flex-col items-center w-full overflow-visible">
@@ -286,28 +281,27 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
       </motion.div>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-        {/* Main horizontal layout: draggables → arrow → targets */}
+        {/* Horizontal layout: draggables → arrow → targets */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
           className="flex items-center justify-center gap-6 sm:gap-10 md:gap-16 w-full px-[4%] overflow-visible"
         >
-          {/* Draggables row */}
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 md:gap-8">
-            {draggables.map((item, i) => (
-              <div key={item.id} style={tileStyle} className="flex-shrink-0">
+          {/* Draggables */}
+          <div className="flex items-center justify-center gap-4 sm:gap-6 md:gap-8">
+            {draggables.map((item) => (
+              <div key={item.id} className="flex-shrink-0" style={{ width: 'clamp(100px, 18vw, 200px)' }}>
                 <DraggableItem
                   item={item}
                   isMatched={matchedDraggableIds.has(item.id)}
                   isDragging={activeId === item.id}
-                  colorIndex={i}
                 />
               </div>
             ))}
           </div>
 
-          {/* Arrow indicator */}
+          {/* Arrow */}
           <div className="flex-shrink-0 hidden sm:flex items-center">
             <motion.div
               animate={{ x: [0, 8, 0] }}
@@ -321,19 +315,18 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
             </motion.div>
           </div>
 
-          {/* Targets row */}
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 md:gap-8">
-            {targets.map((target, i) => (
+          {/* Targets */}
+          <div className="flex items-center justify-center gap-4 sm:gap-6 md:gap-8">
+            {targets.map((target) => (
               <motion.div
                 key={target.id}
-                style={targetTileStyle}
                 className="flex-shrink-0"
+                style={{ width: 'clamp(120px, 20vw, 220px)' }}
                 animate={wrongTarget === target.id ? { x: [0, -6, 6, -3, 3, 0] } : {}}
               >
                 <DroppableTarget
                   target={target}
                   matchedItem={matches[target.id] ? draggables.find(d => d.id === matches[target.id]) || null : null}
-                  colorIndex={i}
                 />
               </motion.div>
             ))}
@@ -344,40 +337,44 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
         <DragOverlay>
           {activeDraggable ? (
             <div
-              className="rounded-2xl flex items-center justify-center"
-              style={{
-                ...tileStyle,
-                background: 'linear-gradient(145deg, #DBEAFE, #BFDBFE)',
-                boxShadow: '0 12px 32px rgba(59,130,246,0.3)',
-              }}
+              className="relative aspect-square flex items-center justify-center"
+              style={{ width: 'clamp(100px, 18vw, 200px)' }}
             >
-              {activeDraggable.image ? (
-                <img src={getAssetUrl(activeDraggable.image)} alt={activeDraggable.label} className="w-[70%] h-[70%] object-contain" />
-              ) : (
-                <span
-                  className="font-extrabold drop-shadow-sm"
-                  style={{
-                    fontSize: 'clamp(2.5rem, 6vw, 5rem)',
-                    color: '#3B82F6',
-                    fontFamily: "'Nunito', 'Comic Sans MS', cursive, sans-serif",
-                  }}
-                >
-                  {activeDraggable.label}
-                </span>
-              )}
+              <img
+                src={draggableBgUrl}
+                alt=""
+                className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+              />
+              <div className="relative z-10 flex items-center justify-center w-[65%] h-[65%]">
+                {activeDraggable.image ? (
+                  <img src={getAssetUrl(activeDraggable.image)} alt={activeDraggable.label} className="w-full h-full object-contain" />
+                ) : (() => {
+                  const asset = resolveContentAsset(activeDraggable.label);
+                  return asset ? (
+                    <img src={asset} alt={activeDraggable.label} className="w-full h-full object-contain" />
+                  ) : (
+                    <span
+                      className="font-extrabold drop-shadow-sm"
+                      style={{
+                        fontSize: 'clamp(2rem, 5vw, 4rem)',
+                        color: '#3B82F6',
+                        fontFamily: "'Nunito', 'Comic Sans MS', cursive, sans-serif",
+                      }}
+                    >
+                      {activeDraggable.label}
+                    </span>
+                  );
+                })()}
+              </div>
             </div>
           ) : null}
         </DragOverlay>
       </DndContext>
 
-      {/* Match hints bar at bottom */}
+      {/* Success overlay */}
       <AnimatePresence>
         {allMatched && (
-          <FeedbackOverlay
-            show={allMatched}
-            correct={true}
-            correctText="All matched! 🎉"
-          />
+          <FeedbackOverlay show={allMatched} correct={true} correctText="All matched! 🎉" />
         )}
       </AnimatePresence>
 
