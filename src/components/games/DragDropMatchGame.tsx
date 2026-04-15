@@ -13,9 +13,10 @@ import {
   useDroppable,
 } from '@dnd-kit/core';
 import { getAssetUrl } from '@/pages/PlayActivityPage';
-import { getDraggableAssetUrl, getDropZoneAssetUrl } from '@/lib/gameAssets';
+import { getChoiceAssetByState, getDropZoneAssetUrl } from '@/lib/gameAssets';
 import { getLetterAsset } from '@/lib/letterAssets';
 import { getNumberAsset } from '@/lib/numberAssets';
+import { getGameAssetUrl } from '@/lib/funquest-assets';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, RotateCcw, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -59,7 +60,7 @@ function DraggableItem({ item, isMatched, isDragging }: {
   item: DraggableData; isMatched: boolean; isDragging: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: item.id });
-  const draggableBg = getDraggableAssetUrl();
+  const draggableBg = getChoiceAssetByState('default');
   const contentAsset = resolveContentAsset(item.label);
 
   const style: React.CSSProperties = {
@@ -244,10 +245,19 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
   };
 
   const activeDraggable = draggables.find(d => d.id === activeId);
-  const draggableBgUrl = getDraggableAssetUrl();
+  const draggableBgUrl = getChoiceAssetByState('default');
+  const cloudBgUrl = getGameAssetUrl('UI background/cloud background.png');
 
   return (
-    <div className="flex flex-col items-center w-full overflow-visible">
+    <div
+      className="flex flex-col items-center w-full min-h-screen overflow-visible"
+      style={{
+        backgroundImage: cloudBgUrl ? `url(${cloudBgUrl})` : undefined,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
       {/* Title */}
       <motion.h1
         initial={{ opacity: 0, y: -15 }}
