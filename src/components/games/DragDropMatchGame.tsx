@@ -314,7 +314,7 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
                 {/* Draggables for this row */}
                 <div className="flex items-center justify-center gap-3 sm:gap-5 md:gap-6">
                   {row.draggables.map((item) => (
-                    <div key={item.id} className="flex-shrink-0" style={{ width: 'clamp(120px, 20vw, 220px)' }}>
+                    <div key={item.id} className="flex-shrink-0" style={{ width: 'clamp(130px, 21vw, 230px)' }}>
                       <DraggableItem
                         item={item}
                         isMatched={matchedDraggableIds.has(item.id)}
