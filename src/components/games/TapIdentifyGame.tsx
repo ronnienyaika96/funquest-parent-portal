@@ -17,7 +17,6 @@ const Cloud: React.FC<{ className?: string }> = ({ className = '' }) => (
 
 const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) => {
   const data = step.data || {};
-  const question = getInstructionText(data);
 
   const rawOptions: any[] = Array.isArray(data.choices) ? data.choices
     : Array.isArray(data.options) ? data.options
@@ -29,6 +28,33 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
     image: opt?.image,
     correct: choicesMatch(opt, answer),
   }));
+
+  // Visual counting support: detect object-based counting questions
+  const countingObject =
+    data.objectName ||
+    data.object_name ||
+    data.countObject ||
+    data.count_object ||
+    data.object?.name ||
+    null;
+  const countingImage =
+    data.objectImage ||
+    data.object_image ||
+    data.countImage ||
+    data.count_image ||
+    data.object?.image ||
+    null;
+  const countingCount = (() => {
+    const explicit = data.count ?? data.objectCount ?? data.object_count ?? data.object?.count;
+    if (typeof explicit === 'number') return explicit;
+    const ansNum = parseInt(extractLabel(answer), 10);
+    return isNaN(ansNum) ? null : ansNum;
+  })();
+  const isCountingMode = !!(countingObject && countingCount && countingCount > 0);
+
+  const question = isCountingMode
+    ? `Tap the number of ${countingObject}`
+    : getInstructionText(data);
 
   const instructionAudio = step.instruction_audio_url;
 
