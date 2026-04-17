@@ -17,7 +17,6 @@ const Cloud: React.FC<{ className?: string }> = ({ className = '' }) => (
 
 const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) => {
   const data = step.data || {};
-  const question = getInstructionText(data);
 
   const rawOptions: any[] = Array.isArray(data.choices) ? data.choices
     : Array.isArray(data.options) ? data.options
@@ -29,6 +28,33 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
     image: opt?.image,
     correct: choicesMatch(opt, answer),
   }));
+
+  // Visual counting support: detect object-based counting questions
+  const countingObject =
+    data.objectName ||
+    data.object_name ||
+    data.countObject ||
+    data.count_object ||
+    data.object?.name ||
+    null;
+  const countingImage =
+    data.objectImage ||
+    data.object_image ||
+    data.countImage ||
+    data.count_image ||
+    data.object?.image ||
+    null;
+  const countingCount = (() => {
+    const explicit = data.count ?? data.objectCount ?? data.object_count ?? data.object?.count;
+    if (typeof explicit === 'number') return explicit;
+    const ansNum = parseInt(extractLabel(answer), 10);
+    return isNaN(ansNum) ? null : ansNum;
+  })();
+  const isCountingMode = !!(countingObject && countingCount && countingCount > 0);
+
+  const question = isCountingMode
+    ? `Tap the number of ${countingObject}`
+    : getInstructionText(data);
 
   const instructionAudio = step.instruction_audio_url;
 
@@ -121,19 +147,20 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
           Tap to Identify
         </motion.h1>
 
-        {/* Instruction pill */}
+        {/* Instruction pill - compact, centered */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
-          className="w-full max-w-2xl rounded-full px-8 sm:px-12 py-4 flex items-center justify-center gap-4"
+          className="rounded-full px-6 sm:px-8 py-3 flex items-center justify-center gap-3 mx-auto"
           style={{
             background: 'rgba(173, 216, 240, 0.55)',
             backdropFilter: 'blur(6px)',
+            maxWidth: 'min(90%, 520px)',
           }}
         >
           <p
-            className="text-center text-lg sm:text-xl md:text-2xl font-bold leading-snug"
+            className="text-center text-base sm:text-lg md:text-xl font-bold leading-snug"
             style={{ color: '#2C5F7C', fontFamily: "'Nunito', sans-serif" }}
           >
             {question}
@@ -141,7 +168,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
           {instructionAudio && (
             <button
               onClick={playAudio}
-              className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center transition-transform active:scale-90"
+              className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-transform active:scale-90"
               style={{ background: 'rgba(255,255,255,0.5)' }}
             >
               <Volume2 className="w-4 h-4" style={{ color: '#2C5F7C' }} />
@@ -149,8 +176,43 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
           )}
         </motion.div>
 
-        {/* Prompt image area */}
-        {data.image && (
+        {/* Counting objects grid */}
+        {isCountingMode && countingCount && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.15 }}
+            className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 w-full max-w-3xl px-4 py-2"
+          >
+            {Array.from({ length: countingCount }).map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 + i * 0.05 }}
+                className="flex items-center justify-center"
+                style={{
+                  width: 'clamp(70px, 9vw, 110px)',
+                  height: 'clamp(70px, 9vw, 110px)',
+                }}
+              >
+                {countingImage ? (
+                  <img
+                    src={getAssetUrl(countingImage)}
+                    alt={countingObject}
+                    className="w-full h-full object-contain drop-shadow-md"
+                    draggable={false}
+                  />
+                ) : (
+                  <span className="text-5xl sm:text-6xl">⭐</span>
+                )}
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+
+        {/* Prompt image area (non-counting mode) */}
+        {!isCountingMode && data.image && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -164,7 +226,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
             />
           </motion.div>
         )}
-        {!data.image && <div className="min-h-[8px]" />}
+        {!isCountingMode && !data.image && <div className="min-h-[8px]" />}
 
         {/* Answer tiles */}
         <motion.div
