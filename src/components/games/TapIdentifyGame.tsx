@@ -94,7 +94,13 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
 
   console.log('[TapIdentifyGame] objectType:', objectType, 'count:', correctCount, 'image:', countingImage);
 
-  const pluralize = (word: string) => (word.endsWith('s') ? word : `${word}s`);
+  const IRREGULAR_PLURALS: Record<string, string> = { fish: 'fish', sheep: 'sheep' };
+  const pluralize = (word: string) => {
+    const w = word.toLowerCase();
+    if (IRREGULAR_PLURALS[w]) return IRREGULAR_PLURALS[w];
+    if (w.endsWith('s')) return w;
+    return `${w}s`;
+  };
   const question = isCountingMode
     ? `Tap the number of ${pluralize(objectType!)}`
     : getInstructionText(data);
