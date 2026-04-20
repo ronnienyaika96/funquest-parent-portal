@@ -52,16 +52,22 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
   // Counting mode triggers when we have a numeric answer
   const isCountingMode = !!(correctCount && correctCount > 0);
 
-  // Pool of object types — randomly chosen per step (stable per step.id)
-  const OBJECT_POOL = ['apple', 'pencil', 'van', 'turtle', 'cat', 'dog', 'watermelon', 'kite', 'jug', 'fish'];
-  const randomObjectType = useMemo(() => {
-    const seed = String(step.id || Math.random());
-    let hash = 0;
-    for (let i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
-    return OBJECT_POOL[hash % OBJECT_POOL.length];
-  }, [step.id]);
+  // Fixed mapping: each number (1-10) always shows the same unique object
+  const COUNT_TO_OBJECT: Record<number, string> = {
+    1: 'apple',
+    2: 'cats',
+    3: 'fish',
+    4: 'dog',
+    5: 'house',
+    6: 'turtle',
+    7: 'van',
+    8: 'pencil',
+    9: 'watermelon',
+    10: 'jugs',
+  };
 
-  const objectType = rawObjectType || (isCountingMode ? randomObjectType : null);
+  const mappedObjectType = isCountingMode && correctCount ? COUNT_TO_OBJECT[correctCount] : null;
+  const objectType = rawObjectType || mappedObjectType;
 
   const explicitImage =
     data.objectImage ||
