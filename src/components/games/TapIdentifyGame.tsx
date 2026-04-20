@@ -192,7 +192,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.15 }}
-            className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 w-full max-w-3xl px-4 py-2"
+            className="flex flex-wrap items-center justify-center gap-4 w-full max-w-3xl px-4 py-2"
           >
             {Array.from({ length: countingCount }).map((_, i) => (
               <motion.div
@@ -201,14 +201,11 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15 + i * 0.05 }}
                 className="flex items-center justify-center"
-                style={{
-                  width: 'clamp(70px, 9vw, 110px)',
-                  height: 'clamp(70px, 9vw, 110px)',
-                }}
+                style={{ width: '90px', height: '90px' }}
               >
                 {countingImage ? (
                   <img
-                    src={getAssetUrl(countingImage)}
+                    src={countingImage.startsWith('http') ? countingImage : getAssetUrl(countingImage)}
                     alt={objectType || ''}
                     className="w-full h-full object-contain drop-shadow-md"
                     draggable={false}
