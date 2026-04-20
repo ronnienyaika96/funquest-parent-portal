@@ -31,7 +31,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
   }));
 
   // Visual counting support: detect object-based counting questions
-  const objectType: string | null =
+  const rawObjectType: string | null =
     data.objectType ||
     data.object_type ||
     data.objectName ||
@@ -41,6 +41,18 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
     data.object?.type ||
     data.object?.name ||
     null;
+
+  const correctCount = (() => {
+    const explicit = data.count ?? data.correct ?? data.objectCount ?? data.object_count ?? data.object?.count;
+    if (typeof explicit === 'number') return explicit;
+    const ansNum = parseInt(extractLabel(answer), 10);
+    return isNaN(ansNum) ? null : ansNum;
+  })();
+
+  // Counting mode triggers when we have a numeric answer (default objectType = "apple")
+  const isCountingMode = !!(correctCount && correctCount > 0);
+  const objectType = rawObjectType || (isCountingMode ? 'apple' : null);
+
   const explicitImage =
     data.objectImage ||
     data.object_image ||
@@ -53,13 +65,8 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
     : objectType
     ? getGameAssetUrl(`objects/${String(objectType).toLowerCase()}.png`)
     : null;
-  const countingCount = (() => {
-    const explicit = data.count ?? data.objectCount ?? data.object_count ?? data.object?.count;
-    if (typeof explicit === 'number') return explicit;
-    const ansNum = parseInt(extractLabel(answer), 10);
-    return isNaN(ansNum) ? null : ansNum;
-  })();
-  const isCountingMode = !!(objectType && countingCount && countingCount > 0);
+
+  console.log('[TapIdentifyGame] objectType:', objectType, 'count:', correctCount, 'image:', countingImage);
 
   const pluralize = (word: string) => (word.endsWith('s') ? word : `${word}s`);
   const question = isCountingMode
@@ -187,14 +194,14 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
         </motion.div>
 
         {/* Counting objects grid */}
-        {isCountingMode && countingCount && (
+        {isCountingMode && correctCount && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.15 }}
             className="flex flex-wrap items-center justify-center gap-4 w-full max-w-3xl px-4 py-2"
           >
-            {Array.from({ length: countingCount }).map((_, i) => (
+            {Array.from({ length: correctCount }).map((_, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: -10 }}
