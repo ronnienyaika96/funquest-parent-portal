@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Volume2 } from 'lucide-react';
 import { getChoiceAssetByState, TileState } from '@/lib/gameAssets';
 import { getInstructionText, resolveOptionAsset, extractLabel, choicesMatch } from '@/lib/gameHelpers';
+import { getGameAssetUrl } from '@/lib/funquest-assets';
 
 interface TapIdentifyGameProps {
   step: any;
