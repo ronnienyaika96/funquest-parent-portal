@@ -65,7 +65,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
   // Fixed mapping: each number (1-10) always shows the same unique object
   const COUNT_TO_OBJECT: Record<number, string> = {
     1: 'apple',
-    2: 'cats',
+    2: 'cat',
     3: 'fish',
     4: 'dog',
     5: 'house',
@@ -73,7 +73,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
     7: 'van',
     8: 'pencil',
     9: 'watermelon',
-    10: 'jugs',
+    10: 'jug',
   };
 
   const mappedObjectType = isCountingMode && correctCount ? COUNT_TO_OBJECT[correctCount] : null;
@@ -94,7 +94,13 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
 
   console.log('[TapIdentifyGame] objectType:', objectType, 'count:', correctCount, 'image:', countingImage);
 
-  const pluralize = (word: string) => (word.endsWith('s') ? word : `${word}s`);
+  const IRREGULAR_PLURALS: Record<string, string> = { fish: 'fish', sheep: 'sheep' };
+  const pluralize = (word: string) => {
+    const w = word.toLowerCase();
+    if (IRREGULAR_PLURALS[w]) return IRREGULAR_PLURALS[w];
+    if (w.endsWith('s')) return w;
+    return `${w}s`;
+  };
   const question = isCountingMode
     ? `Tap the number of ${pluralize(objectType!)}`
     : getInstructionText(data);
@@ -254,7 +260,10 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
                       alt={objectType || ''}
                       className="w-full h-full object-contain drop-shadow-md"
                       draggable={false}
-                      onError={(e) => console.log('Image failed:', (e.target as HTMLImageElement).src)}
+                      onError={(e) => {
+                        console.log('Image failed:', (e.target as HTMLImageElement).src);
+                        (e.currentTarget as HTMLImageElement).style.visibility = 'hidden';
+                      }}
                     />
                   ) : (
                     <span className="text-5xl sm:text-6xl">⭐</span>
