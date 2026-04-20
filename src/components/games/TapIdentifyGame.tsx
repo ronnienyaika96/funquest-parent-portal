@@ -210,37 +210,50 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
         </motion.div>
 
         {/* Counting objects grid */}
-        {isCountingMode && correctCount && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.15 }}
-            className="flex flex-wrap items-center justify-center gap-4 w-full max-w-3xl px-4 py-2"
-          >
-            {Array.from({ length: correctCount }).map((_, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 + i * 0.05 }}
-                className="flex items-center justify-center"
-                style={{ width: '90px', height: '90px' }}
-              >
-                {countingImage ? (
-                  <img
-                    src={countingImage.startsWith('http') ? countingImage : getAssetUrl(countingImage)}
-                    alt={objectType || ''}
-                    className="w-full h-full object-contain drop-shadow-md"
-                    draggable={false}
-                    onError={(e) => console.log('Image failed:', (e.target as HTMLImageElement).src)}
-                  />
-                ) : (
-                  <span className="text-5xl sm:text-6xl">⭐</span>
-                )}
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
+        {isCountingMode && correctCount && (() => {
+          const cols =
+            correctCount <= 3 ? correctCount
+            : correctCount === 4 ? 2
+            : correctCount <= 6 ? 3
+            : correctCount <= 9 ? 3
+            : 4;
+          return (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.15 }}
+              className="grid mx-auto gap-4 sm:gap-6 px-4 py-2"
+              style={{
+                gridTemplateColumns: `repeat(${cols}, 90px)`,
+                justifyItems: 'center',
+                alignItems: 'center',
+              }}
+            >
+              {Array.from({ length: correctCount }).map((_, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15 + i * 0.05 }}
+                  className="flex items-center justify-center"
+                  style={{ width: '90px', height: '90px' }}
+                >
+                  {countingImage ? (
+                    <img
+                      src={countingImage.startsWith('http') ? countingImage : getAssetUrl(countingImage)}
+                      alt={objectType || ''}
+                      className="w-full h-full object-contain drop-shadow-md"
+                      draggable={false}
+                      onError={(e) => console.log('Image failed:', (e.target as HTMLImageElement).src)}
+                    />
+                  ) : (
+                    <span className="text-5xl sm:text-6xl">⭐</span>
+                  )}
+                </motion.div>
+              ))}
+            </motion.div>
+          );
+        })()}
 
         {/* Prompt image area (non-counting mode) */}
         {!isCountingMode && data.image && (
