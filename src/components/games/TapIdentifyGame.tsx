@@ -49,9 +49,19 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
     return isNaN(ansNum) ? null : ansNum;
   })();
 
-  // Counting mode triggers when we have a numeric answer (default objectType = "apple")
+  // Counting mode triggers when we have a numeric answer
   const isCountingMode = !!(correctCount && correctCount > 0);
-  const objectType = rawObjectType || (isCountingMode ? 'apple' : null);
+
+  // Pool of object types — randomly chosen per step (stable per step.id)
+  const OBJECT_POOL = ['apple', 'pencil', 'van', 'turtle', 'cat', 'dog', 'watermelon', 'kite', 'jug', 'fish'];
+  const randomObjectType = useMemo(() => {
+    const seed = String(step.id || Math.random());
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+    return OBJECT_POOL[hash % OBJECT_POOL.length];
+  }, [step.id]);
+
+  const objectType = rawObjectType || (isCountingMode ? randomObjectType : null);
 
   const explicitImage =
     data.objectImage ||
