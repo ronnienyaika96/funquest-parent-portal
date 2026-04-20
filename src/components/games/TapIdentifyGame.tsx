@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Volume2 } from 'lucide-react';
 import { getChoiceAssetByState, TileState } from '@/lib/gameAssets';
 import { getInstructionText, resolveOptionAsset, extractLabel, choicesMatch } from '@/lib/gameHelpers';
+import { getGameAssetUrl } from '@/lib/funquest-assets';
 
 interface TapIdentifyGameProps {
   step: any;
@@ -30,30 +31,39 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
   }));
 
   // Visual counting support: detect object-based counting questions
-  const countingObject =
+  const objectType: string | null =
+    data.objectType ||
+    data.object_type ||
     data.objectName ||
     data.object_name ||
     data.countObject ||
     data.count_object ||
+    data.object?.type ||
     data.object?.name ||
     null;
-  const countingImage =
+  const explicitImage =
     data.objectImage ||
     data.object_image ||
     data.countImage ||
     data.count_image ||
     data.object?.image ||
     null;
+  const countingImage = explicitImage
+    ? explicitImage
+    : objectType
+    ? getGameAssetUrl(`objects/${String(objectType).toLowerCase()}.png`)
+    : null;
   const countingCount = (() => {
     const explicit = data.count ?? data.objectCount ?? data.object_count ?? data.object?.count;
     if (typeof explicit === 'number') return explicit;
     const ansNum = parseInt(extractLabel(answer), 10);
     return isNaN(ansNum) ? null : ansNum;
   })();
-  const isCountingMode = !!(countingObject && countingCount && countingCount > 0);
+  const isCountingMode = !!(objectType && countingCount && countingCount > 0);
 
+  const pluralize = (word: string) => (word.endsWith('s') ? word : `${word}s`);
   const question = isCountingMode
-    ? `Tap the number of ${countingObject}`
+    ? `Tap the number of ${pluralize(objectType!)}`
     : getInstructionText(data);
 
   const instructionAudio = step.instruction_audio_url;
@@ -182,7 +192,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.15 }}
-            className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 w-full max-w-3xl px-4 py-2"
+            className="flex flex-wrap items-center justify-center gap-4 w-full max-w-3xl px-4 py-2"
           >
             {Array.from({ length: countingCount }).map((_, i) => (
               <motion.div
@@ -191,15 +201,12 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15 + i * 0.05 }}
                 className="flex items-center justify-center"
-                style={{
-                  width: 'clamp(70px, 9vw, 110px)',
-                  height: 'clamp(70px, 9vw, 110px)',
-                }}
+                style={{ width: '90px', height: '90px' }}
               >
                 {countingImage ? (
                   <img
-                    src={getAssetUrl(countingImage)}
-                    alt={countingObject}
+                    src={countingImage.startsWith('http') ? countingImage : getAssetUrl(countingImage)}
+                    alt={objectType || ''}
                     className="w-full h-full object-contain drop-shadow-md"
                     draggable={false}
                   />
