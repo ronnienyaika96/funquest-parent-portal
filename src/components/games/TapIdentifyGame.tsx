@@ -24,11 +24,21 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
     : Array.isArray(data.answers) ? data.answers
     : [];
   const answer = data.answer;
-  const options = rawOptions.map((opt: any) => ({
+  const baseOptions = rawOptions.map((opt: any) => ({
     label: extractLabel(opt),
     image: opt?.image,
     correct: choicesMatch(opt, answer),
   }));
+
+  const options = useMemo(() => {
+    const arr = [...baseOptions];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step.id]);
 
   // Visual counting support: detect object-based counting questions
   const rawObjectType: string | null =
