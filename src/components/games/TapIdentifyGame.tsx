@@ -209,7 +209,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
                 {countingImage ? (
                   <img
                     src={getAssetUrl(countingImage)}
-                    alt={countingObject}
+                    alt={objectType || ''}
                     className="w-full h-full object-contain drop-shadow-md"
                     draggable={false}
                   />
