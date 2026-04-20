@@ -63,7 +63,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
   const countingImage = explicitImage
     ? explicitImage
     : objectType
-    ? getGameAssetUrl(`objects/${String(objectType).toLowerCase()}.png`)
+    ? `https://edjtsiynyhrnulfgwbkf.supabase.co/storage/v1/object/public/game%20assets/Objects/${String(objectType).toLowerCase()}.png`
     : null;
 
   console.log('[TapIdentifyGame] objectType:', objectType, 'count:', correctCount, 'image:', countingImage);
@@ -216,6 +216,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
                     alt={objectType || ''}
                     className="w-full h-full object-contain drop-shadow-md"
                     draggable={false}
+                    onError={(e) => console.log('Image failed:', (e.target as HTMLImageElement).src)}
                   />
                 ) : (
                   <span className="text-5xl sm:text-6xl">⭐</span>
