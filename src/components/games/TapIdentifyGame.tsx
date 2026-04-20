@@ -65,7 +65,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
   // Fixed mapping: each number (1-10) always shows the same unique object
   const COUNT_TO_OBJECT: Record<number, string> = {
     1: 'apple',
-    2: 'cats',
+    2: 'cat',
     3: 'fish',
     4: 'dog',
     5: 'house',
@@ -73,7 +73,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
     7: 'van',
     8: 'pencil',
     9: 'watermelon',
-    10: 'jugs',
+    10: 'jug',
   };
 
   const mappedObjectType = isCountingMode && correctCount ? COUNT_TO_OBJECT[correctCount] : null;
