@@ -260,7 +260,10 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
                       alt={objectType || ''}
                       className="w-full h-full object-contain drop-shadow-md"
                       draggable={false}
-                      onError={(e) => console.log('Image failed:', (e.target as HTMLImageElement).src)}
+                      onError={(e) => {
+                        console.log('Image failed:', (e.target as HTMLImageElement).src);
+                        (e.currentTarget as HTMLImageElement).style.visibility = 'hidden';
+                      }}
                     />
                   ) : (
                     <span className="text-5xl sm:text-6xl">⭐</span>
