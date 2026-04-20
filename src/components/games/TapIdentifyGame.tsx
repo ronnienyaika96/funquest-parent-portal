@@ -194,14 +194,14 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
         </motion.div>
 
         {/* Counting objects grid */}
-        {isCountingMode && countingCount && (
+        {isCountingMode && correctCount && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.15 }}
             className="flex flex-wrap items-center justify-center gap-4 w-full max-w-3xl px-4 py-2"
           >
-            {Array.from({ length: countingCount }).map((_, i) => (
+            {Array.from({ length: correctCount }).map((_, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: -10 }}
