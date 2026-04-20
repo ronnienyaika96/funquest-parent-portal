@@ -31,30 +31,39 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
   }));
 
   // Visual counting support: detect object-based counting questions
-  const countingObject =
+  const objectType: string | null =
+    data.objectType ||
+    data.object_type ||
     data.objectName ||
     data.object_name ||
     data.countObject ||
     data.count_object ||
+    data.object?.type ||
     data.object?.name ||
     null;
-  const countingImage =
+  const explicitImage =
     data.objectImage ||
     data.object_image ||
     data.countImage ||
     data.count_image ||
     data.object?.image ||
     null;
+  const countingImage = explicitImage
+    ? explicitImage
+    : objectType
+    ? getGameAssetUrl(`objects/${String(objectType).toLowerCase()}.png`)
+    : null;
   const countingCount = (() => {
     const explicit = data.count ?? data.objectCount ?? data.object_count ?? data.object?.count;
     if (typeof explicit === 'number') return explicit;
     const ansNum = parseInt(extractLabel(answer), 10);
     return isNaN(ansNum) ? null : ansNum;
   })();
-  const isCountingMode = !!(countingObject && countingCount && countingCount > 0);
+  const isCountingMode = !!(objectType && countingCount && countingCount > 0);
 
+  const pluralize = (word: string) => (word.endsWith('s') ? word : `${word}s`);
   const question = isCountingMode
-    ? `Tap the number of ${countingObject}`
+    ? `Tap the number of ${pluralize(objectType!)}`
     : getInstructionText(data);
 
   const instructionAudio = step.instruction_audio_url;
