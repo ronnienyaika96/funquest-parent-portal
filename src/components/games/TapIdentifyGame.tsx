@@ -294,8 +294,26 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
           );
         })()}
 
+        {/* Phonics image area (letter mode) */}
+        {isLetterMode && phonicsImage && !hidePhonicsImage && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.15 }}
+            className="flex items-center justify-center w-full py-2"
+          >
+            <img
+              src={phonicsImage}
+              alt={phonicsObjectType || ''}
+              className="w-[140px] h-[140px] sm:w-[180px] sm:h-[180px] object-contain drop-shadow-lg"
+              draggable={false}
+              onError={() => setHidePhonicsImage(true)}
+            />
+          </motion.div>
+        )}
+
         {/* Prompt image area (non-counting mode) */}
-        {!isCountingMode && data.image && (
+        {!isCountingMode && !isLetterMode && data.image && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -309,7 +327,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
             />
           </motion.div>
         )}
-        {!isCountingMode && !data.image && <div className="min-h-[8px]" />}
+        {!isCountingMode && !isLetterMode && !data.image && <div className="min-h-[8px]" />}
 
         {/* Answer tiles */}
         <motion.div
