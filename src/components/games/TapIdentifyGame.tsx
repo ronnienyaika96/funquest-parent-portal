@@ -59,6 +59,21 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
     return isNaN(ansNum) ? null : ansNum;
   })();
 
+  const answerLabel = extractLabel(answer).trim();
+  const isLetterMode = !correctCount && /^[a-z]$/i.test(answerLabel);
+
+  const LETTER_TO_OBJECT: Record<string, string> = {
+    a: 'apple', b: 'ball', c: 'cat', d: 'dog', e: 'egg', f: 'fish', g: 'goat', h: 'house', i: 'igloo',
+    j: 'jug', k: 'kite', l: 'lion', m: 'moon', n: 'nest', o: 'orange', p: 'pencil', q: 'queen',
+    r: 'rabbit', s: 'sun', t: 'turtle', u: 'umbrella', v: 'van', w: 'watermelon', x: 'xylophone', y: 'yo-yo', z: 'zebra',
+  };
+
+  const phonicsObjectType = isLetterMode
+    ? String(data.objectType || data.object_type || data.object?.type || data.object?.name || LETTER_TO_OBJECT[answerLabel.toLowerCase()] || '').toLowerCase()
+    : null;
+
+  const phonicsImage = phonicsObjectType ? getGameAssetUrl(`objects/${phonicsObjectType}.png`) : null;
+
   // Counting mode triggers when we have a numeric answer
   const isCountingMode = !!(correctCount && correctCount > 0);
 
@@ -101,8 +116,11 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
     if (w.endsWith('s')) return w;
     return `${w}s`;
   };
+  const capitalize = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
   const question = isCountingMode
     ? `Tap the number of ${pluralize(objectType!)}`
+    : isLetterMode && phonicsObjectType
+    ? `${answerLabel.toUpperCase()} is for ${capitalize(phonicsObjectType)}`
     : getInstructionText(data);
 
   const instructionAudio = step.instruction_audio_url;
@@ -110,6 +128,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
   const [selected, setSelected] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [reinforcement, setReinforcement] = useState<string | null>(null);
+  const [hidePhonicsImage, setHidePhonicsImage] = useState(false);
 
   useEffect(() => {
     if (instructionAudio) {
@@ -121,6 +140,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
     setSelected(null);
     setShowResult(false);
     setReinforcement(null);
+    setHidePhonicsImage(false);
   }, [step.id]);
 
   const handleTap = (index: number) => {
@@ -274,8 +294,26 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
           );
         })()}
 
+        {/* Phonics image area (letter mode) */}
+        {isLetterMode && phonicsImage && !hidePhonicsImage && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.15 }}
+            className="flex items-center justify-center w-full py-2"
+          >
+            <img
+              src={phonicsImage}
+              alt={phonicsObjectType || ''}
+              className="w-[140px] h-[140px] sm:w-[180px] sm:h-[180px] object-contain drop-shadow-lg"
+              draggable={false}
+              onError={() => setHidePhonicsImage(true)}
+            />
+          </motion.div>
+        )}
+
         {/* Prompt image area (non-counting mode) */}
-        {!isCountingMode && data.image && (
+        {!isCountingMode && !isLetterMode && data.image && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -289,7 +327,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
             />
           </motion.div>
         )}
-        {!isCountingMode && !data.image && <div className="min-h-[8px]" />}
+        {!isCountingMode && !isLetterMode && !data.image && <div className="min-h-[8px]" />}
 
         {/* Answer tiles */}
         <motion.div
