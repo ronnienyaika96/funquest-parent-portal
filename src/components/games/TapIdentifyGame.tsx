@@ -309,8 +309,12 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
             <img
               src={phonicsImage}
               alt={phonicsWord || ''}
-              style={{ width: '200px', height: 'auto' }}
-              className="object-contain drop-shadow-xl mx-auto"
+              style={{
+                width: 'clamp(200px, 22vw, 240px)',
+                height: 'auto',
+                filter: 'drop-shadow(0 6px 14px rgba(0,0,0,0.18))',
+              }}
+              className="object-contain mx-auto"
               draggable={false}
               onError={() => setHidePhonicsImage(true)}
             />
