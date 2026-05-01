@@ -302,12 +302,14 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
             initial={{ opacity: 0, scale: 0.8, y: -10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ type: 'spring', stiffness: 220, damping: 16, delay: 0.15 }}
-            className="flex items-center justify-center w-full py-2"
+            className="flex items-center justify-center w-full"
+            style={{ marginBottom: '20px' }}
           >
             <img
               src={phonicsImage}
               alt={phonicsWord || ''}
-              className="w-[200px] h-[200px] sm:w-[240px] sm:h-[240px] object-contain drop-shadow-xl"
+              style={{ width: '200px', height: 'auto' }}
+              className="object-contain drop-shadow-xl mx-auto"
               draggable={false}
               onError={() => setHidePhonicsImage(true)}
             />
