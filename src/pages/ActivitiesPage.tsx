@@ -106,6 +106,27 @@ const ActivitiesPage = () => {
     ? activities.filter(a => !progressMap[a.id] || progressMap[a.id].completed)
     : activities;
 
+  const getThumbnailUrl = (title: string, type: string): string | undefined => {
+    const t = title.toLowerCase();
+    const fileMap: Array<{ match: RegExp; file: string }> = [
+      { match: /drag.*drop.*letter/, file: 'drag and drop letters.png' },
+      { match: /letter.*tracing|trace.*letter/, file: 'letter tracing.png' },
+      { match: /match.*number/, file: 'match numbers.png' },
+      { match: /number.*tracing|trace.*number/, file: 'number tracing.png' },
+      { match: /tap.*identify.*letter|identify.*letter/, file: 'tap to identify letters.png' },
+      { match: /tap.*identify.*number|identify.*number/, file: 'tap to identify numbers.png' },
+    ];
+    let file = fileMap.find(f => f.match.test(t))?.file;
+    if (!file) {
+      // type-based fallback
+      if (type === 'letter') file = 'letter tracing.png';
+      else if (type === 'number') file = 'number tracing.png';
+    }
+    if (!file) return undefined;
+    const { data } = supabase.storage.from('thumbnails').getPublicUrl(file);
+    return data.publicUrl;
+  };
+
   const toGameCard = (activity: ActivityWithSteps, index: number) => {
     const config = getCategoryConfig(activity.type);
     const prog = progressMap[activity.id];
@@ -119,6 +140,7 @@ const ActivitiesPage = () => {
       color: `bg-gradient-to-br ${config.gradient}`,
       progress: progressPct,
       isNew: !prog,
+      thumbnail: getThumbnailUrl(activity.title, activity.type),
     };
   };
 
