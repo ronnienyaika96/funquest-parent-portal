@@ -62,17 +62,16 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
   const answerLabel = extractLabel(answer).trim();
   const isLetterMode = !correctCount && /^[a-z]$/i.test(answerLabel);
 
-  const LETTER_TO_OBJECT: Record<string, string> = {
-    a: 'apple', b: 'ball', c: 'cat', d: 'dog', e: 'egg', f: 'fish', g: 'goat', h: 'house', i: 'igloo',
-    j: 'jug', k: 'kite', l: 'lion', m: 'moon', n: 'nest', o: 'orange', p: 'pencil', q: 'queen',
-    r: 'rabbit', s: 'sun', t: 'turtle', u: 'umbrella', v: 'van', w: 'watermelon', x: 'xylophone', y: 'yo-yo', z: 'zebra',
+  const LETTER_WORDS: Record<string, string> = {
+    a: 'Apple', b: 'Ball', c: 'Cat', d: 'Dog', e: 'Elephant', f: 'Fish', g: 'Grapes',
+    h: 'Hat', i: 'Ice cream', j: 'Jug', k: 'Kite', l: 'Lion', m: 'Monkey', n: 'Nest',
+    o: 'Orange', p: 'Pencil', q: 'Queen', r: 'Rabbit', s: 'Sun', t: 'Tiger',
+    u: 'Umbrella', v: 'Van', w: 'Watermelon', x: 'Xylophone', y: 'Yacht', z: 'Zebra',
   };
 
-  const phonicsObjectType = isLetterMode
-    ? String(data.objectType || data.object_type || data.object?.type || data.object?.name || LETTER_TO_OBJECT[answerLabel.toLowerCase()] || '').toLowerCase()
-    : null;
-
-  const phonicsImage = phonicsObjectType ? getGameAssetUrl(`objects/${phonicsObjectType}.png`) : null;
+  const currentLetter = isLetterMode ? answerLabel.toLowerCase() : '';
+  const phonicsWord = currentLetter ? LETTER_WORDS[currentLetter] : null;
+  const phonicsImage = currentLetter ? getGameAssetUrl(`letters/${currentLetter}.png`) : null;
 
   // Counting mode triggers when we have a numeric answer
   const isCountingMode = !!(correctCount && correctCount > 0);
