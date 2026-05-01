@@ -298,15 +298,16 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
         {/* Phonics image area (letter mode) */}
         {isLetterMode && phonicsImage && !hidePhonicsImage && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.15 }}
+            key={currentLetter}
+            initial={{ opacity: 0, scale: 0.8, y: -10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 220, damping: 16, delay: 0.15 }}
             className="flex items-center justify-center w-full py-2"
           >
             <img
               src={phonicsImage}
-              alt={phonicsObjectType || ''}
-              className="w-[140px] h-[140px] sm:w-[180px] sm:h-[180px] object-contain drop-shadow-lg"
+              alt={phonicsWord || ''}
+              className="w-[200px] h-[200px] sm:w-[240px] sm:h-[240px] object-contain drop-shadow-xl"
               draggable={false}
               onError={() => setHidePhonicsImage(true)}
             />
