@@ -71,7 +71,8 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
 
   const currentLetter = isLetterMode ? answerLabel.toLowerCase() : '';
   const phonicsWord = currentLetter ? LETTER_WORDS[currentLetter] : null;
-  const phonicsImage = phonicsWord ? getAssetUrl(`letters/${phonicsWord.toLowerCase()}.png`) : null;
+  const word = phonicsWord?.toLowerCase();
+  const phonicsImage = word ? getAssetUrl(`objects/${word}.png`) : null;
 
   // Counting mode triggers when we have a numeric answer
   const isCountingMode = !!(correctCount && correctCount > 0);
@@ -308,8 +309,12 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
             <img
               src={phonicsImage}
               alt={phonicsWord || ''}
-              style={{ width: '200px', height: 'auto' }}
-              className="object-contain drop-shadow-xl mx-auto"
+              style={{
+                width: 'clamp(200px, 22vw, 240px)',
+                height: 'auto',
+                filter: 'drop-shadow(0 6px 14px rgba(0,0,0,0.18))',
+              }}
+              className="object-contain mx-auto"
               draggable={false}
               onError={() => setHidePhonicsImage(true)}
             />
