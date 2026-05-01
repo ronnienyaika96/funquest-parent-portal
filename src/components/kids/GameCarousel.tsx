@@ -10,6 +10,7 @@ interface Game {
   color: string;
   progress?: number;
   isNew?: boolean;
+  thumbnail?: string;
 }
 
 interface GameCarouselProps {
