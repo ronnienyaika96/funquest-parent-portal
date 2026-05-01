@@ -8,10 +8,11 @@ interface GameCardProps {
   color: string;
   progress?: number;
   isNew?: boolean;
+  thumbnail?: string;
   onClick?: () => void;
 }
 
-const GameCard = ({ title, emoji, color, progress, isNew, onClick }: GameCardProps) => {
+const GameCard = ({ title, emoji, color, progress, isNew, thumbnail, onClick }: GameCardProps) => {
   return (
     <motion.div
       whileHover={{ scale: 1.04, y: -6 }}
