@@ -62,17 +62,16 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
   const answerLabel = extractLabel(answer).trim();
   const isLetterMode = !correctCount && /^[a-z]$/i.test(answerLabel);
 
-  const LETTER_TO_OBJECT: Record<string, string> = {
-    a: 'apple', b: 'ball', c: 'cat', d: 'dog', e: 'egg', f: 'fish', g: 'goat', h: 'house', i: 'igloo',
-    j: 'jug', k: 'kite', l: 'lion', m: 'moon', n: 'nest', o: 'orange', p: 'pencil', q: 'queen',
-    r: 'rabbit', s: 'sun', t: 'turtle', u: 'umbrella', v: 'van', w: 'watermelon', x: 'xylophone', y: 'yo-yo', z: 'zebra',
+  const LETTER_WORDS: Record<string, string> = {
+    a: 'Apple', b: 'Ball', c: 'Cat', d: 'Dog', e: 'Elephant', f: 'Fish', g: 'Grapes',
+    h: 'Hat', i: 'Ice cream', j: 'Jug', k: 'Kite', l: 'Lion', m: 'Monkey', n: 'Nest',
+    o: 'Orange', p: 'Pencil', q: 'Queen', r: 'Rabbit', s: 'Sun', t: 'Tiger',
+    u: 'Umbrella', v: 'Van', w: 'Watermelon', x: 'Xylophone', y: 'Yacht', z: 'Zebra',
   };
 
-  const phonicsObjectType = isLetterMode
-    ? String(data.objectType || data.object_type || data.object?.type || data.object?.name || LETTER_TO_OBJECT[answerLabel.toLowerCase()] || '').toLowerCase()
-    : null;
-
-  const phonicsImage = phonicsObjectType ? getGameAssetUrl(`objects/${phonicsObjectType}.png`) : null;
+  const currentLetter = isLetterMode ? answerLabel.toLowerCase() : '';
+  const phonicsWord = currentLetter ? LETTER_WORDS[currentLetter] : null;
+  const phonicsImage = currentLetter ? getGameAssetUrl(`letters/${currentLetter}.png`) : null;
 
   // Counting mode triggers when we have a numeric answer
   const isCountingMode = !!(correctCount && correctCount > 0);
@@ -119,8 +118,8 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
   const capitalize = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
   const question = isCountingMode
     ? `Tap the number of ${pluralize(objectType!)}`
-    : isLetterMode && phonicsObjectType
-    ? `${answerLabel.toUpperCase()} is for ${capitalize(phonicsObjectType)}`
+    : isLetterMode && phonicsWord
+    ? `Find the letter for ${phonicsWord.toLowerCase()}`
     : getInstructionText(data);
 
   const instructionAudio = step.instruction_audio_url;
@@ -232,7 +231,9 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
             className="text-center text-base sm:text-lg md:text-xl font-bold leading-snug"
             style={{ color: '#2C5F7C', fontFamily: "'Nunito', sans-serif" }}
           >
-            {question}
+            {isLetterMode && showResult && isCorrect && phonicsWord
+              ? `${currentLetter.toUpperCase()} is for ${phonicsWord}`
+              : question}
           </p>
           {instructionAudio && (
             <button
@@ -297,15 +298,16 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
         {/* Phonics image area (letter mode) */}
         {isLetterMode && phonicsImage && !hidePhonicsImage && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.15 }}
+            key={currentLetter}
+            initial={{ opacity: 0, scale: 0.8, y: -10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 220, damping: 16, delay: 0.15 }}
             className="flex items-center justify-center w-full py-2"
           >
             <img
               src={phonicsImage}
-              alt={phonicsObjectType || ''}
-              className="w-[140px] h-[140px] sm:w-[180px] sm:h-[180px] object-contain drop-shadow-lg"
+              alt={phonicsWord || ''}
+              className="w-[200px] h-[200px] sm:w-[240px] sm:h-[240px] object-contain drop-shadow-xl"
               draggable={false}
               onError={() => setHidePhonicsImage(true)}
             />
