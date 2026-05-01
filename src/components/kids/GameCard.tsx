@@ -8,10 +8,11 @@ interface GameCardProps {
   color: string;
   progress?: number;
   isNew?: boolean;
+  thumbnail?: string;
   onClick?: () => void;
 }
 
-const GameCard = ({ title, emoji, color, progress, isNew, onClick }: GameCardProps) => {
+const GameCard = ({ title, emoji, color, progress, isNew, thumbnail, onClick }: GameCardProps) => {
   return (
     <motion.div
       whileHover={{ scale: 1.04, y: -6 }}
@@ -22,17 +23,34 @@ const GameCard = ({ title, emoji, color, progress, isNew, onClick }: GameCardPro
       <div
         className={`w-[calc(50vw-2rem)] h-[calc(50vw-0.5rem)] max-w-[240px] max-h-[280px] rounded-3xl shadow-medium flex flex-col items-center justify-center relative overflow-hidden bg-gradient-to-br ${color}`}
       >
-        {/* Soft decorative shapes */}
-        <div className="absolute top-5 left-5 w-10 h-10 bg-white/12 rounded-full blur-[1px]" />
-        <div className="absolute bottom-8 right-6 w-14 h-14 bg-white/8 rounded-full blur-[1px]" />
+        {thumbnail ? (
+          <>
+            <img
+              src={thumbnail}
+              alt={title}
+              className="absolute inset-0 w-full h-full object-cover"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+            />
+            <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+            <p className="absolute bottom-3 left-3 right-3 text-white font-bold text-sm sm:text-base text-center drop-shadow-md leading-tight z-10">
+              {title}
+            </p>
+          </>
+        ) : (
+          <>
+            {/* Soft decorative shapes */}
+            <div className="absolute top-5 left-5 w-10 h-10 bg-white/12 rounded-full blur-[1px]" />
+            <div className="absolute bottom-8 right-6 w-14 h-14 bg-white/8 rounded-full blur-[1px]" />
 
-        {/* Main emoji */}
-        <span className="text-6xl sm:text-7xl mb-2 drop-shadow-lg select-none">{emoji}</span>
+            {/* Main emoji */}
+            <span className="text-6xl sm:text-7xl mb-2 drop-shadow-lg select-none">{emoji}</span>
 
-        {/* Title */}
-        <p className="text-white font-bold text-sm sm:text-base text-center px-4 drop-shadow-md leading-tight">
-          {title}
-        </p>
+            {/* Title */}
+            <p className="text-white font-bold text-sm sm:text-base text-center px-4 drop-shadow-md leading-tight">
+              {title}
+            </p>
+          </>
+        )}
 
         {/* Progress bar */}
         {progress !== undefined && (

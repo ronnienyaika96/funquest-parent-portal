@@ -10,6 +10,7 @@ interface Game {
   color: string;
   progress?: number;
   isNew?: boolean;
+  thumbnail?: string;
 }
 
 interface GameCarouselProps {
@@ -72,6 +73,7 @@ const GameCarousel = ({ title, titleEmoji, games, onGameClick }: GameCarouselPro
                 color={game.color}
                 progress={game.progress}
                 isNew={game.isNew}
+                thumbnail={game.thumbnail}
                 onClick={() => onGameClick?.(game.id)}
               />
             </motion.div>
