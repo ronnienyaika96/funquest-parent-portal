@@ -118,8 +118,8 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
   const capitalize = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
   const question = isCountingMode
     ? `Tap the number of ${pluralize(objectType!)}`
-    : isLetterMode && phonicsObjectType
-    ? `${answerLabel.toUpperCase()} is for ${capitalize(phonicsObjectType)}`
+    : isLetterMode && phonicsWord
+    ? `Find the letter for ${phonicsWord.toLowerCase()}`
     : getInstructionText(data);
 
   const instructionAudio = step.instruction_audio_url;
