@@ -62,17 +62,25 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
   const answerLabel = extractLabel(answer).trim();
   const isLetterMode = !correctCount && /^[a-z]$/i.test(answerLabel);
 
-  const LETTER_WORDS: Record<string, string> = {
-    a: 'Apple', b: 'Ball', c: 'Cat', d: 'Dog', e: 'Elephant', f: 'Fish', g: 'Grapes',
-    h: 'Hat', i: 'Ice cream', j: 'Jug', k: 'Kite', l: 'Lion', m: 'Monkey', n: 'Nest',
-    o: 'Orange', p: 'Pencil', q: 'Queen', r: 'Rabbit', s: 'Sun', t: 'Tiger',
-    u: 'Umbrella', v: 'Van', w: 'Watermelon', x: 'Xylophone', y: 'Yacht', z: 'Zebra',
+  const SUPABASE_PUBLIC_URL = 'https://edjtsiynyhrnulfgwbkf.supabase.co/storage/v1/object/public/game%20assets';
+  const getImageUrl = (fileName: string) =>
+    `${SUPABASE_PUBLIC_URL}/Objects/${fileName}.png`;
+
+  const LETTER_OBJECTS: Record<string, string> = {
+    a: 'apple', b: 'ball', c: 'cat', d: 'dog', e: 'elephant', f: 'fish', g: 'giraffe',
+    h: 'house', i: 'insect', j: 'jug', k: 'kite', l: 'lemon', m: 'mango', n: 'nail',
+    o: 'orange', p: 'pencil', q: 'queen', r: 'rat', s: 'sun', t: 'turtle',
+    u: 'umbrella', v: 'van', w: 'watermelon', x: 'xylophone', y: 'yacht', z: 'zebra',
   };
 
   const currentLetter = isLetterMode ? answerLabel.toLowerCase() : '';
-  const phonicsWord = currentLetter ? LETTER_WORDS[currentLetter] : null;
-  const word = phonicsWord?.toLowerCase();
-  const phonicsImage = word ? getAssetUrl(`objects/${word}.png`) : null;
+  const phonicsObject = currentLetter ? LETTER_OBJECTS[currentLetter] : null;
+  const phonicsWord = phonicsObject ? phonicsObject.charAt(0).toUpperCase() + phonicsObject.slice(1) : null;
+  const phonicsImage = phonicsObject ? getImageUrl(phonicsObject) : null;
+
+  if (isLetterMode) {
+    console.log('[TapIdentifyGame] Letter:', currentLetter, 'Object:', phonicsObject, 'Image URL:', phonicsImage);
+  }
 
   // Counting mode triggers when we have a numeric answer
   const isCountingMode = !!(correctCount && correctCount > 0);
@@ -104,7 +112,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
   const countingImage = explicitImage
     ? explicitImage
     : objectType
-    ? `https://edjtsiynyhrnulfgwbkf.supabase.co/storage/v1/object/public/game%20assets/Objects/${String(objectType).toLowerCase()}.png`
+    ? getImageUrl(String(objectType).toLowerCase())
     : null;
 
   console.log('[TapIdentifyGame] objectType:', objectType, 'count:', correctCount, 'image:', countingImage);
