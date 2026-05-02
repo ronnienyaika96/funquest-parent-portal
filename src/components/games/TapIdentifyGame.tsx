@@ -70,7 +70,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
     a: 'apple', b: 'ball', c: 'cat', d: 'dog', e: 'elephant', f: 'fish', g: 'giraffe',
     h: 'house', i: 'insect', j: 'jug', k: 'kite', l: 'lemon', m: 'mango', n: 'nail',
     o: 'orange', p: 'pencil', q: 'queen', r: 'rat', s: 'sun', t: 'turtle',
-    u: 'umbrella', v: 'van', w: 'watermelon', x: 'xylophone', y: 'yacht', z: 'zebra',
+    u: 'umbrella', v: 'van', w: 'watermelon', x: 'xylephone', y: 'yatch', z: 'zebra',
   };
 
   const currentLetter = isLetterMode ? answerLabel.toLowerCase() : '';
