@@ -70,12 +70,18 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
     a: 'apple', b: 'ball', c: 'cat', d: 'dog', e: 'elephant', f: 'fish', g: 'giraffe',
     h: 'house', i: 'insect', j: 'jug', k: 'kite', l: 'lemon', m: 'mango', n: 'nail',
     o: 'orange', p: 'pencil', q: 'queen', r: 'rat', s: 'sun', t: 'turtle',
-    u: 'umbrella', v: 'van', w: 'watermelon', x: 'xylophone', y: 'yacht', z: 'zebra',
+    u: 'umbrella', v: 'van', w: 'watermelon', x: 'xylephone', y: 'yatch', z: 'zebra',
+  };
+
+  const LETTER_DISPLAY_WORDS: Record<string, string> = {
+    ...Object.fromEntries(Object.entries(LETTER_OBJECTS).map(([k, v]) => [k, v.charAt(0).toUpperCase() + v.slice(1)])),
+    x: 'Xylophone',
+    y: 'Yacht',
   };
 
   const currentLetter = isLetterMode ? answerLabel.toLowerCase() : '';
   const phonicsObject = currentLetter ? LETTER_OBJECTS[currentLetter] : null;
-  const phonicsWord = phonicsObject ? phonicsObject.charAt(0).toUpperCase() + phonicsObject.slice(1) : null;
+  const phonicsWord = currentLetter ? LETTER_DISPLAY_WORDS[currentLetter] : null;
   const phonicsImage = phonicsObject ? getImageUrl(phonicsObject) : null;
 
   if (isLetterMode) {
