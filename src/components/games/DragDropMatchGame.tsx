@@ -300,6 +300,13 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
     }
   }, [instructionAudio]);
 
+  // Reset state when step (round) changes
+  useEffect(() => {
+    setMatches({});
+    setActiveId(null);
+    setWrongTarget(null);
+  }, [step.id]);
+
   const matchedDraggableIds = new Set(Object.values(matches));
   const allMatched = targets.length > 0 && targets.every(t => !!matches[t.id]);
 
