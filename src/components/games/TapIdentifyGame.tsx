@@ -112,7 +112,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
   const countingImage = explicitImage
     ? explicitImage
     : objectType
-    ? `https://edjtsiynyhrnulfgwbkf.supabase.co/storage/v1/object/public/game%20assets/Objects/${String(objectType).toLowerCase()}.png`
+    ? getImageUrl(String(objectType).toLowerCase())
     : null;
 
   console.log('[TapIdentifyGame] objectType:', objectType, 'count:', correctCount, 'image:', countingImage);
