@@ -109,8 +109,8 @@ const ActivitiesPage = () => {
   const getThumbnailUrl = (title: string, type: string): string | undefined => {
     const t = title.toLowerCase();
     const fileMap: Array<{ match: RegExp; file: string }> = [
-      { match: /drag.*drop.*letter/, file: 'drag and drop letters.png' },
-      { match: /letter.*tracing|trace.*letter/, file: 'letter tracing.png' },
+      { match: /(drag.*drop.*letter|letter.*drag.*drop|match.*letter)/, file: 'drag and drop letters.png' },
+      { match: /letter.*tracing|trace.*letter|alphabet.*tracing/, file: 'letter tracing.png' },
       { match: /match.*number/, file: 'match numbers.png' },
       { match: /number.*tracing|trace.*number/, file: 'number tracing.png' },
       { match: /tap.*identify.*letter|identify.*letter/, file: 'tap to identify letters.png' },
