@@ -173,13 +173,35 @@ function DroppableTarget({ target, matchedItem }: {
 
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center justify-center w-full h-full gap-1 p-3">
-        {target.image && (
+        {target.objectName && target.quantity ? (
+          <div
+            className="grid gap-1 w-[80%] place-items-center"
+            style={{
+              gridTemplateColumns: `repeat(${target.quantity <= 4 ? target.quantity : target.quantity <= 6 ? 3 : target.quantity <= 9 ? 3 : 5}, minmax(0, 1fr))`,
+            }}
+          >
+            {Array.from({ length: target.quantity }).map((_, i) => (
+              <motion.img
+                key={i}
+                src={getObjectImageUrl(target.objectName!)}
+                alt={target.objectName}
+                initial={{ scale: 0.6, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: i * 0.04, type: 'spring', stiffness: 220, damping: 14 }}
+                className="object-contain drop-shadow-md"
+                style={{ width: 'clamp(18px, 3.2vw, 38px)', height: 'clamp(18px, 3.2vw, 38px)' }}
+                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+              />
+            ))}
+          </div>
+        ) : target.image ? (
           <img
             src={getAssetUrl(target.image)}
             alt={target.label}
             className="w-[55%] h-[50%] object-contain drop-shadow-md"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
           />
-        )}
+        ) : null}
         {/* Label */}
         <div
           className="rounded-lg px-3 py-1 mt-auto"
@@ -200,7 +222,11 @@ function DroppableTarget({ target, matchedItem }: {
         </div>
 
         {matchedItem && (
-          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1.15 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 10 }}
+          >
             <CheckCircle className="w-6 h-6 text-emerald-500 drop-shadow" />
           </motion.div>
         )}
