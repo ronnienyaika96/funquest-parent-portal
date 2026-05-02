@@ -33,7 +33,30 @@ interface Target {
   label: string;
   image?: string;
   accepts: string[];
+  /** Quantity-image mode: how many object images to render */
+  quantity?: number;
+  /** Quantity-image mode: object pool name (e.g. "apple") */
+  objectName?: string;
 }
+
+// Supabase public URL for object images (bucket "game assets" → folder "Objects")
+const SUPABASE_PUBLIC_URL = 'https://edjtsiynyhrnulfgwbkf.supabase.co';
+const getObjectImageUrl = (name: string) =>
+  `${SUPABASE_PUBLIC_URL}/storage/v1/object/public/game%20assets/Objects/${name}.png`;
+
+const OBJECT_POOL = [
+  'apple','ball','cat','dog','elephant','fish','giraffe','house','insect','jug',
+  'kite','lemon','mango','nail','orange','pencil','pumpkin','queen','rat','sun','turtle',
+];
+
+const shuffleArr = <T,>(arr: T[]): T[] => [...arr].sort(() => Math.random() - 0.5);
+
+const pluralize = (word: string, n: number) => {
+  if (n === 1) return word;
+  if (/(s|x|z|ch|sh)$/i.test(word)) return `${word}es`;
+  if (/[^aeiou]y$/i.test(word)) return `${word.slice(0, -1)}ies`;
+  return `${word}s`;
+};
 
 interface DragDropMatchGameProps {
   step: any;
