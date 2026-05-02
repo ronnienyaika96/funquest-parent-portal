@@ -33,7 +33,30 @@ interface Target {
   label: string;
   image?: string;
   accepts: string[];
+  /** Quantity-image mode: how many object images to render */
+  quantity?: number;
+  /** Quantity-image mode: object pool name (e.g. "apple") */
+  objectName?: string;
 }
+
+// Supabase public URL for object images (bucket "game assets" → folder "Objects")
+const SUPABASE_PUBLIC_URL = 'https://edjtsiynyhrnulfgwbkf.supabase.co';
+const getObjectImageUrl = (name: string) =>
+  `${SUPABASE_PUBLIC_URL}/storage/v1/object/public/game%20assets/Objects/${name}.png`;
+
+const OBJECT_POOL = [
+  'apple','ball','cat','dog','elephant','fish','giraffe','house','insect','jug',
+  'kite','lemon','mango','nail','orange','pencil','pumpkin','queen','rat','sun','turtle',
+];
+
+const shuffleArr = <T,>(arr: T[]): T[] => [...arr].sort(() => Math.random() - 0.5);
+
+const pluralize = (word: string, n: number) => {
+  if (n === 1) return word;
+  if (/(s|x|z|ch|sh)$/i.test(word)) return `${word}es`;
+  if (/[^aeiou]y$/i.test(word)) return `${word.slice(0, -1)}ies`;
+  return `${word}s`;
+};
 
 interface DragDropMatchGameProps {
   step: any;
@@ -150,13 +173,35 @@ function DroppableTarget({ target, matchedItem }: {
 
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center justify-center w-full h-full gap-1 p-3">
-        {target.image && (
+        {target.objectName && target.quantity ? (
+          <div
+            className="grid gap-1 w-[80%] place-items-center"
+            style={{
+              gridTemplateColumns: `repeat(${target.quantity <= 4 ? target.quantity : target.quantity <= 6 ? 3 : target.quantity <= 9 ? 3 : 5}, minmax(0, 1fr))`,
+            }}
+          >
+            {Array.from({ length: target.quantity }).map((_, i) => (
+              <motion.img
+                key={i}
+                src={getObjectImageUrl(target.objectName!)}
+                alt={target.objectName}
+                initial={{ scale: 0.6, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: i * 0.04, type: 'spring', stiffness: 220, damping: 14 }}
+                className="object-contain drop-shadow-md"
+                style={{ width: 'clamp(18px, 3.2vw, 38px)', height: 'clamp(18px, 3.2vw, 38px)' }}
+                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+              />
+            ))}
+          </div>
+        ) : target.image ? (
           <img
             src={getAssetUrl(target.image)}
             alt={target.label}
             className="w-[55%] h-[50%] object-contain drop-shadow-md"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
           />
-        )}
+        ) : null}
         {/* Label */}
         <div
           className="rounded-lg px-3 py-1 mt-auto"
@@ -177,7 +222,11 @@ function DroppableTarget({ target, matchedItem }: {
         </div>
 
         {matchedItem && (
-          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1.15 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 10 }}
+          >
             <CheckCircle className="w-6 h-6 text-emerald-500 drop-shadow" />
           </motion.div>
         )}
@@ -189,9 +238,52 @@ function DroppableTarget({ target, matchedItem }: {
 const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }) => {
   const data = step.data || {};
   const instruction = data.instruction || 'Drag each item to the correct match!';
-  const draggables: DraggableData[] = data.draggables || [];
-  const targets: Target[] = data.targets || [];
+  const rawDraggables: DraggableData[] = data.draggables || [];
+  const rawTargets: Target[] = data.targets || [];
   const instructionAudio = step.instruction_audio_url;
+
+  // Detect "match number to objects" schema and rebuild targets with random unique objects.
+  const isNumberMatch = React.useMemo(() => {
+    const schema: string = data.schema || '';
+    if (schema.includes('match_number_objects')) return true;
+    return rawTargets.some((t: any) => t?.type === 'quantity_image' || typeof t?.quantity === 'number');
+  }, [data.schema, rawTargets]);
+
+  const { draggables, targets } = React.useMemo(() => {
+    if (!isNumberMatch) return { draggables: rawDraggables, targets: rawTargets };
+
+    // Pair each number-draggable with a unique random object from the pool
+    const numberDraggables = rawDraggables
+      .map((d: any) => ({ ...d, _num: Number(d.value ?? d.label) }))
+      .filter((d) => !isNaN(d._num));
+
+    const picked = shuffleArr(OBJECT_POOL).slice(0, numberDraggables.length);
+
+    const newTargets: Target[] = numberDraggables.map((d, i) => {
+      const obj = picked[i];
+      const n = d._num;
+      return {
+        id: `target_${d.id}_${obj}`,
+        label: `${n} ${pluralize(obj, n)}`,
+        accepts: [d.id],
+        quantity: n,
+        objectName: obj,
+      };
+    });
+
+    const shuffledDraggables = shuffleArr(numberDraggables);
+    const shuffledTargets = shuffleArr(newTargets);
+
+    // eslint-disable-next-line no-console
+    console.log('[DragDropMatchGame] Numbers round →', {
+      pairs: newTargets.map(t => ({ n: t.quantity, obj: t.objectName })),
+      shuffledNumbers: shuffledDraggables.map(d => d.label),
+      shuffledDrops: shuffledTargets.map(t => t.label),
+    });
+
+    return { draggables: shuffledDraggables as DraggableData[], targets: shuffledTargets };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step.id, isNumberMatch]);
 
   const [matches, setMatches] = useState<Record<string, string>>({});
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -207,6 +299,13 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
       new Audio(getAssetUrl(instructionAudio)).play().catch(() => {});
     }
   }, [instructionAudio]);
+
+  // Reset state when step (round) changes
+  useEffect(() => {
+    setMatches({});
+    setActiveId(null);
+    setWrongTarget(null);
+  }, [step.id]);
 
   const matchedDraggableIds = new Set(Object.values(matches));
   const allMatched = targets.length > 0 && targets.every(t => !!matches[t.id]);
