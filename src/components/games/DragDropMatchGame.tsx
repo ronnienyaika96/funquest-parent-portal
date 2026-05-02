@@ -238,9 +238,52 @@ function DroppableTarget({ target, matchedItem }: {
 const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }) => {
   const data = step.data || {};
   const instruction = data.instruction || 'Drag each item to the correct match!';
-  const draggables: DraggableData[] = data.draggables || [];
-  const targets: Target[] = data.targets || [];
+  const rawDraggables: DraggableData[] = data.draggables || [];
+  const rawTargets: Target[] = data.targets || [];
   const instructionAudio = step.instruction_audio_url;
+
+  // Detect "match number to objects" schema and rebuild targets with random unique objects.
+  const isNumberMatch = React.useMemo(() => {
+    const schema: string = data.schema || '';
+    if (schema.includes('match_number_objects')) return true;
+    return rawTargets.some((t: any) => t?.type === 'quantity_image' || typeof t?.quantity === 'number');
+  }, [data.schema, rawTargets]);
+
+  const { draggables, targets } = React.useMemo(() => {
+    if (!isNumberMatch) return { draggables: rawDraggables, targets: rawTargets };
+
+    // Pair each number-draggable with a unique random object from the pool
+    const numberDraggables = rawDraggables
+      .map((d: any) => ({ ...d, _num: Number(d.value ?? d.label) }))
+      .filter((d) => !isNaN(d._num));
+
+    const picked = shuffleArr(OBJECT_POOL).slice(0, numberDraggables.length);
+
+    const newTargets: Target[] = numberDraggables.map((d, i) => {
+      const obj = picked[i];
+      const n = d._num;
+      return {
+        id: `target_${d.id}_${obj}`,
+        label: `${n} ${pluralize(obj, n)}`,
+        accepts: [d.id],
+        quantity: n,
+        objectName: obj,
+      };
+    });
+
+    const shuffledDraggables = shuffleArr(numberDraggables);
+    const shuffledTargets = shuffleArr(newTargets);
+
+    // eslint-disable-next-line no-console
+    console.log('[DragDropMatchGame] Numbers round →', {
+      pairs: newTargets.map(t => ({ n: t.quantity, obj: t.objectName })),
+      shuffledNumbers: shuffledDraggables.map(d => d.label),
+      shuffledDrops: shuffledTargets.map(t => t.label),
+    });
+
+    return { draggables: shuffledDraggables as DraggableData[], targets: shuffledTargets };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step.id, isNumberMatch]);
 
   const [matches, setMatches] = useState<Record<string, string>>({});
   const [activeId, setActiveId] = useState<string | null>(null);
