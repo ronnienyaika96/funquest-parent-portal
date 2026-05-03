@@ -212,14 +212,14 @@ function DroppableTarget({ target, matchedItem }: {
         ) : null}
         {/* Label */}
         <div
-          className="rounded-lg px-3 py-1 mt-auto"
+          className={`rounded-lg px-3 py-1 text-center ${isQuantityMode ? 'mt-2' : 'mt-auto'}`}
           style={{
             background: 'rgba(255,255,255,0.85)',
             border: '1px solid rgba(148,163,184,0.3)',
           }}
         >
           <span
-            className="font-bold text-sm sm:text-base"
+            className="font-medium text-sm sm:text-base"
             style={{
               color: '#334155',
               fontFamily: "'Nunito', sans-serif",
