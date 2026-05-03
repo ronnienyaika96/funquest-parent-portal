@@ -158,29 +158,38 @@ function DroppableTarget({ target, matchedItem }: {
   const { setNodeRef, isOver } = useDroppable({ id: target.id });
   const dropBg = getDropZoneAssetUrl(!!matchedItem);
 
+  const getImageSize = (count: number) => {
+    if (count <= 4) return 'w-20 h-20';
+    if (count <= 6) return 'w-16 h-16';
+    return 'w-14 h-14';
+  };
+
+  const isQuantityMode = !!(target.objectName && target.quantity);
+
   return (
     <motion.div
       ref={setNodeRef}
       animate={isOver ? { scale: 1.06 } : { scale: 1 }}
-      className="relative aspect-square flex flex-col items-center justify-center"
+      className={
+        isQuantityMode
+          ? 'relative bg-white/80 rounded-2xl p-6 min-h-[220px] flex flex-col items-center justify-center shadow-md text-center'
+          : 'relative aspect-square flex flex-col items-center justify-center'
+      }
     >
-      {/* SVG drop zone background */}
-      <img
-        src={dropBg}
-        alt=""
-        className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-      />
+      {/* SVG drop zone background (non-quantity mode only) */}
+      {!isQuantityMode && (
+        <img
+          src={dropBg}
+          alt=""
+          className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+        />
+      )}
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center w-full h-full gap-1 p-3">
-        {target.objectName && target.quantity ? (
-          <div
-            className="grid gap-1 w-[80%] place-items-center"
-            style={{
-              gridTemplateColumns: `repeat(${target.quantity <= 4 ? target.quantity : target.quantity <= 6 ? 3 : target.quantity <= 9 ? 3 : 5}, minmax(0, 1fr))`,
-            }}
-          >
-            {Array.from({ length: target.quantity }).map((_, i) => (
+      <div className={`relative z-10 flex flex-col items-center justify-center text-center ${isQuantityMode ? 'w-full' : 'w-full h-full gap-1 p-3'}`}>
+        {isQuantityMode ? (
+          <div className="flex flex-wrap justify-center items-center gap-3 mb-3 max-w-[200px]">
+            {Array.from({ length: target.quantity! }).map((_, i) => (
               <motion.img
                 key={i}
                 src={getObjectImageUrl(target.objectName!)}
@@ -188,8 +197,7 @@ function DroppableTarget({ target, matchedItem }: {
                 initial={{ scale: 0.6, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: i * 0.04, type: 'spring', stiffness: 220, damping: 14 }}
-                className="object-contain drop-shadow-md"
-                style={{ width: 'clamp(18px, 3.2vw, 38px)', height: 'clamp(18px, 3.2vw, 38px)' }}
+                className={`${getImageSize(target.quantity!)} object-contain drop-shadow-md hover:scale-105 transition-transform duration-200`}
                 onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
               />
             ))}
