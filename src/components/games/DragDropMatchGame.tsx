@@ -236,7 +236,7 @@ function DroppableTarget({ target, matchedItem }: {
             <img
               src={primarySrc}
               alt={target.label}
-              className="w-[55%] h-[50%] object-contain drop-shadow-md"
+              className="w-[78%] h-[62%] max-w-[160px] max-h-[160px] object-contain drop-shadow-md mx-auto"
               onError={(e) => {
                 const img = e.currentTarget as HTMLImageElement;
                 // Try the original step-data image as a fallback before hiding
@@ -297,7 +297,21 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
   }, [data.schema, rawTargets]);
 
   const { draggables, targets } = React.useMemo(() => {
-    if (!isNumberMatch) return { draggables: rawDraggables, targets: rawTargets };
+    if (!isNumberMatch) {
+      // Letters / picture-match mode: ensure each target's label matches its image,
+      // then jumble both draggables and targets so the game isn't predictable.
+      const fixedTargets: Target[] = rawTargets.map((t) => {
+        const objName = resolveTargetObjectName(t);
+        const wordLabel = objName
+          ? objName.charAt(0).toUpperCase() + objName.slice(1)
+          : t.label;
+        return { ...t, label: wordLabel };
+      });
+      return {
+        draggables: shuffleArr(rawDraggables),
+        targets: shuffleArr(fixedTargets),
+      };
+    }
 
     // Pair each number-draggable with a unique random object from the pool
     const numberDraggables = rawDraggables
