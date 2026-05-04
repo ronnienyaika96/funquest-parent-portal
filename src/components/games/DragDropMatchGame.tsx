@@ -236,7 +236,7 @@ function DroppableTarget({ target, matchedItem }: {
             <img
               src={primarySrc}
               alt={target.label}
-              className="w-[55%] h-[50%] object-contain drop-shadow-md"
+              className="w-[78%] h-[62%] max-w-[160px] max-h-[160px] object-contain drop-shadow-md mx-auto"
               onError={(e) => {
                 const img = e.currentTarget as HTMLImageElement;
                 // Try the original step-data image as a fallback before hiding
