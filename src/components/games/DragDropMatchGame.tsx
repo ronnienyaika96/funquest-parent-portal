@@ -49,6 +49,32 @@ const OBJECT_POOL = [
   'kite','lemon','mango','nail','orange','pencil','pumpkin','queen','rat','sun','turtle',
 ];
 
+/**
+ * Map a–z to actual filenames in the Supabase "game assets" → "Objects/" folder.
+ * (Some files have intentional typos in storage: xylephone, yatch.)
+ */
+const LETTER_TO_OBJECT: Record<string, string> = {
+  a: 'apple', b: 'ball', c: 'cat', d: 'dog', e: 'elephant', f: 'fish',
+  g: 'giraffe', h: 'house', i: 'insect', j: 'jug', k: 'kite', l: 'lemon',
+  m: 'mango', n: 'nest', o: 'orange', p: 'pencil', q: 'queen', r: 'rat',
+  s: 'sun', t: 'turtle', u: 'umbrella', v: 'van', w: 'watermelon',
+  x: 'xylephone', y: 'yatch', z: 'zebra',
+};
+
+/** For a picture-match target, derive the storage filename from the accepted draggable id (e.g. "drag_a"). */
+function resolveTargetObjectName(target: Target): string | null {
+  for (const id of target.accepts || []) {
+    const m = String(id).match(/([a-zA-Z])\s*$/);
+    if (m) {
+      const letter = m[1].toLowerCase();
+      if (LETTER_TO_OBJECT[letter]) return LETTER_TO_OBJECT[letter];
+    }
+  }
+  // Fallback: try the label's first word lowercased (e.g. "apple", "ice cream" → "icecream")
+  const labelKey = (target.label || '').toLowerCase().replace(/\s+/g, '');
+  return labelKey || null;
+}
+
 const shuffleArr = <T,>(arr: T[]): T[] => [...arr].sort(() => Math.random() - 0.5);
 
 const pluralize = (word: string, n: number) => {
