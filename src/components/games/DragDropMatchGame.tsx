@@ -228,14 +228,27 @@ function DroppableTarget({ target, matchedItem }: {
               />
             ))}
           </div>
-        ) : target.image ? (
-          <img
-            src={getAssetUrl(target.image)}
-            alt={target.label}
-            className="w-[55%] h-[50%] object-contain drop-shadow-md"
-            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-          />
-        ) : null}
+        ) : (() => {
+          const objName = resolveTargetObjectName(target);
+          const primarySrc = objName ? getObjectImageUrl(objName) : (target.image ? getAssetUrl(target.image) : '');
+          if (!primarySrc) return null;
+          return (
+            <img
+              src={primarySrc}
+              alt={target.label}
+              className="w-[55%] h-[50%] object-contain drop-shadow-md"
+              onError={(e) => {
+                const img = e.currentTarget as HTMLImageElement;
+                // Try the original step-data image as a fallback before hiding
+                if (target.image && img.src !== getAssetUrl(target.image)) {
+                  img.src = getAssetUrl(target.image);
+                } else {
+                  img.style.display = 'none';
+                }
+              }}
+            />
+          );
+        })()}
         {/* Label */}
         <div
           className={`rounded-lg px-3 py-1 text-center ${isQuantityMode ? 'mt-2' : 'mt-auto'}`}
