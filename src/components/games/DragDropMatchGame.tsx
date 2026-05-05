@@ -493,7 +493,57 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
           className="w-full px-[3%] overflow-visible"
         >
           {(() => {
-            // Pair draggables with targets row by row (2 pairs per row)
+            // Number-match mode: one pair per row, clean 2-column layout
+            // (LEFT: number tile, RIGHT: object card), centered, large vertical spacing.
+            if (isNumberMatch) {
+              const pairCount = Math.min(draggables.length, targets.length);
+              return (
+                <div className="flex flex-col items-center justify-center" style={{ gap: '48px' }}>
+                  {Array.from({ length: pairCount }).map((_, i) => {
+                    const item = draggables[i];
+                    const target = targets[i];
+                    return (
+                      <div
+                        key={`${item.id}_${target.id}`}
+                        className="flex items-center justify-center"
+                        style={{ gap: '70px' }}
+                      >
+                        {/* LEFT: number tile (150x150) */}
+                        <div style={{ width: 150, height: 150 }} className="flex-shrink-0">
+                          <DraggableItem
+                            item={item}
+                            isMatched={matchedDraggableIds.has(item.id)}
+                            isDragging={activeId === item.id}
+                          />
+                        </div>
+
+                        {/* Subtle arrow */}
+                        <div className="hidden sm:flex items-center flex-shrink-0">
+                          <ArrowRight
+                            className="w-6 h-6"
+                            style={{ color: 'rgba(255,255,255,0.6)' }}
+                            strokeWidth={2}
+                          />
+                        </div>
+
+                        {/* RIGHT: object card */}
+                        <motion.div
+                          className="flex-shrink-0"
+                          animate={wrongTarget === target.id ? { x: [0, -6, 6, -3, 3, 0] } : {}}
+                        >
+                          <DroppableTarget
+                            target={target}
+                            matchedItem={matches[target.id] ? draggables.find(d => d.id === matches[target.id]) || null : null}
+                          />
+                        </motion.div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            }
+
+            // Letters / picture-match mode: keep existing 2-pairs-per-row grid
             const pairsPerRow = 2;
             const rows: { draggables: typeof draggables; targets: typeof targets }[] = [];
             const totalRows = Math.ceil(Math.max(draggables.length, targets.length) / pairsPerRow);
@@ -505,7 +555,6 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
             }
             return rows.map((row, rowIdx) => (
               <div key={rowIdx} className="flex items-center justify-center gap-4 sm:gap-8 md:gap-12 mb-6">
-                {/* Draggables for this row */}
                 <div className="flex items-center justify-center gap-3 sm:gap-5 md:gap-6">
                   {row.draggables.map((item) => (
                     <div key={item.id} className="flex-shrink-0" style={{ width: 'clamp(130px, 21vw, 230px)' }}>
@@ -518,8 +567,7 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
                   ))}
                 </div>
 
-                {/* Arrow */}
-                {rowIdx === 0 && (
+                {rowIdx === 0 ? (
                   <div className="flex-shrink-0 hidden sm:flex items-center">
                     <motion.div
                       animate={{ x: [0, 8, 0] }}
@@ -532,12 +580,10 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
                       />
                     </motion.div>
                   </div>
-                )}
-                {rowIdx !== 0 && (
+                ) : (
                   <div className="flex-shrink-0 hidden sm:flex items-center w-8 md:w-12" />
                 )}
 
-                {/* Targets for this row */}
                 <div className="flex items-center justify-center gap-3 sm:gap-5 md:gap-6">
                   {row.targets.map((target) => (
                     <motion.div
