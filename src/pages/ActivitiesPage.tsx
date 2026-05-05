@@ -110,15 +110,15 @@ const ActivitiesPage = () => {
     const t = title.toLowerCase();
     const fileMap: Array<{ match: RegExp; file: string }> = [
       { match: /(drag.*drop.*letter|letter.*drag.*drop|match.*letter)/, file: 'drag and drop letters.png' },
+      { match: /(drag.*drop.*number|number.*drag.*drop|match.*number)/, file: 'drag and drop numbers.png' },
       { match: /letter.*tracing|trace.*letter|alphabet.*tracing/, file: 'letter tracing.png' },
-      { match: /match.*number/, file: 'match numbers.png' },
       { match: /number.*tracing|trace.*number/, file: 'number tracing.png' },
       { match: /tap.*identify.*letter|identify.*letter/, file: 'tap to identify letters.png' },
       { match: /tap.*identify.*number|identify.*number/, file: 'tap to identify numbers.png' },
+      { match: /drag.*drop/, file: 'drag and drop letters.png' },
     ];
     let file = fileMap.find(f => f.match.test(t))?.file;
     if (!file) {
-      // type-based fallback
       if (type === 'letter') file = 'letter tracing.png';
       else if (type === 'number') file = 'number tracing.png';
     }
