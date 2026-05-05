@@ -236,10 +236,9 @@ function DroppableTarget({ target, matchedItem }: {
             <img
               src={primarySrc}
               alt={target.label}
-              className="w-[78%] h-[62%] max-w-[160px] max-h-[160px] object-contain drop-shadow-md mx-auto"
+              className="w-[70%] h-[55%] max-w-[150px] max-h-[150px] object-contain drop-shadow-md mx-auto my-auto"
               onError={(e) => {
                 const img = e.currentTarget as HTMLImageElement;
-                // Try the original step-data image as a fallback before hiding
                 if (target.image && img.src !== getAssetUrl(target.image)) {
                   img.src = getAssetUrl(target.image);
                 } else {
@@ -251,7 +250,7 @@ function DroppableTarget({ target, matchedItem }: {
         })()}
         {/* Label */}
         <div
-          className={`rounded-lg px-3 py-1 text-center ${isQuantityMode ? 'mt-2' : 'mt-auto'}`}
+          className={`rounded-lg px-3 py-1 text-center ${isQuantityMode ? 'mt-2' : ''}`}
           style={{
             background: 'rgba(255,255,255,0.85)',
             border: '1px solid rgba(148,163,184,0.3)',
