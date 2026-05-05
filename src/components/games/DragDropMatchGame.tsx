@@ -462,7 +462,7 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
           fontFamily: "'Nunito', 'Comic Sans MS', cursive, sans-serif",
         }}
       >
-        Match Letters
+        {isNumberMatch ? 'Match Numbers' : 'Match Letters'}
       </motion.h1>
 
       {/* Instruction bar */}
