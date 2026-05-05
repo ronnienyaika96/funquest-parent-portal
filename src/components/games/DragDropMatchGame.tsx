@@ -314,10 +314,29 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
     }
 
     // Pair each number-draggable with a unique random object from the pool
-    const numberDraggables = rawDraggables
+    let numberDraggables = rawDraggables
       .map((d: any) => ({ ...d, _num: Number(d.value ?? d.label) }))
       .filter((d) => !isNaN(d._num));
 
+    // If this step's allowed-numbers are explicitly 9 and 10 (or include both),
+    // restrict the round to ONLY 9 and 10 — exactly two tiles & two drop zones.
+    const stepNumbers: number[] | undefined = Array.isArray(data.numbers)
+      ? data.numbers.map((n: any) => Number(n)).filter((n: number) => !isNaN(n))
+      : undefined;
+    const restrictTo910 =
+      (stepNumbers && stepNumbers.length === 2 && stepNumbers.includes(9) && stepNumbers.includes(10)) ||
+      (numberDraggables.length === 2 &&
+        numberDraggables.some((d) => d._num === 9) &&
+        numberDraggables.some((d) => d._num === 10)) ||
+      // Fallback: if both 9 and 10 exist among draggables, narrow to just those
+      (numberDraggables.some((d) => d._num === 9) && numberDraggables.some((d) => d._num === 10) &&
+        (data.schema?.includes('nine_ten') || data.id === 'nine_ten' || step?.id?.toString().includes('9_10')));
+
+    if (restrictTo910) {
+      numberDraggables = numberDraggables.filter((d) => d._num === 9 || d._num === 10);
+    }
+
+    // Pick unique random objects, one per number
     const picked = shuffleArr(OBJECT_POOL).slice(0, numberDraggables.length);
 
     const newTargets: Target[] = numberDraggables.map((d, i) => {
