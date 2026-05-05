@@ -212,7 +212,7 @@ function DroppableTarget({ target, matchedItem }: {
       )}
 
       {/* Content */}
-      <div className={`relative z-10 flex flex-col items-center justify-center text-center ${isQuantityMode ? 'w-full' : 'w-full h-full gap-1 p-3'}`}>
+      <div className={`relative z-10 flex flex-col items-center justify-center text-center ${isQuantityMode ? 'w-full' : 'absolute inset-0 w-full h-full gap-2 p-4'}`}>
         {isQuantityMode ? (
           <div className="flex flex-wrap justify-center items-center gap-3 mb-3 max-w-[200px]">
             {Array.from({ length: target.quantity! }).map((_, i) => (
