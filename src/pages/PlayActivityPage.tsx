@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, Star, Trophy, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import TracingGame from '@/components/games/TracingGame';
+import NumberTracingGame from '@/components/games/NumberTracingGame';
 import TapIdentifyGame from '@/components/games/TapIdentifyGame';
 import DragDropMatchGame from '@/components/games/DragDropMatchGame';
 import StoryInteractiveGame from '@/components/games/StoryInteractiveGame';
@@ -282,6 +283,11 @@ function GameRenderer({ step, onSuccess }: { step: any; onSuccess: () => void })
   const gameType = step.game_type;
 
   if (gameType === 'tracing') {
+    const isNumber =
+      data?.number != null ||
+      (typeof data?.ui?.instruction === 'string' && /number/i.test(data.ui.instruction)) ||
+      (typeof data?.assets?.svg === 'string' && /number/i.test(data.assets.svg));
+    if (isNumber) return <NumberTracingGame step={step} onSuccess={onSuccess} />;
     return <TracingGame step={step} onSuccess={onSuccess} />;
   }
   if (gameType === 'tap_identify' && data.mode === 'story_interactive') {
