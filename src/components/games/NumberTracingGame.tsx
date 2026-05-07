@@ -107,7 +107,8 @@ interface NumberTracingGameProps {
   onSuccess: () => void;
 }
 
-const CANVAS_PX = 360; // square render size
+const CANVAS_PX = 520; // square render size
+const CANVAS_PADDING = 40;
 
 const NumberTracingGame: React.FC<NumberTracingGameProps> = ({ step, onSuccess }) => {
   const data = step.data || {};
