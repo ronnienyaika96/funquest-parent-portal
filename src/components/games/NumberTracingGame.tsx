@@ -507,10 +507,10 @@ const NumberTracingGame: React.FC<NumberTracingGameProps> = ({ step, onSuccess }
             animate={{
               opacity: [0, 1, 1, 0],
               x: pathInfo.checkpoints.map(
-                cp => ((cp.x - vb.x) / vb.w) * CANVAS_PX - 14,
+                cp => CANVAS_PADDING + ((cp.x - vb.x) / vb.w) * (CANVAS_PX - CANVAS_PADDING * 2) - 14,
               ),
               y: pathInfo.checkpoints.map(
-                cp => ((cp.y - vb.y) / vb.h) * CANVAS_PX - 8,
+                cp => CANVAS_PADDING + ((cp.y - vb.y) / vb.h) * (CANVAS_PX - CANVAS_PADDING * 2) - 8,
               ),
             }}
             transition={{ duration: 2.4, repeat: Infinity, repeatDelay: 1.2, ease: 'easeInOut' }}
