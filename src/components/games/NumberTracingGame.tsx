@@ -215,9 +215,10 @@ const NumberTracingGame: React.FC<NumberTracingGameProps> = ({ step, onSuccess }
     (cx: number, cy: number) => {
       if (!pathInfo) return { x: cx, y: cy };
       const { viewBox } = pathInfo;
+      const inner = CANVAS_PX - CANVAS_PADDING * 2;
       return {
-        x: viewBox.x + (cx / CANVAS_PX) * viewBox.w,
-        y: viewBox.y + (cy / CANVAS_PX) * viewBox.h,
+        x: viewBox.x + ((cx - CANVAS_PADDING) / inner) * viewBox.w,
+        y: viewBox.y + ((cy - CANVAS_PADDING) / inner) * viewBox.h,
       };
     },
     [pathInfo],
