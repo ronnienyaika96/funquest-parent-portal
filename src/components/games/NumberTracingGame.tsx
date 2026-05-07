@@ -351,114 +351,135 @@ const NumberTracingGame: React.FC<NumberTracingGameProps> = ({ step, onSuccess }
         onPointerMove={handleMove}
         onPointerUp={handleUp}
         onPointerLeave={handleUp}
-        className={`relative rounded-3xl border-4 select-none overflow-hidden touch-none transition-colors ${
+        className={`relative select-none touch-none transition-colors ${
           completed
             ? 'border-funquest-success/60 shadow-[0_0_40px_rgba(34,197,94,0.35)]'
             : deviated
             ? 'border-funquest-error/50 shadow-[0_0_30px_rgba(239,68,68,0.25)]'
-            : 'border-border/40 shadow-medium'
+            : 'border-border/30 shadow-medium'
         }`}
         style={{
           width: CANVAS_PX,
           height: CANVAS_PX,
           maxWidth: '92vw',
           maxHeight: '92vw',
-          background:
-            'radial-gradient(circle at 50% 40%, hsl(var(--background)) 0%, hsl(var(--muted)/0.5) 100%)',
+          aspectRatio: '1 / 1',
+          padding: CANVAS_PADDING,
+          borderRadius: 32,
+          borderWidth: 3,
+          borderStyle: 'solid',
+          background: 'hsl(0 0% 100% / 0.92)',
+          boxShadow: '0 8px 30px -10px hsl(var(--foreground) / 0.18)',
         }}
       >
-        {/* PNG guide background */}
-        {pngOk && (
-          <img
-            src={pngUrl}
-            alt={`Number ${number}`}
-            onError={() => setPngOk(false)}
-            className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-            style={{ opacity: 0.4 }}
-            draggable={false}
-          />
-        )}
-
-        {/* SVG overlay: dotted guide + active fill */}
-        {pathInfo && (
-          <svg
-            viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`}
-            preserveAspectRatio="xMidYMid meet"
-            className="absolute inset-0 w-full h-full pointer-events-none"
-          >
-            {/* Glow filter */}
-            <defs>
-              <filter id="successGlow" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="2.2" result="b" />
-                <feMerge>
-                  <feMergeNode in="b" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
-
-            {/* Dotted base path */}
-            {pathInfo.pathDs.map((d, i) => (
-              <path
-                key={`base-${i}`}
-                d={d}
-                fill="none"
-                stroke="hsl(var(--muted-foreground) / 0.55)"
-                strokeWidth={Math.max(2, vb.w * 0.04)}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeDasharray={`${vb.w * 0.025} ${vb.w * 0.04}`}
-              />
-            ))}
-
-            {/* Active progress overlay (dash offset based on ratio) */}
-            {pathInfo.pathDs.map((d, i) => {
-              const len = 1000; // estimate; harmless
-              return (
-                <path
-                  key={`fill-${i}`}
-                  d={d}
-                  fill="none"
-                  stroke={completed ? 'hsl(142 70% 45%)' : 'hsl(217 91% 60%)'}
-                  strokeWidth={Math.max(2.5, vb.w * 0.05)}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeDasharray={len}
-                  strokeDashoffset={len - len * progressRatio}
-                  style={{ transition: 'stroke-dashoffset 0.15s linear, stroke 0.3s' }}
-                  filter={completed ? 'url(#successGlow)' : undefined}
-                />
-              );
-            })}
-          </svg>
-        )}
-
-        {/* User strokes overlay */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none" width={CANVAS_PX} height={CANVAS_PX}>
-          {strokes.map((s, i) => (
-            <polyline
-              key={i}
-              points={s.map(p => `${p.x},${p.y}`).join(' ')}
-              fill="none"
-              stroke="hsl(217 91% 55%)"
-              strokeWidth={10}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              opacity={0.55}
-            />
-          ))}
-          {current.length > 1 && (
-            <polyline
-              points={current.map(p => `${p.x},${p.y}`).join(' ')}
-              fill="none"
-              stroke="hsl(217 91% 55%)"
-              strokeWidth={11}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              opacity={0.7}
+        {/* Inner square stage — PNG and SVG share these exact dimensions */}
+        <div
+          className="relative w-full h-full"
+          style={{ aspectRatio: '1 / 1' }}
+        >
+          {/* PNG guide background */}
+          {pngOk && (
+            <img
+              src={pngUrl}
+              alt={`Number ${number}`}
+              onError={() => setPngOk(false)}
+              className="absolute inset-0 w-full h-full pointer-events-none select-none"
+              style={{
+                objectFit: 'contain',
+                imageRendering: 'auto',
+                opacity: 0.55,
+              }}
+              draggable={false}
             />
           )}
-        </svg>
+
+          {/* SVG overlay: dotted guide + active fill */}
+          {pathInfo && (
+            <svg
+              viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`}
+              preserveAspectRatio="xMidYMid meet"
+              className="absolute inset-0 w-full h-full pointer-events-none"
+              style={{ shapeRendering: 'geometricPrecision' }}
+            >
+              <defs>
+                <filter id="successGlow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="2.2" result="b" />
+                  <feMerge>
+                    <feMergeNode in="b" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+
+              {/* Dotted base path */}
+              {pathInfo.pathDs.map((d, i) => (
+                <path
+                  key={`base-${i}`}
+                  d={d}
+                  fill="none"
+                  stroke="hsl(var(--muted-foreground) / 0.55)"
+                  strokeWidth={Math.max(2, vb.w * 0.04)}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeDasharray={`${vb.w * 0.025} ${vb.w * 0.04}`}
+                />
+              ))}
+
+              {/* Active progress overlay */}
+              {pathInfo.pathDs.map((d, i) => {
+                const len = 1000;
+                return (
+                  <path
+                    key={`fill-${i}`}
+                    d={d}
+                    fill="none"
+                    stroke={completed ? 'hsl(142 70% 45%)' : 'hsl(217 91% 60%)'}
+                    strokeWidth={Math.max(2.5, vb.w * 0.05)}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeDasharray={len}
+                    strokeDashoffset={len - len * progressRatio}
+                    style={{ transition: 'stroke-dashoffset 0.15s linear, stroke 0.3s' }}
+                    filter={completed ? 'url(#successGlow)' : undefined}
+                  />
+                );
+              })}
+            </svg>
+          )}
+
+          {/* User strokes overlay (matches inner stage exactly) */}
+          <svg
+            className="absolute inset-0 w-full h-full pointer-events-none"
+            viewBox={`0 0 ${CANVAS_PX - CANVAS_PADDING * 2} ${CANVAS_PX - CANVAS_PADDING * 2}`}
+            preserveAspectRatio="none"
+          >
+            {strokes.map((s, i) => (
+              <polyline
+                key={i}
+                points={s.map(p => `${p.x - CANVAS_PADDING},${p.y - CANVAS_PADDING}`).join(' ')}
+                fill="none"
+                stroke="hsl(217 91% 55%)"
+                strokeWidth={6}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                opacity={0.7}
+                vectorEffect="non-scaling-stroke"
+              />
+            ))}
+            {current.length > 1 && (
+              <polyline
+                points={current.map(p => `${p.x - CANVAS_PADDING},${p.y - CANVAS_PADDING}`).join(' ')}
+                fill="none"
+                stroke="hsl(217 91% 55%)"
+                strokeWidth={7}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                opacity={0.85}
+                vectorEffect="non-scaling-stroke"
+              />
+            )}
+          </svg>
+        </div>
 
         {/* Sparkles */}
         <AnimatePresence>
