@@ -1,13 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { RotateCcw, ArrowRight, Sparkles } from 'lucide-react';
+import { RotateCcw, ArrowRight, Sparkles, Volume2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import InstructionBar from './InstructionBar';
-import { getAssetUrl } from '@/pages/PlayActivityPage';
 
 /* ------------------------------------------------------------------ */
-/* Helpers                                                            */
+/* Asset helpers                                                       */
 /* ------------------------------------------------------------------ */
 
 const BUCKET = 'game assets';
@@ -16,395 +14,429 @@ function publicUrl(path: string) {
   const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
   return data.publicUrl;
 }
+const pngUrlFor = (n: number) => publicUrl(`Tracing/png/${n}.png`);
+const svgUrlFor = (n: number) => publicUrl(`Tracing/svg/${n}.svg`);
 
-function getNumberPngUrl(n: number) {
-  return publicUrl(`Tracing/png/${n}.png`);
-}
-function getNumberSvgUrl(n: number) {
-  return publicUrl(`Tracing/svg/${n}.svg`);
-}
+const dist = (a: { x: number; y: number }, b: { x: number; y: number }) =>
+  Math.hypot(a.x - b.x, a.y - b.y);
 
-function dist(a: { x: number; y: number }, b: { x: number; y: number }) {
-  const dx = a.x - b.x, dy = a.y - b.y;
-  return Math.sqrt(dx * dx + dy * dy);
-}
-
-/** Convert SVG into a normalized ViewBox + flat list of path points. */
-function extractPathData(svgText: string) {
+/** Parse an SVG, sample its paths/lines/polylines into checkpoints in viewBox coords. */
+function parseSvgPaths(svgText: string) {
   try {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(svgText, 'image/svg+xml');
+    const doc = new DOMParser().parseFromString(svgText, 'image/svg+xml');
     const svg = doc.querySelector('svg');
     if (!svg) return null;
 
+    let viewBox = { x: 0, y: 0, w: 1024, h: 1024 };
     const vb = svg.getAttribute('viewBox');
-    let viewBox = { x: 0, y: 0, w: 100, h: 100 };
     if (vb) {
-      const parts = vb.split(/[\s,]+/).map(Number);
-      if (parts.length === 4) viewBox = { x: parts[0], y: parts[1], w: parts[2], h: parts[3] };
-    } else {
-      const w = Number(svg.getAttribute('width')) || 100;
-      const h = Number(svg.getAttribute('height')) || 100;
-      viewBox = { x: 0, y: 0, w, h };
+      const p = vb.split(/[\s,]+/).map(Number);
+      if (p.length === 4) viewBox = { x: p[0], y: p[1], w: p[2], h: p[3] };
     }
 
-    // Use the first path; mount svg to DOM temporarily so getPointAtLength works.
-    const paths = Array.from(svg.querySelectorAll('path')) as SVGPathElement[];
-    const pathDs = paths.map(p => p.getAttribute('d') || '').filter(Boolean);
+    // Convert primitives -> path "d" strings
+    const ds: string[] = [];
+    svg.querySelectorAll('path').forEach(p => {
+      const d = p.getAttribute('d');
+      if (d) ds.push(d);
+    });
+    svg.querySelectorAll('line').forEach(l => {
+      const x1 = l.getAttribute('x1'), y1 = l.getAttribute('y1');
+      const x2 = l.getAttribute('x2'), y2 = l.getAttribute('y2');
+      if (x1 && y1 && x2 && y2) ds.push(`M${x1},${y1} L${x2},${y2}`);
+    });
+    svg.querySelectorAll('polyline,polygon').forEach(pl => {
+      const pts = pl.getAttribute('points');
+      if (pts) {
+        const cleaned = pts.trim().split(/\s+/).join(' L');
+        ds.push(`M${cleaned}`);
+      }
+    });
+    if (!ds.length) return null;
 
-    const tempSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    tempSvg.setAttribute('style', 'position:absolute;width:0;height:0;visibility:hidden');
-    document.body.appendChild(tempSvg);
+    // Sample using a temp SVG
+    const tmp = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    tmp.setAttribute('style', 'position:absolute;width:0;height:0;visibility:hidden');
+    document.body.appendChild(tmp);
 
     const checkpoints: { x: number; y: number }[] = [];
     let totalLen = 0;
-    pathDs.forEach(d => {
-      const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      p.setAttribute('d', d);
-      tempSvg.appendChild(p);
-      const len = p.getTotalLength();
+    ds.forEach(d => {
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', d);
+      tmp.appendChild(path);
+      const len = path.getTotalLength();
+      if (!len || !isFinite(len)) return;
       totalLen += len;
-      const samples = Math.max(24, Math.min(120, Math.round(len / 6)));
+      const samples = Math.max(40, Math.min(240, Math.round(len / 12)));
       for (let i = 0; i <= samples; i++) {
-        const pt = p.getPointAtLength((i / samples) * len);
+        const pt = path.getPointAtLength((i / samples) * len);
         checkpoints.push({ x: pt.x, y: pt.y });
       }
     });
-    document.body.removeChild(tempSvg);
+    document.body.removeChild(tmp);
 
-    return { viewBox, pathDs, checkpoints, totalLen };
+    if (!checkpoints.length) return null;
+    return { viewBox, ds, checkpoints, totalLen };
   } catch {
     return null;
   }
 }
 
-/** Fallback: build a path "d" by drawing the digit as text and tracing its outline. We just produce a digit-like line as a fallback. */
-function fallbackForNumber(n: number) {
-  // Provide simple bezier-ish path strings that look like the digit centered in 100x140 viewBox.
-  const paths: Record<number, string[]> = {
-    0: ['M50,15 C20,15 20,125 50,125 C80,125 80,15 50,15 Z'],
-    1: ['M35,35 L50,20 L50,125'],
-    2: ['M22,40 C25,18 75,18 75,45 C75,70 25,90 22,125 L78,125'],
-    3: ['M22,30 C30,15 78,15 78,45 C78,65 35,65 50,70 C75,70 80,90 78,110 C75,130 25,130 22,110'],
-    4: ['M70,20 L25,85 L80,85 M65,40 L65,125'],
-    5: ['M75,20 L30,20 L28,65 C45,55 75,60 75,90 C75,125 30,130 22,110'],
-    6: ['M70,22 C40,22 25,65 25,95 C25,125 75,130 75,95 C75,65 30,60 25,80'],
-    7: ['M22,22 L80,22 L40,125'],
-    8: ['M50,20 C20,20 20,65 50,65 C80,65 80,20 50,20 Z M50,65 C20,65 20,125 50,125 C80,125 80,65 50,65 Z'],
-    9: ['M75,80 C75,55 30,50 30,80 C30,105 75,105 75,80 M75,80 C75,110 60,125 30,125'],
-    10: ['M20,30 L30,15 L30,125', 'M55,70 C55,30 95,30 95,70 C95,110 55,110 55,70 Z'],
-  };
-  const ds = paths[n] || paths[0];
-  return ds;
-}
+/* ------------------------------------------------------------------ */
+/* Audio helpers                                                       */
+/* ------------------------------------------------------------------ */
+
+const playTone = (freq: number, duration = 0.12, type: OscillatorType = 'sine', vol = 0.05) => {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = type;
+    o.frequency.value = freq;
+    g.gain.value = vol;
+    o.connect(g).connect(ctx.destination);
+    o.start();
+    o.stop(ctx.currentTime + duration);
+    setTimeout(() => ctx.close(), duration * 1000 + 200);
+  } catch {}
+};
+
+const playSuccessChime = () => {
+  [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => playTone(f, 0.18, 'sine', 0.07), i * 110));
+};
+
+const speak = (text: string) => {
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.9;
+    u.pitch = 1.15;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+  } catch {}
+};
 
 /* ------------------------------------------------------------------ */
 /* Component                                                           */
 /* ------------------------------------------------------------------ */
 
-interface NumberTracingGameProps {
-  step: any;
-  onSuccess: () => void;
+interface Props {
+  step?: any;
+  onSuccess?: () => void;
 }
 
-const CANVAS_PX = 520; // square render size
-const CANVAS_PADDING = 40;
+const CANVAS = 520;       // outer card render size
+const PAD = 36;           // inner padding so PNG/SVG don't touch edges
+const COMPLETE_THRESHOLD = 0.82;
 
-const NumberTracingGame: React.FC<NumberTracingGameProps> = ({ step, onSuccess }) => {
-  const data = step.data || {};
-  const number: number =
-    data?.number?.value ??
-    data?.number ??
-    (typeof data?.ui?.instruction === 'string'
-      ? parseInt((data.ui.instruction.match(/\d+/) || ['0'])[0], 10)
-      : 0);
+const NumberTracingGame: React.FC<Props> = ({ step, onSuccess }) => {
+  /* ----- Discover available numbers (probe HEAD on PNG + SVG) ----- */
+  const [available, setAvailable] = useState<number[] | null>(null);
 
-  const instruction = data?.ui?.instruction || `Trace the number ${number}`;
-  const instructionAudio = step.instruction_audio_url || data?.assets?.audio_prompt;
-
-  const pngUrl = getNumberPngUrl(number);
-  const svgUrl = getNumberSvgUrl(number);
-
-  const [pngOk, setPngOk] = useState(true);
-  const [svgText, setSvgText] = useState<string | null>(null);
-  const [pathInfo, setPathInfo] = useState<ReturnType<typeof extractPathData> | null>(null);
-
-  const [strokes, setStrokes] = useState<{ x: number; y: number }[][]>([]);
-  const [current, setCurrent] = useState<{ x: number; y: number }[]>([]);
-  const [hitMask, setHitMask] = useState<boolean[]>([]);
-  const [completed, setCompleted] = useState(false);
-  const [deviated, setDeviated] = useState(false);
-  const [showHand, setShowHand] = useState(true);
-  const [sparkles, setSparkles] = useState<{ id: number; x: number; y: number }[]>([]);
-
-  const containerRef = useRef<HTMLDivElement>(null);
-  const sparkleId = useRef(0);
-  const traceAudio = useRef<HTMLAudioElement | null>(null);
-
-  /* ------- Load SVG (or fallback) ------- */
   useEffect(() => {
     let cancelled = false;
-    setSvgText(null);
-    setPathInfo(null);
-    setStrokes([]);
-    setCurrent([]);
-    setCompleted(false);
-    setDeviated(false);
-    setShowHand(true);
-
-    fetch(svgUrl)
-      .then(r => (r.ok ? r.text() : Promise.reject(new Error('no svg'))))
-      .then(t => {
-        if (cancelled) return;
-        setSvgText(t);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        // Build fallback inline SVG
-        const ds = fallbackForNumber(number);
-        const fallback = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 140">${ds
-          .map(d => `<path d="${d}" fill="none"/>`)
-          .join('')}</svg>`;
-        setSvgText(fallback);
-      });
-
+    const candidates = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    Promise.all(
+      candidates.map(async n => {
+        try {
+          const [png, svg] = await Promise.all([
+            fetch(pngUrlFor(n), { method: 'HEAD' }),
+            fetch(svgUrlFor(n), { method: 'HEAD' }),
+          ]);
+          return png.ok && svg.ok ? n : null;
+        } catch {
+          return null;
+        }
+      }),
+    ).then(results => {
+      if (cancelled) return;
+      const found = results.filter((n): n is number => n !== null);
+      // If a step provided a specific number, prioritize starting there
+      const stepNum =
+        step?.data?.number?.value ?? step?.data?.number ?? null;
+      if (typeof stepNum === 'number' && found.includes(stepNum)) {
+        const reordered = [stepNum, ...found.filter(n => n !== stepNum)];
+        setAvailable(reordered);
+      } else {
+        setAvailable(found.length ? found : []);
+      }
+    });
     return () => {
       cancelled = true;
     };
-  }, [svgUrl, number]);
+  }, [step]);
 
-  /* ------- Parse SVG path ------- */
+  const [index, setIndex] = useState(0);
+  const number = available?.[index] ?? null;
+
+  /* ----- Per-number SVG load + parse ----- */
+  const [pathInfo, setPathInfo] = useState<ReturnType<typeof parseSvgPaths> | null>(null);
+  const [pngOk, setPngOk] = useState(true);
+  const [strokes, setStrokes] = useState<{ x: number; y: number }[][]>([]);
+  const [current, setCurrent] = useState<{ x: number; y: number }[]>([]);
+  const [hits, setHits] = useState<boolean[]>([]);
+  const [completed, setCompleted] = useState(false);
+  const [showHand, setShowHand] = useState(true);
+  const [sparkles, setSparkles] = useState<{ id: number; x: number; y: number }[]>([]);
+  const sparkleId = useRef(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    if (!svgText) return;
-    const info = extractPathData(svgText);
-    setPathInfo(info);
-    setHitMask(info ? new Array(info.checkpoints.length).fill(false) : []);
-  }, [svgText]);
+    if (number == null) return;
+    let cancelled = false;
+    setPathInfo(null);
+    setStrokes([]);
+    setCurrent([]);
+    setHits([]);
+    setCompleted(false);
+    setShowHand(true);
+    setPngOk(true);
 
-  /* ------- Play instruction audio ------- */
-  useEffect(() => {
-    if (!instructionAudio) return;
-    try {
-      const a = new Audio(getAssetUrl(instructionAudio));
-      a.play().catch(() => {});
-    } catch {}
-  }, [instructionAudio]);
+    fetch(svgUrlFor(number))
+      .then(r => (r.ok ? r.text() : Promise.reject()))
+      .then(t => {
+        if (cancelled) return;
+        const info = parseSvgPaths(t);
+        setPathInfo(info);
+        setHits(info ? new Array(info.checkpoints.length).fill(false) : []);
+      })
+      .catch(() => {});
 
-  /* ------- Soft "crayon" sound while tracing ------- */
-  const playCrayon = useCallback(() => {
-    try {
-      if (!traceAudio.current) {
-        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-        const o = ctx.createOscillator();
-        const g = ctx.createGain();
-        o.type = 'triangle';
-        o.frequency.value = 220;
-        g.gain.value = 0.02;
-        o.connect(g).connect(ctx.destination);
-        o.start();
-        setTimeout(() => {
-          o.stop();
-          ctx.close();
-        }, 90);
-      }
-    } catch {}
-  }, []);
+    // Voice prompt
+    setTimeout(() => speak(`Trace the number ${number}`), 250);
+    return () => {
+      cancelled = true;
+    };
+  }, [number]);
 
-  /* ------- Coordinate conversion: canvas px -> svg viewBox ------- */
-  const toSvgCoords = useCallback(
+  /* ----- Coordinate conversion ----- */
+  const toSvg = useCallback(
     (cx: number, cy: number) => {
       if (!pathInfo) return { x: cx, y: cy };
-      const { viewBox } = pathInfo;
-      const inner = CANVAS_PX - CANVAS_PADDING * 2;
+      const inner = CANVAS - PAD * 2;
       return {
-        x: viewBox.x + ((cx - CANVAS_PADDING) / inner) * viewBox.w,
-        y: viewBox.y + ((cy - CANVAS_PADDING) / inner) * viewBox.h,
+        x: pathInfo.viewBox.x + ((cx - PAD) / inner) * pathInfo.viewBox.w,
+        y: pathInfo.viewBox.y + ((cy - PAD) / inner) * pathInfo.viewBox.h,
+      };
+    },
+    [pathInfo],
+  );
+
+  const fromSvg = useCallback(
+    (sx: number, sy: number) => {
+      if (!pathInfo) return { x: sx, y: sy };
+      const inner = CANVAS - PAD * 2;
+      return {
+        x: PAD + ((sx - pathInfo.viewBox.x) / pathInfo.viewBox.w) * inner,
+        y: PAD + ((sy - pathInfo.viewBox.y) / pathInfo.viewBox.h) * inner,
       };
     },
     [pathInfo],
   );
 
   const tolerance = useMemo(() => {
-    if (!pathInfo) return 14;
-    // Allow ~10% of viewBox diagonal as margin
-    const diag = Math.hypot(pathInfo.viewBox.w, pathInfo.viewBox.h);
-    return diag * 0.09;
+    if (!pathInfo) return 80;
+    return Math.hypot(pathInfo.viewBox.w, pathInfo.viewBox.h) * 0.07;
   }, [pathInfo]);
 
-  /* ------- Pointer handlers ------- */
-  const getLocal = (e: React.PointerEvent) => {
-    const rect = containerRef.current!.getBoundingClientRect();
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  /* ----- Pointer handlers ----- */
+  const local = (e: React.PointerEvent) => {
+    const r = containerRef.current!.getBoundingClientRect();
+    return {
+      x: ((e.clientX - r.left) / r.width) * CANVAS,
+      y: ((e.clientY - r.top) / r.height) * CANVAS,
+    };
   };
 
-  const handleDown = (e: React.PointerEvent) => {
+  const onDown = (e: React.PointerEvent) => {
     if (completed) return;
     setShowHand(false);
-    const p = getLocal(e);
+    const p = local(e);
     setCurrent([p]);
     containerRef.current?.setPointerCapture(e.pointerId);
   };
 
-  const handleMove = (e: React.PointerEvent) => {
-    if (current.length === 0 || completed) return;
-    const p = getLocal(e);
-    const last = current[current.length - 1];
-    if (dist(last, p) < 3) return;
+  const onMove = (e: React.PointerEvent) => {
+    if (!current.length || completed || !pathInfo) return;
+    const p = local(e);
+    if (dist(p, current[current.length - 1]) < 4) return;
     setCurrent(prev => [...prev, p]);
 
-    // Mark nearby checkpoints as hit
-    if (pathInfo) {
-      const sp = toSvgCoords(p.x, p.y);
-      let anyClose = false;
-      let updated = false;
-      const mask = hitMask.slice();
-      for (let i = 0; i < pathInfo.checkpoints.length; i++) {
-        const cp = pathInfo.checkpoints[i];
-        const d = dist(sp, cp);
-        if (d < tolerance) {
-          anyClose = true;
-          if (!mask[i]) {
-            mask[i] = true;
-            updated = true;
-          }
-        }
+    const sp = toSvg(p.x, p.y);
+    const mask = hits.slice();
+    let updated = false;
+    for (let i = 0; i < pathInfo.checkpoints.length; i++) {
+      if (!mask[i] && dist(sp, pathInfo.checkpoints[i]) < tolerance) {
+        mask[i] = true;
+        updated = true;
       }
-      if (updated) setHitMask(mask);
-      setDeviated(!anyClose);
+    }
+    if (updated) setHits(mask);
 
-      // Sparkle trail
-      if (Math.random() > 0.55) {
-        const id = ++sparkleId.current;
-        setSparkles(prev => [...prev.slice(-12), { id, x: p.x, y: p.y }]);
-        setTimeout(() => setSparkles(prev => prev.filter(s => s.id !== id)), 700);
-      }
-      playCrayon();
+    if (Math.random() > 0.55) {
+      const id = ++sparkleId.current;
+      setSparkles(prev => [...prev.slice(-10), { id, x: p.x, y: p.y }]);
+      setTimeout(() => setSparkles(prev => prev.filter(s => s.id !== id)), 700);
+    }
+    if (Math.random() > 0.7) playTone(220 + Math.random() * 60, 0.04, 'triangle', 0.015);
 
-      // Completion check
-      const hits = mask.filter(Boolean).length;
-      const ratio = hits / mask.length;
-      if (ratio >= 0.85 && !completed) {
-        setCompleted(true);
-        try {
-          const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-          [523, 659, 784].forEach((f, i) => {
-            const o = ctx.createOscillator();
-            const g = ctx.createGain();
-            o.frequency.value = f;
-            o.type = 'sine';
-            g.gain.value = 0.06;
-            o.connect(g).connect(ctx.destination);
-            o.start(ctx.currentTime + i * 0.12);
-            o.stop(ctx.currentTime + i * 0.12 + 0.18);
-          });
-          setTimeout(() => ctx.close(), 700);
-        } catch {}
-      }
+    const ratio = mask.filter(Boolean).length / mask.length;
+    if (ratio >= COMPLETE_THRESHOLD && !completed) {
+      setCompleted(true);
+      playSuccessChime();
     }
   };
 
-  const handleUp = (e: React.PointerEvent) => {
+  const onUp = (e: React.PointerEvent) => {
     if (current.length > 1) setStrokes(prev => [...prev, current]);
     setCurrent([]);
-    setDeviated(false);
     try {
       containerRef.current?.releasePointerCapture(e.pointerId);
     } catch {}
   };
 
-  /* ------- Actions ------- */
+  /* ----- Actions ----- */
   const handleRetry = () => {
     setStrokes([]);
     setCurrent([]);
-    setHitMask(pathInfo ? new Array(pathInfo.checkpoints.length).fill(false) : []);
+    setHits(pathInfo ? new Array(pathInfo.checkpoints.length).fill(false) : []);
     setCompleted(false);
-    setDeviated(false);
     setShowHand(true);
   };
 
-  const handleNext = () => {
-    if (completed) onSuccess();
+  const goNext = () => {
+    if (!available) return;
+    if (index < available.length - 1) {
+      setIndex(i => i + 1);
+    } else {
+      onSuccess?.();
+    }
   };
 
-  /* ------- Render ------- */
-  const vb = pathInfo?.viewBox || { x: 0, y: 0, w: 100, h: 140 };
-  const progressRatio = hitMask.length ? hitMask.filter(Boolean).length / hitMask.length : 0;
+  const goPrev = () => {
+    if (index > 0) setIndex(i => i - 1);
+  };
+
+  /* ----- Loading state ----- */
+  if (available === null) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 gap-3">
+        <div className="w-14 h-14 rounded-full border-4 border-funquest-blue/30 border-t-funquest-blue animate-spin" />
+        <p className="text-muted-foreground font-medium">Loading tracing numbers…</p>
+      </div>
+    );
+  }
+
+  if (available.length === 0 || number == null) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 gap-3">
+        <span className="text-5xl">😕</span>
+        <p className="text-foreground font-semibold">No tracing numbers available yet.</p>
+      </div>
+    );
+  }
+
+  /* ----- Derived for render ----- */
+  const vb = pathInfo?.viewBox || { x: 0, y: 0, w: 1024, h: 1024 };
+  const progressRatio = hits.length ? hits.filter(Boolean).length / hits.length : 0;
+  const startPt = pathInfo?.checkpoints[0];
+  const arrowFromTo =
+    pathInfo && pathInfo.checkpoints.length > 6
+      ? { from: pathInfo.checkpoints[0], to: pathInfo.checkpoints[8] }
+      : null;
 
   return (
-    <div className="flex flex-col items-center gap-4 px-3 sm:px-6 w-full">
-      {/* Title */}
-      <div className="text-center">
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground">Trace the Number</h2>
-        <p className="text-sm sm:text-base text-muted-foreground mt-1">
-          Follow the dotted line with your finger
-        </p>
+    <div className="flex flex-col items-center gap-5 px-3 sm:px-6 w-full">
+      {/* Title row */}
+      <div className="flex flex-col items-center gap-1 text-center">
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground">
+          Trace the Number{' '}
+          <span className="text-funquest-blue">{number}</span>
+        </h2>
+        <p className="text-sm text-muted-foreground">Follow the dotted path with your finger</p>
       </div>
 
-      {/* Optional instruction bar (audio etc) */}
-      {instruction && (
-        <InstructionBar text={instruction} audioUrl={instructionAudio} />
-      )}
+      {/* Number selector chips */}
+      <div className="flex items-center gap-2 flex-wrap justify-center max-w-[520px]">
+        {available.map((n, i) => (
+          <button
+            key={n}
+            onClick={() => setIndex(i)}
+            className={`w-9 h-9 rounded-full text-sm font-bold border-2 transition-all ${
+              i === index
+                ? 'bg-funquest-blue text-white border-funquest-blue scale-110 shadow-medium'
+                : i < index
+                ? 'bg-funquest-success/15 text-funquest-success border-funquest-success/40'
+                : 'bg-card text-muted-foreground border-border/60 hover:border-funquest-blue/50'
+            }`}
+            aria-label={`Number ${n}`}
+          >
+            {n}
+          </button>
+        ))}
+      </div>
 
-      {/* Tracing area */}
+      {/* Tracing card */}
       <motion.div
         ref={containerRef}
-        onPointerDown={handleDown}
-        onPointerMove={handleMove}
-        onPointerUp={handleUp}
-        onPointerLeave={handleUp}
-        className={`relative select-none touch-none transition-colors ${
+        onPointerDown={onDown}
+        onPointerMove={onMove}
+        onPointerUp={onUp}
+        onPointerLeave={onUp}
+        initial={{ scale: 0.96, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.25 }}
+        className={`relative select-none touch-none transition-all ${
           completed
-            ? 'border-funquest-success/60 shadow-[0_0_40px_rgba(34,197,94,0.35)]'
-            : deviated
-            ? 'border-funquest-error/50 shadow-[0_0_30px_rgba(239,68,68,0.25)]'
-            : 'border-border/30 shadow-medium'
+            ? 'ring-4 ring-funquest-success/50 shadow-[0_0_50px_rgba(34,197,94,0.35)]'
+            : 'shadow-large'
         }`}
         style={{
-          width: CANVAS_PX,
-          height: CANVAS_PX,
+          width: CANVAS,
+          height: CANVAS,
           maxWidth: '92vw',
           maxHeight: '92vw',
           aspectRatio: '1 / 1',
-          padding: CANVAS_PADDING,
-          borderRadius: 32,
-          borderWidth: 3,
-          borderStyle: 'solid',
-          background: 'hsl(0 0% 100% / 0.92)',
-          boxShadow: '0 8px 30px -10px hsl(var(--foreground) / 0.18)',
+          borderRadius: 36,
+          background:
+            'linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(210 40% 98%) 100%)',
+          border: '3px solid hsl(var(--border) / 0.6)',
+          padding: PAD,
         }}
       >
-        {/* Inner square stage — PNG and SVG share these exact dimensions */}
-        <div
-          className="relative w-full h-full"
-          style={{ aspectRatio: '1 / 1' }}
-        >
-          {/* PNG guide background */}
+        {/* PNG: visible artwork */}
+        <div className="relative w-full h-full">
           {pngOk && (
             <img
-              src={pngUrl}
+              src={pngUrlFor(number)}
               alt={`Number ${number}`}
               onError={() => setPngOk(false)}
-              className="absolute inset-0 w-full h-full pointer-events-none select-none"
+              draggable={false}
+              className="absolute inset-0 w-full h-full pointer-events-none"
               style={{
                 objectFit: 'contain',
-                imageRendering: 'auto',
-                opacity: 0.55,
+                width: '78%',
+                height: '78%',
+                left: '11%',
+                top: '11%',
               }}
-              draggable={false}
             />
           )}
 
-          {/* SVG overlay: dotted guide + active fill */}
+          {/* SVG: invisible-tracking path with subtle dotted guide overlay */}
           {pathInfo && (
             <svg
               viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`}
               preserveAspectRatio="xMidYMid meet"
               className="absolute inset-0 w-full h-full pointer-events-none"
-              style={{ shapeRendering: 'geometricPrecision' }}
             >
               <defs>
-                <filter id="successGlow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur stdDeviation="2.2" result="b" />
+                <linearGradient id="traceGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="hsl(217 91% 60%)" />
+                  <stop offset="100%" stopColor="hsl(280 80% 60%)" />
+                </linearGradient>
+                <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+                  <feGaussianBlur stdDeviation="6" result="b" />
                   <feMerge>
                     <feMergeNode in="b" />
                     <feMergeNode in="SourceGraphic" />
@@ -412,135 +444,177 @@ const NumberTracingGame: React.FC<NumberTracingGameProps> = ({ step, onSuccess }
                 </filter>
               </defs>
 
-              {/* Dotted base path */}
-              {pathInfo.pathDs.map((d, i) => (
+              {/* Dotted guide path (thin, light) */}
+              {pathInfo.ds.map((d, i) => (
                 <path
-                  key={`base-${i}`}
+                  key={`g-${i}`}
                   d={d}
                   fill="none"
-                  stroke="hsl(var(--muted-foreground) / 0.55)"
-                  strokeWidth={Math.max(2, vb.w * 0.04)}
+                  stroke="hsl(217 91% 60% / 0.55)"
+                  strokeWidth={Math.max(6, vb.w * 0.012)}
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeDasharray={`${vb.w * 0.025} ${vb.w * 0.04}`}
+                  strokeDasharray={`${vb.w * 0.012} ${vb.w * 0.028}`}
                 />
               ))}
 
-              {/* Active progress overlay */}
-              {pathInfo.pathDs.map((d, i) => {
-                const len = 1000;
+              {/* Animated progress overlay (glowing reveal) */}
+              {pathInfo.ds.map((d, i) => {
+                const len = 4000;
                 return (
                   <path
-                    key={`fill-${i}`}
+                    key={`p-${i}`}
                     d={d}
                     fill="none"
-                    stroke={completed ? 'hsl(142 70% 45%)' : 'hsl(217 91% 60%)'}
-                    strokeWidth={Math.max(2.5, vb.w * 0.05)}
+                    stroke={completed ? 'hsl(142 70% 45%)' : 'url(#traceGrad)'}
+                    strokeWidth={Math.max(10, vb.w * 0.022)}
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeDasharray={len}
                     strokeDashoffset={len - len * progressRatio}
-                    style={{ transition: 'stroke-dashoffset 0.15s linear, stroke 0.3s' }}
-                    filter={completed ? 'url(#successGlow)' : undefined}
+                    style={{ transition: 'stroke-dashoffset 0.18s linear, stroke 0.3s' }}
+                    filter="url(#glow)"
+                    opacity={0.85}
                   />
                 );
               })}
+
+              {/* Start dot (green) */}
+              {startPt && !completed && (
+                <g>
+                  <circle
+                    cx={startPt.x}
+                    cy={startPt.y}
+                    r={vb.w * 0.028}
+                    fill="hsl(142 70% 45%)"
+                    opacity={0.25}
+                  >
+                    <animate
+                      attributeName="r"
+                      values={`${vb.w * 0.028};${vb.w * 0.05};${vb.w * 0.028}`}
+                      dur="1.6s"
+                      repeatCount="indefinite"
+                    />
+                  </circle>
+                  <circle
+                    cx={startPt.x}
+                    cy={startPt.y}
+                    r={vb.w * 0.022}
+                    fill="hsl(142 70% 45%)"
+                  />
+                  <text
+                    x={startPt.x}
+                    y={startPt.y + vb.w * 0.008}
+                    textAnchor="middle"
+                    fontSize={vb.w * 0.028}
+                    fontWeight="bold"
+                    fill="white"
+                  >
+                    ▶
+                  </text>
+                </g>
+              )}
+
+              {/* Directional arrow */}
+              {arrowFromTo && progressRatio < 0.1 && (
+                <g opacity={0.7}>
+                  <line
+                    x1={arrowFromTo.from.x}
+                    y1={arrowFromTo.from.y}
+                    x2={arrowFromTo.to.x}
+                    y2={arrowFromTo.to.y}
+                    stroke="hsl(217 91% 50%)"
+                    strokeWidth={vb.w * 0.008}
+                    strokeDasharray={`${vb.w * 0.02} ${vb.w * 0.015}`}
+                  />
+                </g>
+              )}
             </svg>
           )}
 
-          {/* User strokes overlay (matches inner stage exactly) */}
+          {/* User stroke overlay (in canvas pixel space) */}
           <svg
-            className="absolute inset-0 w-full h-full pointer-events-none"
-            viewBox={`0 0 ${CANVAS_PX - CANVAS_PADDING * 2} ${CANVAS_PX - CANVAS_PADDING * 2}`}
-            preserveAspectRatio="none"
+            className="absolute pointer-events-none"
+            viewBox={`0 0 ${CANVAS} ${CANVAS}`}
+            preserveAspectRatio="xMidYMid meet"
+            style={{ inset: -PAD, width: CANVAS, height: CANVAS }}
           >
-            {strokes.map((s, i) => (
+            {strokes.concat(current.length > 1 ? [current] : []).map((s, i) => (
               <polyline
                 key={i}
-                points={s.map(p => `${p.x - CANVAS_PADDING},${p.y - CANVAS_PADDING}`).join(' ')}
+                points={s.map(p => `${p.x},${p.y}`).join(' ')}
                 fill="none"
                 stroke="hsl(217 91% 55%)"
-                strokeWidth={6}
+                strokeWidth={14}
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                opacity={0.7}
-                vectorEffect="non-scaling-stroke"
+                opacity={0.55}
               />
             ))}
-            {current.length > 1 && (
-              <polyline
-                points={current.map(p => `${p.x - CANVAS_PADDING},${p.y - CANVAS_PADDING}`).join(' ')}
-                fill="none"
-                stroke="hsl(217 91% 55%)"
-                strokeWidth={7}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                opacity={0.85}
-                vectorEffect="non-scaling-stroke"
-              />
-            )}
           </svg>
         </div>
 
-        {/* Sparkles */}
+        {/* Sparkle trail */}
         <AnimatePresence>
           {sparkles.map(s => (
             <motion.div
               key={s.id}
               initial={{ opacity: 1, scale: 0.4 }}
-              animate={{ opacity: 0, scale: 1.6, y: s.y - 14 }}
+              animate={{ opacity: 0, scale: 1.6, y: -16 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.7 }}
               className="absolute pointer-events-none"
-              style={{ left: s.x - 8, top: s.y - 8 }}
+              style={{ left: s.x - 10, top: s.y - 10 }}
             >
-              <Sparkles className="w-4 h-4 text-funquest-warning" />
+              <Sparkles className="w-5 h-5 text-funquest-warning" />
             </motion.div>
           ))}
         </AnimatePresence>
 
         {/* Hand guide (first attempt) */}
-        {showHand && pathInfo && pathInfo.checkpoints.length > 1 && (
+        {showHand && pathInfo && pathInfo.checkpoints.length > 8 && (
           <motion.div
-            className="absolute pointer-events-none text-3xl"
+            className="absolute pointer-events-none text-3xl select-none"
             initial={{ opacity: 0 }}
             animate={{
               opacity: [0, 1, 1, 0],
-              x: pathInfo.checkpoints.map(
-                cp => CANVAS_PADDING + ((cp.x - vb.x) / vb.w) * (CANVAS_PX - CANVAS_PADDING * 2) - 14,
-              ),
-              y: pathInfo.checkpoints.map(
-                cp => CANVAS_PADDING + ((cp.y - vb.y) / vb.h) * (CANVAS_PX - CANVAS_PADDING * 2) - 8,
-              ),
+              x: pathInfo.checkpoints
+                .filter((_, i) => i % Math.ceil(pathInfo.checkpoints.length / 30) === 0)
+                .map(cp => fromSvg(cp.x, cp.y).x - 12),
+              y: pathInfo.checkpoints
+                .filter((_, i) => i % Math.ceil(pathInfo.checkpoints.length / 30) === 0)
+                .map(cp => fromSvg(cp.x, cp.y).y - 6),
             }}
-            transition={{ duration: 2.4, repeat: Infinity, repeatDelay: 1.2, ease: 'easeInOut' }}
+            transition={{ duration: 3.2, repeat: Infinity, repeatDelay: 1.4, ease: 'easeInOut' }}
           >
             👆
           </motion.div>
         )}
 
-        {/* Success glow text */}
+        {/* Success badge */}
         <AnimatePresence>
           {completed && (
             <motion.div
               initial={{ opacity: 0, scale: 0.6, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-x-0 bottom-3 flex justify-center"
+              className="absolute inset-x-0 bottom-4 flex justify-center"
             >
-              <div className="bg-funquest-success/15 border border-funquest-success/40 text-funquest-success font-bold rounded-full px-5 py-2 shadow-medium">
-                Great job! 🌟
+              <div className="bg-funquest-success text-white font-bold rounded-full px-6 py-2.5 shadow-large flex items-center gap-2">
+                <Sparkles className="w-4 h-4" /> Great Job!
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </motion.div>
 
-      {/* Progress hint */}
-      <div className="w-full max-w-[360px]">
-        <div className="h-2 bg-muted rounded-full overflow-hidden">
+      {/* Progress bar */}
+      <div className="w-full max-w-[400px]">
+        <div className="h-2.5 bg-muted rounded-full overflow-hidden">
           <motion.div
-            className={`h-full ${completed ? 'bg-funquest-success' : 'bg-funquest-blue'}`}
+            className={`h-full rounded-full ${
+              completed ? 'bg-funquest-success' : 'bg-gradient-to-r from-funquest-blue to-funquest-purple'
+            }`}
             initial={false}
             animate={{ width: `${Math.round(progressRatio * 100)}%` }}
             transition={{ duration: 0.2 }}
@@ -548,23 +622,56 @@ const NumberTracingGame: React.FC<NumberTracingGameProps> = ({ step, onSuccess }
         </div>
       </div>
 
-      {/* Buttons */}
-      <div className="flex items-center gap-3 mt-1">
+      {/* Action buttons */}
+      <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-center">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={goPrev}
+          disabled={index === 0}
+          className="rounded-full w-11 h-11 border-2"
+          aria-label="Previous number"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </Button>
+
         <Button
           variant="outline"
           onClick={handleRetry}
-          className="rounded-full px-5 border-2 font-semibold gap-2"
+          className="rounded-full px-5 h-11 border-2 font-semibold gap-2"
         >
           <RotateCcw className="w-4 h-4" />
           Try Again
         </Button>
+
         <Button
-          onClick={handleNext}
-          disabled={!completed}
-          className="rounded-full px-6 font-semibold gap-2 shadow-medium disabled:opacity-50"
+          variant="outline"
+          size="icon"
+          onClick={() => speak(`Trace the number ${number}`)}
+          className="rounded-full w-11 h-11 border-2"
+          aria-label="Hear instruction"
         >
-          Next
+          <Volume2 className="w-5 h-5" />
+        </Button>
+
+        <Button
+          onClick={goNext}
+          disabled={!completed}
+          className="rounded-full px-6 h-11 font-semibold gap-2 shadow-medium disabled:opacity-50 bg-gradient-to-r from-funquest-blue to-funquest-purple text-white hover:opacity-90"
+        >
+          {index < (available.length - 1) ? 'Next' : 'Finish'}
           <ArrowRight className="w-4 h-4" />
+        </Button>
+
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => available && index < available.length - 1 && setIndex(i => i + 1)}
+          disabled={index >= available.length - 1}
+          className="rounded-full w-11 h-11 border-2"
+          aria-label="Skip"
+        >
+          <ChevronRight className="w-5 h-5" />
         </Button>
       </div>
     </div>
