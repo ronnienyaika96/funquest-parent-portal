@@ -487,7 +487,68 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
       </motion.div>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-        {/* Grid layout: rows of paired draggables + targets */}
+        {isFinalNineTen ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="w-full flex flex-col items-center gap-10 px-4"
+            style={{ maxWidth: 980 }}
+          >
+            {/* Order rows so 9 appears on top, 10 below */}
+            {[9, 10].map((n) => {
+              const target = targets.find((t) => t.quantity === n)!;
+              const draggable = draggables.find((d) =>
+                target.accepts.includes(d.id),
+              );
+              if (!target || !draggable) return null;
+              const matched = !!matches[target.id];
+              const cols = n === 9 ? 3 : 5;
+
+              return (
+                <div
+                  key={target.id}
+                  className="w-full flex items-center justify-center"
+                  style={{ gap: 50 }}
+                >
+                  {/* Number tile */}
+                  <div
+                    className="flex-shrink-0"
+                    style={{ width: 'clamp(160px, 20vw, 220px)' }}
+                  >
+                    <DraggableItem
+                      item={draggable}
+                      isMatched={matched}
+                      isDragging={activeId === draggable.id}
+                    />
+                  </div>
+
+                  {/* Object card */}
+                  <motion.div
+                    animate={
+                      wrongTarget === target.id
+                        ? { x: [0, -8, 8, -4, 4, 0] }
+                        : matched
+                        ? { scale: [1, 1.03, 1] }
+                        : {}
+                    }
+                    className="flex-shrink-0"
+                    style={{
+                      width: 'min(700px, 60vw)',
+                      minWidth: 380,
+                    }}
+                  >
+                    <ObjectCard
+                      target={target}
+                      cols={cols}
+                      matched={matched}
+                    />
+                  </motion.div>
+                </div>
+              );
+            })}
+          </motion.div>
+        ) : (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -558,6 +619,7 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
               </div>
             ));
           })()}
+
         </motion.div>
 
         {/* Drag overlay */}
