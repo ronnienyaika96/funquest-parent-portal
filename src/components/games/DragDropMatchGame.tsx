@@ -426,6 +426,15 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
   const draggableBgUrl = getChoiceAssetByState('default');
   const cloudBgUrl = getGameAssetUrl('UI background/cloud background.png');
 
+  // Detect final "9 & 10" stage → premium row-based layout
+  const isFinalNineTen =
+    isNumberMatch &&
+    targets.length === 2 &&
+    targets.every((t) => t.quantity === 9 || t.quantity === 10) &&
+    targets.some((t) => t.quantity === 9) &&
+    targets.some((t) => t.quantity === 10);
+
+
   return (
     <div
       className="flex flex-col items-center w-full min-h-screen overflow-visible"
