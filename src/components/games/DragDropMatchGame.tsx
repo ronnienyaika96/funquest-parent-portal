@@ -455,8 +455,17 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
           fontFamily: "'Nunito', 'Comic Sans MS', cursive, sans-serif",
         }}
       >
-        Match Letters
+        {isNumberMatch ? 'Match the Numbers' : 'Match Letters'}
       </motion.h1>
+      {isFinalNineTen && (
+        <p
+          className="text-white/90 text-center text-sm sm:text-base md:text-lg -mt-1 mb-3"
+          style={{ fontFamily: "'Nunito', sans-serif" }}
+        >
+          Count the objects and drag the correct number.
+        </p>
+      )}
+
 
       {/* Instruction bar */}
       <motion.div
