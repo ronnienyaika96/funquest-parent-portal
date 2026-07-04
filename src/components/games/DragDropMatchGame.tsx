@@ -281,6 +281,104 @@ function DroppableTarget({ target, matchedItem }: {
   );
 }
 
+/** Premium fixed-size object card used for the final 9 & 10 stage */
+function ObjectCard({
+  target,
+  cols,
+  matched,
+}: {
+  target: Target;
+  cols: number;
+  matched: boolean;
+}) {
+  const { setNodeRef, isOver } = useDroppable({ id: target.id });
+  const n = target.quantity || 0;
+  const objectName = target.objectName || 'apple';
+
+  return (
+    <motion.div
+      ref={setNodeRef}
+      animate={isOver ? { scale: 1.02 } : { scale: 1 }}
+      className="relative rounded-3xl flex flex-col items-center justify-center"
+      style={{
+        width: '100%',
+        height: 220,
+        background: matched
+          ? 'linear-gradient(135deg, rgba(220,252,231,0.95), rgba(187,247,208,0.95))'
+          : 'rgba(255,255,255,0.92)',
+        border: matched
+          ? '3px solid #22c55e'
+          : isOver
+          ? '3px dashed #38bdf8'
+          : '2px solid rgba(148,163,184,0.35)',
+        boxShadow: matched
+          ? '0 0 0 6px rgba(34,197,94,0.15), 0 12px 30px -12px rgba(34,197,94,0.45)'
+          : '0 10px 25px -12px rgba(30,64,175,0.25)',
+        padding: '18px 22px 46px',
+        transition: 'background 0.25s, border-color 0.25s, box-shadow 0.25s',
+      }}
+    >
+      {/* Object grid */}
+      <div
+        className="grid mx-auto"
+        style={{
+          gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+          gap: 'clamp(6px, 1vw, 14px)',
+          width: '100%',
+          maxWidth: 560,
+          justifyItems: 'center',
+          alignItems: 'center',
+        }}
+      >
+        {Array.from({ length: n }).map((_, i) => (
+          <motion.img
+            key={i}
+            src={getObjectImageUrl(objectName)}
+            alt={objectName}
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: i * 0.04, type: 'spring', stiffness: 220, damping: 14 }}
+            className="object-contain drop-shadow-md"
+            style={{
+              width: cols === 3 ? 'clamp(38px, 5vw, 58px)' : 'clamp(32px, 4.2vw, 50px)',
+              height: cols === 3 ? 'clamp(38px, 5vw, 58px)' : 'clamp(32px, 4.2vw, 50px)',
+            }}
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+          />
+        ))}
+      </div>
+
+      {/* Pill label */}
+      <div
+        className="absolute left-1/2 -translate-x-1/2 rounded-full px-5 py-1.5 shadow-sm"
+        style={{
+          bottom: 10,
+          background: matched ? '#22c55e' : 'white',
+          color: matched ? 'white' : '#1e3a8a',
+          border: matched ? 'none' : '1.5px solid rgba(59,130,246,0.35)',
+          fontFamily: "'Nunito', sans-serif",
+          fontWeight: 800,
+          fontSize: 'clamp(0.9rem, 1.2vw, 1.05rem)',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {target.label}
+      </div>
+
+      {matched && (
+        <motion.div
+          initial={{ scale: 0, rotate: -90 }}
+          animate={{ scale: 1, rotate: 0 }}
+          className="absolute -top-3 -right-3"
+        >
+          <CheckCircle className="w-9 h-9 text-emerald-500 drop-shadow-lg fill-white" />
+        </motion.div>
+      )}
+    </motion.div>
+  );
+}
+
+
 const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }) => {
   const data = step.data || {};
   const instruction = data.instruction || 'Drag each item to the correct match!';
@@ -426,6 +524,15 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
   const draggableBgUrl = getChoiceAssetByState('default');
   const cloudBgUrl = getGameAssetUrl('UI background/cloud background.png');
 
+  // Detect final "9 & 10" stage → premium row-based layout
+  const isFinalNineTen =
+    isNumberMatch &&
+    targets.length === 2 &&
+    targets.every((t) => t.quantity === 9 || t.quantity === 10) &&
+    targets.some((t) => t.quantity === 9) &&
+    targets.some((t) => t.quantity === 10);
+
+
   return (
     <div
       className="flex flex-col items-center w-full min-h-screen overflow-visible"
@@ -446,8 +553,17 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
           fontFamily: "'Nunito', 'Comic Sans MS', cursive, sans-serif",
         }}
       >
-        Match Letters
+        {isNumberMatch ? 'Match the Numbers' : 'Match Letters'}
       </motion.h1>
+      {isFinalNineTen && (
+        <p
+          className="text-white/90 text-center text-sm sm:text-base md:text-lg -mt-1 mb-3"
+          style={{ fontFamily: "'Nunito', sans-serif" }}
+        >
+          Count the objects and drag the correct number.
+        </p>
+      )}
+
 
       {/* Instruction bar */}
       <motion.div
@@ -469,7 +585,68 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
       </motion.div>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-        {/* Grid layout: rows of paired draggables + targets */}
+        {isFinalNineTen ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="w-full flex flex-col items-center gap-10 px-4"
+            style={{ maxWidth: 980 }}
+          >
+            {/* Order rows so 9 appears on top, 10 below */}
+            {[9, 10].map((n) => {
+              const target = targets.find((t) => t.quantity === n)!;
+              const draggable = draggables.find((d) =>
+                target.accepts.includes(d.id),
+              );
+              if (!target || !draggable) return null;
+              const matched = !!matches[target.id];
+              const cols = n === 9 ? 3 : 5;
+
+              return (
+                <div
+                  key={target.id}
+                  className="w-full flex items-center justify-center"
+                  style={{ gap: 50 }}
+                >
+                  {/* Number tile */}
+                  <div
+                    className="flex-shrink-0"
+                    style={{ width: 'clamp(160px, 20vw, 220px)' }}
+                  >
+                    <DraggableItem
+                      item={draggable}
+                      isMatched={matched}
+                      isDragging={activeId === draggable.id}
+                    />
+                  </div>
+
+                  {/* Object card */}
+                  <motion.div
+                    animate={
+                      wrongTarget === target.id
+                        ? { x: [0, -8, 8, -4, 4, 0] }
+                        : matched
+                        ? { scale: [1, 1.03, 1] }
+                        : {}
+                    }
+                    className="flex-shrink-0"
+                    style={{
+                      width: 'min(700px, 60vw)',
+                      minWidth: 380,
+                    }}
+                  >
+                    <ObjectCard
+                      target={target}
+                      cols={cols}
+                      matched={matched}
+                    />
+                  </motion.div>
+                </div>
+              );
+            })}
+          </motion.div>
+        ) : (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -540,7 +717,10 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
               </div>
             ));
           })()}
+
         </motion.div>
+        )}
+
 
         {/* Drag overlay */}
         <DragOverlay>
