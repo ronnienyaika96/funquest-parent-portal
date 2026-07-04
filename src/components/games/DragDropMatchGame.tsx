@@ -621,6 +621,8 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
           })()}
 
         </motion.div>
+        )}
+
 
         {/* Drag overlay */}
         <DragOverlay>
