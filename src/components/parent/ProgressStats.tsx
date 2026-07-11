@@ -198,7 +198,7 @@ const ProgressStats = ({ childId, childName }: ProgressStatsProps) => {
         completedLetters={completedLetters}
         totalAttempts={totalAttempts}
         currentStreak={currentStreak}
-        childName={childName}
+        childName={displayName}
       />
 
       {/* Recent Activity */}
