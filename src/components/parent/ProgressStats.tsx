@@ -234,10 +234,17 @@ const ProgressStats = ({ childId, childName }: ProgressStatsProps) => {
             ))}
           </div>
         ) : (
-          <div className="text-center py-8 text-gray-400">
-            <Target className="w-12 h-12 mx-auto mb-2 opacity-50" />
-            <p>No learning data yet</p>
-            <p className="text-sm">Start playing games to track progress!</p>
+          <div className="text-center py-8">
+            <Target className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+            <p className="text-gray-500 font-medium">No learning data yet</p>
+            <p className="text-sm text-gray-400 mb-5">Start playing games to track progress!</p>
+            <Button
+              onClick={() => navigate('/activities')}
+              className="rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-semibold px-5"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              Hand device to {displayName} to start learning
+            </Button>
           </div>
         )}
       </motion.div>
