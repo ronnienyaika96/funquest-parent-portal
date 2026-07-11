@@ -160,11 +160,11 @@ const ProgressStats = ({ childId, childName }: ProgressStatsProps) => {
         >
           <p className="text-sm text-gray-700 font-medium">
             {completedLetters < 5
-              ? `🌱 Great start! ${childName || 'Your child'} is building a strong foundation!`
+              ? `🌱 Great start! ${displayName} is building a strong foundation!`
               : completedLetters < 13
               ? `🚀 Awesome progress! Almost halfway through the alphabet!`
               : completedLetters < 26
-              ? `🔥 Incredible! ${childName || 'Your child'} is an alphabet superstar!`
+              ? `🔥 Incredible! ${displayName} is an alphabet superstar!`
               : `🎉 WOW! The entire alphabet is mastered! Time to celebrate!`}
           </p>
         </motion.div>
