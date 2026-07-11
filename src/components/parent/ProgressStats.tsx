@@ -1,14 +1,18 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Target, Star, Clock, TrendingUp, Flame, Gamepad2 } from 'lucide-react';
+import { Target, Star, Clock, TrendingUp, Flame, Gamepad2, Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import AlphabetProgressGrid from './AlphabetProgressGrid';
 import ActivityBreakdownTabs from './ActivityBreakdownTabs';
 import AchievementsPanel from './AchievementsPanel';
 import LearningInsights from './LearningInsights';
 import ContinueLearningCard from './ContinueLearningCard';
 import WeeklyPracticeChart from './WeeklyPracticeChart';
+
+const capitalize = (s?: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '');
 
 interface ProgressItem {
   id: string;
