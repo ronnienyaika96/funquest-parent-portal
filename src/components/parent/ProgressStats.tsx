@@ -80,12 +80,12 @@ const ProgressStats = ({ childId, childName }: ProgressStatsProps) => {
 
   // Color-coded stat cards: Letters=blue, Numbers=orange, Games=purple, Stories=green
   const statCards = [
-    { label: 'Letters Learned', value: `${completedLetters}/26`, icon: Target, bgColor: 'bg-blue-100', textColor: 'text-blue-600', emoji: '🔤', progress: completedLetters / 26 },
-    { label: 'Numbers Done', value: '0/10', icon: Star, bgColor: 'bg-orange-100', textColor: 'text-orange-600', emoji: '🔢', progress: 0 },
-    { label: 'Practice Sessions', value: totalAttempts, icon: Clock, bgColor: 'bg-purple-100', textColor: 'text-purple-600', emoji: '📚', progress: Math.min(totalAttempts / 50, 1) },
-    { label: 'Current Streak', value: `${currentStreak} day${currentStreak !== 1 ? 's' : ''}`, icon: Flame, bgColor: 'bg-orange-100', textColor: 'text-orange-600', emoji: '🔥', progress: Math.min(currentStreak / 7, 1) },
-    { label: 'Average Score', value: `${avgScore}%`, icon: TrendingUp, bgColor: 'bg-blue-100', textColor: 'text-blue-600', emoji: '⭐', progress: avgScore / 100 },
-    { label: 'Last Activity', value: lastActivity ? `Letter ${lastActivity.letter.toUpperCase()}` : 'None', icon: Gamepad2, bgColor: 'bg-purple-100', textColor: 'text-purple-600', emoji: '🎮', progress: null },
+    { label: 'Letters Learned', value: `${completedLetters}/26`, icon: Target, bgColor: 'bg-blue-100', textColor: 'text-blue-600', progress: completedLetters / 26 },
+    { label: 'Numbers Done', value: '0/10', icon: Star, bgColor: 'bg-orange-100', textColor: 'text-orange-600', progress: 0 },
+    { label: 'Practice Sessions', value: totalAttempts, icon: Clock, bgColor: 'bg-purple-100', textColor: 'text-purple-600', progress: Math.min(totalAttempts / 50, 1) },
+    { label: 'Current Streak', value: currentStreak > 0 ? `${currentStreak} day${currentStreak !== 1 ? 's' : ''}` : 'Ready to play!', icon: Flame, bgColor: 'bg-orange-100', textColor: 'text-orange-600', progress: Math.min(currentStreak / 7, 1) },
+    { label: 'Average Score', value: totalAttempts > 0 ? `${avgScore}%` : '—', icon: TrendingUp, bgColor: 'bg-blue-100', textColor: 'text-blue-600', progress: avgScore / 100 },
+    { label: 'Last Activity', value: lastActivity ? `Letter ${lastActivity.letter.toUpperCase()}` : 'No sessions yet this week', icon: Gamepad2, bgColor: 'bg-purple-100', textColor: 'text-purple-600', progress: null },
   ];
 
   if (isLoading) {
