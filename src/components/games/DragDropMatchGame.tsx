@@ -299,13 +299,13 @@ function ObjectCard({
     <motion.div
       ref={setNodeRef}
       animate={isOver ? { scale: 1.02 } : { scale: 1 }}
-      className="relative rounded-3xl flex flex-col items-center justify-center"
+      className="relative rounded-3xl flex flex-col items-center justify-between"
       style={{
-        width: '100%',
-        height: 220,
+        width: 260,
+        height: 260,
         background: matched
           ? 'linear-gradient(135deg, rgba(220,252,231,0.95), rgba(187,247,208,0.95))'
-          : 'rgba(255,255,255,0.92)',
+          : 'rgba(255,255,255,0.95)',
         border: matched
           ? '3px solid #22c55e'
           : isOver
@@ -314,18 +314,16 @@ function ObjectCard({
         boxShadow: matched
           ? '0 0 0 6px rgba(34,197,94,0.15), 0 12px 30px -12px rgba(34,197,94,0.45)'
           : '0 10px 25px -12px rgba(30,64,175,0.25)',
-        padding: '18px 22px 46px',
+        padding: '18px 18px 16px',
         transition: 'background 0.25s, border-color 0.25s, box-shadow 0.25s',
       }}
     >
       {/* Object grid */}
       <div
-        className="grid mx-auto"
+        className="grid mx-auto flex-1 w-full"
         style={{
-          gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-          gap: 'clamp(6px, 1vw, 14px)',
-          width: '100%',
-          maxWidth: 560,
+          gridTemplateColumns: `repeat(${cols}, 1fr)`,
+          gap: 6,
           justifyItems: 'center',
           alignItems: 'center',
         }}
@@ -338,27 +336,23 @@ function ObjectCard({
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: i * 0.04, type: 'spring', stiffness: 220, damping: 14 }}
-            className="object-contain drop-shadow-md"
-            style={{
-              width: cols === 3 ? 'clamp(38px, 5vw, 58px)' : 'clamp(32px, 4.2vw, 50px)',
-              height: cols === 3 ? 'clamp(38px, 5vw, 58px)' : 'clamp(32px, 4.2vw, 50px)',
-            }}
+            className="drop-shadow-md"
+            style={{ width: 56, height: 56, objectFit: 'contain' }}
             onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
           />
         ))}
       </div>
 
-      {/* Pill label */}
+      {/* Pill label below grid */}
       <div
-        className="absolute left-1/2 -translate-x-1/2 rounded-full px-5 py-1.5 shadow-sm"
+        className="rounded-full px-4 py-1 shadow-sm mt-2"
         style={{
-          bottom: 10,
           background: matched ? '#22c55e' : 'white',
           color: matched ? 'white' : '#1e3a8a',
           border: matched ? 'none' : '1.5px solid rgba(59,130,246,0.35)',
           fontFamily: "'Nunito', sans-serif",
           fontWeight: 800,
-          fontSize: 'clamp(0.9rem, 1.2vw, 1.05rem)',
+          fontSize: '0.95rem',
           whiteSpace: 'nowrap',
         }}
       >
@@ -415,21 +409,11 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
       .map((d: any) => ({ ...d, _num: Number(d.value ?? d.label) }))
       .filter((d) => !isNaN(d._num));
 
-    // If this step's allowed-numbers are explicitly 9 and 10 (or include both),
-    // restrict the round to ONLY 9 and 10 — exactly two tiles & two drop zones.
-    const stepNumbers: number[] | undefined = Array.isArray(data.numbers)
-      ? data.numbers.map((n: any) => Number(n)).filter((n: number) => !isNaN(n))
-      : undefined;
-    const restrictTo910 =
-      (stepNumbers && stepNumbers.length === 2 && stepNumbers.includes(9) && stepNumbers.includes(10)) ||
-      (numberDraggables.length === 2 &&
-        numberDraggables.some((d) => d._num === 9) &&
-        numberDraggables.some((d) => d._num === 10)) ||
-      // Fallback: if both 9 and 10 exist among draggables, narrow to just those
-      (numberDraggables.some((d) => d._num === 9) && numberDraggables.some((d) => d._num === 10) &&
-        (data.schema?.includes('nine_ten') || data.id === 'nine_ten' || step?.id?.toString().includes('9_10')));
-
-    if (restrictTo910) {
+    // FINAL STAGE: if both 9 and 10 are present among the draggables, this is the
+    // final "9 & 10" round — strip out every other number so ONLY 9 and 10 render.
+    const hasNine = numberDraggables.some((d) => d._num === 9);
+    const hasTen = numberDraggables.some((d) => d._num === 10);
+    if (hasNine && hasTen) {
       numberDraggables = numberDraggables.filter((d) => d._num === 9 || d._num === 10);
     }
 
@@ -590,8 +574,8 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="w-full flex flex-col items-center gap-10 px-4"
-            style={{ maxWidth: 980 }}
+            className="w-full flex flex-col items-center gap-8 px-4"
+            style={{ maxWidth: 780 }}
           >
             {/* Order rows so 9 appears on top, 10 below */}
             {[9, 10].map((n) => {
@@ -606,20 +590,29 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
               return (
                 <div
                   key={target.id}
-                  className="w-full flex items-center justify-center"
-                  style={{ gap: 50 }}
+                  className="w-full flex items-center justify-center gap-6 sm:gap-10"
                 >
                   {/* Number tile */}
-                  <div
-                    className="flex-shrink-0"
-                    style={{ width: 'clamp(160px, 20vw, 220px)' }}
-                  >
+                  <div className="flex-shrink-0" style={{ width: 180, height: 180 }}>
                     <DraggableItem
                       item={draggable}
                       isMatched={matched}
                       isDragging={activeId === draggable.id}
                     />
                   </div>
+
+                  {/* Arrow */}
+                  <motion.div
+                    animate={{ x: [0, 8, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
+                    className="flex-shrink-0 hidden sm:flex"
+                  >
+                    <ArrowRight
+                      className="w-10 h-10 md:w-12 md:h-12"
+                      style={{ color: 'rgba(255,255,255,0.8)' }}
+                      strokeWidth={2.5}
+                    />
+                  </motion.div>
 
                   {/* Object card */}
                   <motion.div
@@ -631,10 +624,6 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
                         : {}
                     }
                     className="flex-shrink-0"
-                    style={{
-                      width: 'min(700px, 60vw)',
-                      minWidth: 380,
-                    }}
                   >
                     <ObjectCard
                       target={target}
