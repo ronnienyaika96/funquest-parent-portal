@@ -574,8 +574,8 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="w-full flex flex-col items-center gap-10 px-4"
-            style={{ maxWidth: 980 }}
+            className="w-full flex flex-col items-center gap-8 px-4"
+            style={{ maxWidth: 780 }}
           >
             {/* Order rows so 9 appears on top, 10 below */}
             {[9, 10].map((n) => {
@@ -590,20 +590,29 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
               return (
                 <div
                   key={target.id}
-                  className="w-full flex items-center justify-center"
-                  style={{ gap: 50 }}
+                  className="w-full flex items-center justify-center gap-6 sm:gap-10"
                 >
                   {/* Number tile */}
-                  <div
-                    className="flex-shrink-0"
-                    style={{ width: 'clamp(160px, 20vw, 220px)' }}
-                  >
+                  <div className="flex-shrink-0" style={{ width: 180, height: 180 }}>
                     <DraggableItem
                       item={draggable}
                       isMatched={matched}
                       isDragging={activeId === draggable.id}
                     />
                   </div>
+
+                  {/* Arrow */}
+                  <motion.div
+                    animate={{ x: [0, 8, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
+                    className="flex-shrink-0 hidden sm:flex"
+                  >
+                    <ArrowRight
+                      className="w-10 h-10 md:w-12 md:h-12"
+                      style={{ color: 'rgba(255,255,255,0.8)' }}
+                      strokeWidth={2.5}
+                    />
+                  </motion.div>
 
                   {/* Object card */}
                   <motion.div
@@ -615,10 +624,6 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
                         : {}
                     }
                     className="flex-shrink-0"
-                    style={{
-                      width: 'min(700px, 60vw)',
-                      minWidth: 380,
-                    }}
                   >
                     <ObjectCard
                       target={target}
