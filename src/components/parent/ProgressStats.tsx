@@ -29,6 +29,8 @@ interface ProgressStatsProps {
 }
 
 const ProgressStats = ({ childId, childName }: ProgressStatsProps) => {
+  const navigate = useNavigate();
+  const displayName = capitalize(childName) || 'your child';
   const { data: progressData, isLoading } = useQuery({
     queryKey: ['tracing-progress-stats', childId],
     queryFn: async () => {
