@@ -1,14 +1,18 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Target, Star, Clock, TrendingUp, Flame, Gamepad2 } from 'lucide-react';
+import { Target, Star, Clock, TrendingUp, Flame, Gamepad2, Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import AlphabetProgressGrid from './AlphabetProgressGrid';
 import ActivityBreakdownTabs from './ActivityBreakdownTabs';
 import AchievementsPanel from './AchievementsPanel';
 import LearningInsights from './LearningInsights';
 import ContinueLearningCard from './ContinueLearningCard';
 import WeeklyPracticeChart from './WeeklyPracticeChart';
+
+const capitalize = (s?: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '');
 
 interface ProgressItem {
   id: string;
@@ -25,6 +29,8 @@ interface ProgressStatsProps {
 }
 
 const ProgressStats = ({ childId, childName }: ProgressStatsProps) => {
+  const navigate = useNavigate();
+  const displayName = capitalize(childName) || 'your child';
   const { data: progressData, isLoading } = useQuery({
     queryKey: ['tracing-progress-stats', childId],
     queryFn: async () => {
@@ -74,12 +80,12 @@ const ProgressStats = ({ childId, childName }: ProgressStatsProps) => {
 
   // Color-coded stat cards: Letters=blue, Numbers=orange, Games=purple, Stories=green
   const statCards = [
-    { label: 'Letters Learned', value: `${completedLetters}/26`, icon: Target, bgColor: 'bg-blue-100', textColor: 'text-blue-600', emoji: '🔤', progress: completedLetters / 26 },
-    { label: 'Numbers Done', value: '0/10', icon: Star, bgColor: 'bg-orange-100', textColor: 'text-orange-600', emoji: '🔢', progress: 0 },
-    { label: 'Practice Sessions', value: totalAttempts, icon: Clock, bgColor: 'bg-purple-100', textColor: 'text-purple-600', emoji: '📚', progress: Math.min(totalAttempts / 50, 1) },
-    { label: 'Current Streak', value: `${currentStreak} day${currentStreak !== 1 ? 's' : ''}`, icon: Flame, bgColor: 'bg-orange-100', textColor: 'text-orange-600', emoji: '🔥', progress: Math.min(currentStreak / 7, 1) },
-    { label: 'Average Score', value: `${avgScore}%`, icon: TrendingUp, bgColor: 'bg-blue-100', textColor: 'text-blue-600', emoji: '⭐', progress: avgScore / 100 },
-    { label: 'Last Activity', value: lastActivity ? `Letter ${lastActivity.letter.toUpperCase()}` : 'None', icon: Gamepad2, bgColor: 'bg-purple-100', textColor: 'text-purple-600', emoji: '🎮', progress: null },
+    { label: 'Letters Learned', value: `${completedLetters}/26`, icon: Target, bgColor: 'bg-blue-100', textColor: 'text-blue-600', progress: completedLetters / 26 },
+    { label: 'Numbers Done', value: '0/10', icon: Star, bgColor: 'bg-orange-100', textColor: 'text-orange-600', progress: 0 },
+    { label: 'Practice Sessions', value: totalAttempts, icon: Clock, bgColor: 'bg-purple-100', textColor: 'text-purple-600', progress: Math.min(totalAttempts / 50, 1) },
+    { label: 'Current Streak', value: currentStreak > 0 ? `${currentStreak} day${currentStreak !== 1 ? 's' : ''}` : 'Ready to play!', icon: Flame, bgColor: 'bg-orange-100', textColor: 'text-orange-600', progress: Math.min(currentStreak / 7, 1) },
+    { label: 'Average Score', value: totalAttempts > 0 ? `${avgScore}%` : '—', icon: TrendingUp, bgColor: 'bg-blue-100', textColor: 'text-blue-600', progress: avgScore / 100 },
+    { label: 'Last Activity', value: lastActivity ? `Letter ${lastActivity.letter.toUpperCase()}` : 'No sessions yet this week', icon: Gamepad2, bgColor: 'bg-purple-100', textColor: 'text-purple-600', progress: null },
   ];
 
   if (isLoading) {
@@ -110,10 +116,9 @@ const ProgressStats = ({ childId, childName }: ProgressStatsProps) => {
             className="bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-lg transition-shadow"
           >
             <div className="flex items-center gap-2 mb-2">
-              <div className={`w-9 h-9 rounded-xl ${stat.bgColor} ${stat.textColor} flex items-center justify-center`}>
-                <stat.icon className="w-4 h-4" />
+              <div className={`w-10 h-10 rounded-xl ${stat.bgColor} ${stat.textColor} flex items-center justify-center`}>
+                <stat.icon className="w-5 h-5" />
               </div>
-              <span className="text-lg">{stat.emoji}</span>
             </div>
             <AnimatePresence mode="wait">
               <motion.p
@@ -155,11 +160,11 @@ const ProgressStats = ({ childId, childName }: ProgressStatsProps) => {
         >
           <p className="text-sm text-gray-700 font-medium">
             {completedLetters < 5
-              ? `🌱 Great start! ${childName || 'Your child'} is building a strong foundation!`
+              ? `🌱 Great start! ${displayName} is building a strong foundation!`
               : completedLetters < 13
               ? `🚀 Awesome progress! Almost halfway through the alphabet!`
               : completedLetters < 26
-              ? `🔥 Incredible! ${childName || 'Your child'} is an alphabet superstar!`
+              ? `🔥 Incredible! ${displayName} is an alphabet superstar!`
               : `🎉 WOW! The entire alphabet is mastered! Time to celebrate!`}
           </p>
         </motion.div>
@@ -174,7 +179,7 @@ const ProgressStats = ({ childId, childName }: ProgressStatsProps) => {
         totalAttempts={totalAttempts}
         avgScore={avgScore}
         currentStreak={currentStreak}
-        childName={childName}
+        childName={displayName}
       />
 
       {/* Alphabet Progress Grid */}
@@ -193,7 +198,7 @@ const ProgressStats = ({ childId, childName }: ProgressStatsProps) => {
         completedLetters={completedLetters}
         totalAttempts={totalAttempts}
         currentStreak={currentStreak}
-        childName={childName}
+        childName={displayName}
       />
 
       {/* Recent Activity */}
@@ -229,10 +234,17 @@ const ProgressStats = ({ childId, childName }: ProgressStatsProps) => {
             ))}
           </div>
         ) : (
-          <div className="text-center py-8 text-gray-400">
-            <Target className="w-12 h-12 mx-auto mb-2 opacity-50" />
-            <p>No learning data yet</p>
-            <p className="text-sm">Start playing games to track progress!</p>
+          <div className="text-center py-8">
+            <Target className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+            <p className="text-gray-500 font-medium">No learning data yet</p>
+            <p className="text-sm text-gray-400 mb-5">Start playing games to track progress!</p>
+            <Button
+              onClick={() => navigate('/activities')}
+              className="rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-semibold px-5"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              Hand device to {displayName} to start learning
+            </Button>
           </div>
         )}
       </motion.div>

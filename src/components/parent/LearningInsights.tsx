@@ -35,8 +35,19 @@ const LearningInsights = ({ completedLetters, totalAttempts, avgScore, currentSt
     insights.push({ icon: '🚀', text: `Great progress on letters! ${completedLetters}/26 mastered so far.`, type: 'neutral' });
   }
 
+  const displayName = childName && childName !== 'Your child'
+    ? childName.charAt(0).toUpperCase() + childName.slice(1)
+    : 'Your child';
+  const pronoun = displayName === 'Your child' ? 'They' : 'She';
   const strengthArea = avgScore >= 70 ? 'Letter Recognition' : 'Tracing Practice';
   const focusArea = completedLetters < 13 ? 'Alphabet Completion' : 'Number Practice';
+
+  const strengthTip = avgScore >= 70
+    ? `${pronoun}'s recognizing letters quickly — try a timed round to challenge her.`
+    : `${pronoun}'s doing great! Consider letting her try drawing freehand today.`;
+  const focusTip = completedLetters < 13
+    ? `${pronoun} hasn't practiced letters T–Z yet. Try encouraging a quick session tonight.`
+    : `Numbers are the next milestone. A 5-minute counting game tonight would help.`;
 
   return (
     <motion.div
@@ -51,7 +62,7 @@ const LearningInsights = ({ completedLetters, totalAttempts, avgScore, currentSt
         </div>
         <div>
           <h3 className="text-lg font-bold text-gray-800">Learning Insights</h3>
-          <p className="text-sm text-gray-500">Performance summary for {childName}</p>
+          <p className="text-sm text-gray-500">Performance summary for {displayName}</p>
         </div>
       </div>
 
@@ -63,6 +74,7 @@ const LearningInsights = ({ completedLetters, totalAttempts, avgScore, currentSt
             <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wide">Strength</span>
           </div>
           <p className="text-sm font-bold text-gray-800">{strengthArea}</p>
+          <p className="text-xs text-emerald-700/80 mt-1.5 leading-snug">{strengthTip}</p>
         </div>
         <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4">
           <div className="flex items-center gap-2 mb-1">
@@ -70,6 +82,7 @@ const LearningInsights = ({ completedLetters, totalAttempts, avgScore, currentSt
             <span className="text-xs font-semibold text-amber-700 uppercase tracking-wide">Focus Area</span>
           </div>
           <p className="text-sm font-bold text-gray-800">{focusArea}</p>
+          <p className="text-xs text-amber-700/80 mt-1.5 leading-snug">{focusTip}</p>
         </div>
       </div>
 
