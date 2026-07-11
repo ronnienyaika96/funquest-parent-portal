@@ -179,7 +179,7 @@ const ProgressStats = ({ childId, childName }: ProgressStatsProps) => {
         totalAttempts={totalAttempts}
         avgScore={avgScore}
         currentStreak={currentStreak}
-        childName={childName}
+        childName={displayName}
       />
 
       {/* Alphabet Progress Grid */}
