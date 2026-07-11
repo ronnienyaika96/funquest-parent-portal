@@ -35,8 +35,19 @@ const LearningInsights = ({ completedLetters, totalAttempts, avgScore, currentSt
     insights.push({ icon: '🚀', text: `Great progress on letters! ${completedLetters}/26 mastered so far.`, type: 'neutral' });
   }
 
+  const displayName = childName && childName !== 'Your child'
+    ? childName.charAt(0).toUpperCase() + childName.slice(1)
+    : 'Your child';
+  const pronoun = displayName === 'Your child' ? 'They' : 'She';
   const strengthArea = avgScore >= 70 ? 'Letter Recognition' : 'Tracing Practice';
   const focusArea = completedLetters < 13 ? 'Alphabet Completion' : 'Number Practice';
+
+  const strengthTip = avgScore >= 70
+    ? `${pronoun}'s recognizing letters quickly — try a timed round to challenge her.`
+    : `${pronoun}'s doing great! Consider letting her try drawing freehand today.`;
+  const focusTip = completedLetters < 13
+    ? `${pronoun} hasn't practiced letters T–Z yet. Try encouraging a quick session tonight.`
+    : `Numbers are the next milestone. A 5-minute counting game tonight would help.`;
 
   return (
     <motion.div
