@@ -623,57 +623,66 @@ const NumberTracingGame: React.FC<Props> = ({ step, onSuccess }) => {
       </div>
 
       {/* Action buttons */}
-      <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-center">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={goPrev}
-          disabled={index === 0}
-          className="rounded-full w-11 h-11 border-2"
-          aria-label="Previous number"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </Button>
+      <div className="w-full max-w-[520px] flex flex-col gap-3 px-2">
+        {/* Primary row: Try Again + Next — large touch targets, fixed below canvas */}
+        <div className="grid grid-cols-2 gap-3">
+          <Button
+            variant="outline"
+            onClick={handleRetry}
+            className="rounded-2xl border-2 font-bold gap-2 text-base"
+            style={{ minHeight: 64 }}
+          >
+            <RotateCcw className="w-5 h-5" />
+            Try Again
+          </Button>
+          <Button
+            onClick={goNext}
+            disabled={!completed}
+            className="rounded-2xl font-bold gap-2 text-base shadow-medium disabled:opacity-50 bg-gradient-to-r from-funquest-blue to-funquest-purple text-white hover:opacity-90"
+            style={{ minHeight: 64 }}
+          >
+            {index < (available.length - 1) ? 'Next' : 'Finish'}
+            <ArrowRight className="w-5 h-5" />
+          </Button>
+        </div>
 
-        <Button
-          variant="outline"
-          onClick={handleRetry}
-          className="rounded-full px-5 h-11 border-2 font-semibold gap-2"
-        >
-          <RotateCcw className="w-4 h-4" />
-          Try Again
-        </Button>
-
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => speak(`Trace the number ${number}`)}
-          className="rounded-full w-11 h-11 border-2"
-          aria-label="Hear instruction"
-        >
-          <Volume2 className="w-5 h-5" />
-        </Button>
-
-        <Button
-          onClick={goNext}
-          disabled={!completed}
-          className="rounded-full px-6 h-11 font-semibold gap-2 shadow-medium disabled:opacity-50 bg-gradient-to-r from-funquest-blue to-funquest-purple text-white hover:opacity-90"
-        >
-          {index < (available.length - 1) ? 'Next' : 'Finish'}
-          <ArrowRight className="w-4 h-4" />
-        </Button>
-
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => available && index < available.length - 1 && setIndex(i => i + 1)}
-          disabled={index >= available.length - 1}
-          className="rounded-full w-11 h-11 border-2"
-          aria-label="Skip"
-        >
-          <ChevronRight className="w-5 h-5" />
-        </Button>
+        {/* Secondary row: prev / audio / skip */}
+        <div className="flex items-center justify-center gap-3">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={goPrev}
+            disabled={index === 0}
+            className="rounded-full border-2"
+            style={{ width: 52, height: 52 }}
+            aria-label="Previous number"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => speak(`Trace the number ${number}`)}
+            className="rounded-full border-2"
+            style={{ width: 52, height: 52 }}
+            aria-label="Hear instruction"
+          >
+            <Volume2 className="w-5 h-5" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => available && index < available.length - 1 && setIndex(i => i + 1)}
+            disabled={index >= available.length - 1}
+            className="rounded-full border-2"
+            style={{ width: 52, height: 52 }}
+            aria-label="Skip"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </Button>
+        </div>
       </div>
+
     </div>
   );
 };
