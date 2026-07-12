@@ -574,7 +574,7 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="w-full flex flex-col items-center gap-8 px-4"
+            className="w-full flex flex-col items-center gap-5 sm:gap-8 px-3 sm:px-4"
             style={{ maxWidth: 780 }}
           >
             {/* Order rows so 9 appears on top, 10 below */}
@@ -590,10 +590,13 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
               return (
                 <div
                   key={target.id}
-                  className="w-full flex items-center justify-center gap-6 sm:gap-10"
+                  className="w-full flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-10"
                 >
-                  {/* Number tile */}
-                  <div className="flex-shrink-0" style={{ width: 180, height: 180 }}>
+                  {/* Number tile — 80px+ touch target, scales up on larger screens */}
+                  <div
+                    className="flex-shrink-0"
+                    style={{ width: 'clamp(110px, 32vw, 180px)', height: 'clamp(110px, 32vw, 180px)' }}
+                  >
                     <DraggableItem
                       item={draggable}
                       isMatched={matched}
@@ -640,10 +643,53 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="w-full px-[3%] overflow-visible"
+          className="w-full px-3 sm:px-[3%] overflow-visible"
         >
+          {/* MOBILE-FIRST: draggables in a horizontal row up top, targets in a 2-col grid below.
+              At sm+ we keep the original paired-row layout for larger screens. */}
+
+          {/* Mobile layout (< sm) */}
+          <div className="sm:hidden flex flex-col items-center gap-5 w-full">
+            {/* Draggables row — horizontal, scrolls if too many, min 80x80 tap targets */}
+            <div className="w-full overflow-x-auto -mx-3 px-3 pb-1">
+              <div className="flex items-center justify-center gap-3 min-w-max mx-auto">
+                {draggables.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex-shrink-0"
+                    style={{ width: 96, height: 96 }}
+                  >
+                    <DraggableItem
+                      item={item}
+                      isMatched={matchedDraggableIds.has(item.id)}
+                      isDragging={activeId === item.id}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Targets — 2-column grid, equal-size cards */}
+            <div className="w-full grid grid-cols-2 gap-4">
+              {targets.map((target) => (
+                <motion.div
+                  key={target.id}
+                  className="w-full"
+                  style={{ minHeight: 150 }}
+                  animate={wrongTarget === target.id ? { x: [0, -6, 6, -3, 3, 0] } : {}}
+                >
+                  <DroppableTarget
+                    target={target}
+                    matchedItem={matches[target.id] ? draggables.find(d => d.id === matches[target.id]) || null : null}
+                  />
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* Desktop / tablet layout (>= sm) — original paired rows */}
+          <div className="hidden sm:block">
           {(() => {
-            // Pair draggables with targets row by row (2 pairs per row)
             const pairsPerRow = 2;
             const rows: { draggables: typeof draggables; targets: typeof targets }[] = [];
             const totalRows = Math.ceil(Math.max(draggables.length, targets.length) / pairsPerRow);
@@ -706,9 +752,11 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
               </div>
             ));
           })()}
+          </div>
 
         </motion.div>
         )}
+
 
 
         {/* Drag overlay */}
