@@ -394,8 +394,8 @@ const NumberTracingGame: React.FC<Props> = ({ step, onSuccess }) => {
         style={{
           width: CANVAS,
           height: CANVAS,
-          maxWidth: '92vw',
-          maxHeight: '92vw',
+          maxWidth: 'min(80vw, 520px)',
+          maxHeight: 'min(80vw, 520px)',
           aspectRatio: '1 / 1',
           borderRadius: 36,
           background:
