@@ -127,6 +127,25 @@ const ActivitiesPage = () => {
     return data.publicUrl;
   };
 
+  const ACCENTS = [
+    'bg-funquest-purple',
+    'bg-funquest-green',
+    'bg-funquest-orange',
+    'bg-funquest-blue',
+    'bg-funquest-pink',
+    'bg-funquest-turquoise',
+  ];
+
+  const typeSubtitle = (type: string) => {
+    switch (type) {
+      case 'letter': return 'Learn letters A–Z';
+      case 'number': return 'Learn numbers 1–20';
+      case 'story': return 'Read and explore';
+      case 'word': return 'Build your vocabulary';
+      default: return 'Play and learn';
+    }
+  };
+
   const toGameCard = (activity: ActivityWithSteps, index: number) => {
     const config = getCategoryConfig(activity.type);
     const prog = progressMap[activity.id];
@@ -136,13 +155,16 @@ const ActivitiesPage = () => {
     return {
       id: activity.id,
       title: activity.title,
+      subtitle: typeSubtitle(activity.type),
       emoji: config.emoji,
-      color: `bg-gradient-to-br ${config.gradient}`,
+      color: config.gradient,
+      accent: ACCENTS[index % ACCENTS.length],
       progress: progressPct,
       isNew: !prog,
       thumbnail: getThumbnailUrl(activity.title, activity.type),
     };
   };
+
 
   const handleGameClick = (activityId: string) => {
     const params = selectedChildId ? `?childId=${selectedChildId}` : '';
