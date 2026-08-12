@@ -18,7 +18,7 @@ import { getLetterAsset } from '@/lib/letterAssets';
 import { getNumberAsset } from '@/lib/numberAssets';
 import { getGameAssetUrl } from '@/lib/funquest-assets';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, RotateCcw, ArrowRight } from 'lucide-react';
+import { CheckCircle, RotateCcw, ArrowRight, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import FeedbackOverlay from './FeedbackOverlay';
 
