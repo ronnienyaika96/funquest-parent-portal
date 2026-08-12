@@ -590,18 +590,22 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
   const draggableBgUrl = getChoiceAssetByState('default');
   const cloudBgUrl = getGameAssetUrl('UI background/cloud background.png');
 
-  // Detect final "9 & 10" stage → premium row-based layout
-  const isFinalNineTen =
-    isNumberMatch &&
-    targets.length === 2 &&
-    targets.every((t) => t.quantity === 9 || t.quantity === 10) &&
-    targets.some((t) => t.quantity === 9) &&
-    targets.some((t) => t.quantity === 10);
-
+  const speakInstruction = () => {
+    if (instructionAudio) {
+      new Audio(getAssetUrl(instructionAudio)).play().catch(() => {});
+      return;
+    }
+    try {
+      const u = new SpeechSynthesisUtterance(instruction);
+      u.rate = 0.9;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(u);
+    } catch { /* no-op */ }
+  };
 
   return (
     <div
-      className="flex flex-col items-center w-full min-h-screen overflow-visible"
+      className="flex flex-col items-center w-full min-h-screen overflow-visible pb-8"
       style={{
         backgroundImage: cloudBgUrl ? `url(${cloudBgUrl})` : undefined,
         backgroundSize: 'cover',
@@ -615,35 +619,27 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
         animate={{ opacity: 1, y: 0 }}
         className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white text-center tracking-wide mt-4 mb-2"
         style={{
-          textShadow: '0 2px 8px rgba(0,0,0,0.12)',
+          textShadow: '0 3px 10px rgba(30,64,175,0.35)',
           fontFamily: "'Nunito', 'Comic Sans MS', cursive, sans-serif",
         }}
       >
-        {isNumberMatch ? 'Match the Numbers' : 'Match Letters'}
+        {isNumberMatch ? 'Number Matching' : 'Match Letters'}
       </motion.h1>
-      {isFinalNineTen && (
-        <p
-          className="text-white/90 text-center text-sm sm:text-base md:text-lg -mt-1 mb-3"
-          style={{ fontFamily: "'Nunito', sans-serif" }}
-        >
-          Count the objects and drag the correct number.
-        </p>
-      )}
 
-
-      {/* Instruction bar */}
+      {/* Instruction pill */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.1 }}
-        className="w-full max-w-3xl rounded-full px-8 py-3 mb-6 flex items-center justify-center"
+        className="rounded-full px-6 py-2.5 mb-5 mx-4 flex items-center justify-center max-w-[92vw]"
         style={{
-          background: 'rgba(173, 216, 240, 0.55)',
-          backdropFilter: 'blur(6px)',
+          background: 'rgba(255,255,255,0.9)',
+          boxShadow: '0 8px 20px -10px rgba(30,64,175,0.5)',
+          border: '2px solid rgba(147,197,253,0.6)',
         }}
       >
         <p
-          className="text-center text-base sm:text-lg md:text-xl font-bold"
+          className="text-center text-base sm:text-lg font-extrabold"
           style={{ color: '#2C5F7C', fontFamily: "'Nunito', sans-serif" }}
         >
           {instruction}
@@ -651,56 +647,49 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
       </motion.div>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-        {isFinalNineTen ? (
+        {isNumberMatch ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="w-full flex flex-col items-center gap-5 sm:gap-8 px-3 sm:px-4"
-            style={{ maxWidth: 780 }}
+            className="w-full flex flex-col items-center gap-4 px-4"
+            style={{ maxWidth: 480 }}
           >
-            {/* Order rows so 9 appears on top, 10 below */}
-            {[9, 10].map((n) => {
-              const target = targets.find((t) => t.quantity === n)!;
-              const draggable = draggables.find((d) =>
-                target.accepts.includes(d.id),
-              );
-              if (!target || !draggable) return null;
-              const matched = !!matches[target.id];
-              const cols = n === 9 ? 3 : 5;
+            {/* Number tiles row */}
+            <div className="w-full flex items-center justify-center gap-4 flex-wrap">
+              {draggables.map((item, i) => (
+                <NumberTile
+                  key={item.id}
+                  item={item}
+                  matched={matchedDraggableIds.has(item.id)}
+                  dragging={activeId === item.id}
+                  color={['#2563EB', '#F97316', '#7C3AED', '#DB2777'][i % 4]}
+                />
+              ))}
+            </div>
 
-              return (
-                <div
-                  key={target.id}
-                  className="w-full flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-10"
-                >
-                  {/* Number tile — 80px+ touch target, scales up on larger screens */}
-                  <div
-                    className="flex-shrink-0"
-                    style={{ width: 'clamp(110px, 32vw, 180px)', height: 'clamp(110px, 32vw, 180px)' }}
-                  >
-                    <DraggableItem
-                      item={draggable}
-                      isMatched={matched}
-                      isDragging={activeId === draggable.id}
-                    />
-                  </div>
+            {/* Down arrow hint */}
+            <motion.div
+              animate={{ y: [0, 7, 0] }}
+              transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}
+              className="flex items-center justify-center"
+            >
+              <ArrowRight
+                className="w-8 h-8 rotate-90"
+                style={{ color: 'rgba(255,255,255,0.9)' }}
+                strokeWidth={3}
+              />
+            </motion.div>
 
-                  {/* Arrow */}
+            {/* Object cards stacked vertically */}
+            <div className="w-full flex flex-col gap-4">
+              {targets.map((target) => {
+                const matched = !!matches[target.id];
+                const tone = LABEL_TONES[(target.quantity || 0) % LABEL_TONES.length];
+                return (
                   <motion.div
-                    animate={{ x: [0, 8, 0] }}
-                    transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
-                    className="flex-shrink-0 hidden sm:flex"
-                  >
-                    <ArrowRight
-                      className="w-10 h-10 md:w-12 md:h-12"
-                      style={{ color: 'rgba(255,255,255,0.8)' }}
-                      strokeWidth={2.5}
-                    />
-                  </motion.div>
-
-                  {/* Object card */}
-                  <motion.div
+                    key={target.id}
+                    className="w-full"
                     animate={
                       wrongTarget === target.id
                         ? { x: [0, -8, 8, -4, 4, 0] }
@@ -708,19 +697,47 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
                         ? { scale: [1, 1.03, 1] }
                         : {}
                     }
-                    className="flex-shrink-0"
                   >
-                    <ObjectCard
-                      target={target}
-                      cols={cols}
-                      matched={matched}
-                    />
+                    <ObjectCard target={target} matched={matched} tone={tone} />
                   </motion.div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+
+            {/* Bottom controls */}
+            <div className="w-full grid grid-cols-2 gap-3 mt-3">
+              <button
+                onClick={handleReset}
+                className="rounded-2xl font-extrabold flex items-center justify-center gap-2"
+                style={{
+                  height: 60,
+                  background: 'rgba(255,255,255,0.95)',
+                  color: '#2563EB',
+                  border: '2px solid rgba(147,197,253,0.8)',
+                  boxShadow: '0 10px 22px -12px rgba(30,64,175,0.6)',
+                  fontFamily: "'Nunito', sans-serif",
+                  fontSize: '1.05rem',
+                }}
+              >
+                <RotateCcw className="w-5 h-5" /> Try Again
+              </button>
+              <button
+                onClick={speakInstruction}
+                className="rounded-2xl font-extrabold flex items-center justify-center gap-2 text-white"
+                style={{
+                  height: 60,
+                  background: 'linear-gradient(135deg,#8B5CF6,#6D28D9)',
+                  boxShadow: '0 10px 22px -10px rgba(109,40,217,0.8)',
+                  fontFamily: "'Nunito', sans-serif",
+                  fontSize: '1.05rem',
+                }}
+              >
+                <Volume2 className="w-5 h-5" /> Read
+              </button>
+            </div>
           </motion.div>
         ) : (
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
