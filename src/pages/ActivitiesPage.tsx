@@ -227,38 +227,28 @@ const ActivitiesPage = () => {
           </div>
         ) : null}
 
-        {/* Welcome Banner */}
+        {/* Activities Banner */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="mx-4 sm:mx-6 mb-8"
+          className="mx-4 sm:mx-6 mb-6 text-center"
         >
-          <div className="bg-gradient-to-r from-funquest-purple via-funquest-pink to-funquest-orange rounded-3xl p-6 sm:p-8 shadow-strong relative overflow-hidden">
-            {/* Decorative */}
-            <div className="absolute top-3 right-6 w-16 h-16 bg-white/8 rounded-full blur-sm" />
-            <div className="absolute bottom-2 right-20 w-10 h-10 bg-white/6 rounded-full blur-sm" />
-            <div className="relative z-10 flex items-center gap-4">
-              <div className="hidden sm:flex w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-sm items-center justify-center flex-shrink-0">
-                <Sparkles className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-white text-2xl sm:text-3xl font-bold mb-1 drop-shadow-md" style={{ lineHeight: '1.2' }}>
-                  What shall we learn today?
-                </h1>
-                <p className="text-white/80 text-base sm:text-lg">Pick a game and start your adventure!</p>
-              </div>
-            </div>
+          <div className="inline-flex items-center gap-3 bg-gradient-to-r from-funquest-purple via-funquest-pink to-funquest-orange rounded-3xl px-7 py-4 shadow-strong">
+            <Sparkles className="w-7 h-7 text-primary-foreground drop-shadow" />
+            <h1 className="text-primary-foreground text-2xl sm:text-4xl font-extrabold drop-shadow-md tracking-tight">
+              Activities
+            </h1>
           </div>
+          <p className="mt-2 text-foreground/70 font-semibold">Play, learn and grow!</p>
         </motion.div>
 
         {/* Activities */}
         {activitiesLoading ? (
-          <div className="px-4 sm:px-6 space-y-6">
-            <Skeleton className="h-8 w-48 rounded-full" />
-            <div className="flex gap-4 overflow-hidden">
-              {[1, 2, 3].map(i => (
-                <Skeleton key={i} className="w-[200px] h-[240px] rounded-3xl flex-shrink-0" />
+          <div className="px-4 sm:px-6">
+            <div className="grid grid-cols-2 gap-4 max-w-3xl mx-auto">
+              {[1, 2, 3, 4].map(i => (
+                <Skeleton key={i} className="w-full h-[190px] rounded-3xl" />
               ))}
             </div>
           </div>
@@ -275,25 +265,35 @@ const ActivitiesPage = () => {
             <p className="text-muted-foreground">New learning adventures are coming soon.</p>
           </div>
         ) : (
-          <>
+          <div className="px-4 sm:px-6 max-w-3xl mx-auto space-y-8">
             {continuePlaying.length > 0 && (
-              <GameCarousel
-                title="Continue Playing"
-                titleEmoji="🎮"
-                games={continuePlaying.map(toGameCard)}
-                onGameClick={handleGameClick}
-              />
+              <section>
+                <h2 className="flex items-center gap-2 text-lg sm:text-xl font-extrabold text-foreground mb-3">
+                  <span className="text-2xl">🎮</span> Continue Playing
+                </h2>
+                <div className="grid grid-cols-2 gap-4">
+                  {continuePlaying.map(toGameCard).map((g, i) => (
+                    <ActivityTile key={g.id} {...g} index={i} onClick={() => handleGameClick(g.id)} />
+                  ))}
+                </div>
+              </section>
             )}
             {newAdventures.length > 0 && (
-              <GameCarousel
-                title={continuePlaying.length > 0 ? 'New Adventures' : 'All Adventures'}
-                titleEmoji="✨"
-                games={newAdventures.map(toGameCard)}
-                onGameClick={handleGameClick}
-              />
+              <section>
+                <h2 className="flex items-center gap-2 text-lg sm:text-xl font-extrabold text-foreground mb-3">
+                  <span className="text-2xl">✨</span>
+                  {continuePlaying.length > 0 ? 'New Adventures' : 'All Adventures'}
+                </h2>
+                <div className="grid grid-cols-2 gap-4">
+                  {newAdventures.map(toGameCard).map((g, i) => (
+                    <ActivityTile key={g.id} {...g} index={i} onClick={() => handleGameClick(g.id)} />
+                  ))}
+                </div>
+              </section>
             )}
-          </>
+          </div>
         )}
+
       </main>
 
       <LearningPathMap
