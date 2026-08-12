@@ -8,6 +8,8 @@ import { Loader2, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import KidsHeader from '@/components/kids/KidsHeader';
 import GameCarousel from '@/components/kids/GameCarousel';
+import ActivityTile from '@/components/kids/ActivityTile';
+
 import LearningPathMap from '@/components/kids/LearningPathMap';
 import ParentalGate from '@/components/kids/ParentalGate';
 import ChildSelector from '@/components/parent/ChildSelector';
