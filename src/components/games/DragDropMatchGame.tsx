@@ -281,49 +281,131 @@ function DroppableTarget({ target, matchedItem }: {
   );
 }
 
-/** Premium fixed-size object card used for the final 9 & 10 stage */
-function ObjectCard({
-  target,
-  cols,
-  matched,
-}: {
-  target: Target;
-  cols: number;
-  matched: boolean;
+/** Columns used to lay out N objects in a balanced grid (per design spec). */
+function gridColsForQuantity(n: number): number {
+  switch (n) {
+    case 1: return 1;
+    case 2: return 2;
+    case 3: return 3;
+    case 4: return 2;
+    case 5: return 3;
+    case 6: return 3;
+    case 7: return 4;
+    case 8: return 4;
+    case 9: return 3;
+    case 10: return 5;
+    default: return Math.min(5, Math.ceil(Math.sqrt(n)));
+  }
+}
+
+function objectSizeForQuantity(n: number): number {
+  if (n <= 4) return 64;
+  if (n <= 6) return 58;
+  if (n <= 8) return 52;
+  return 46;
+}
+
+const LABEL_TONES = [
+  { bg: '#DCFCE7', text: '#15803D', border: 'rgba(34,197,94,0.35)' },
+  { bg: '#FEF3C7', text: '#B45309', border: 'rgba(245,158,11,0.35)' },
+  { bg: '#DBEAFE', text: '#1D4ED8', border: 'rgba(59,130,246,0.35)' },
+  { bg: '#FCE7F3', text: '#BE185D', border: 'rgba(236,72,153,0.35)' },
+];
+
+/** Mobile-first draggable number tile (dashed light card + big colorful digit). */
+function NumberTile({ item, matched, dragging, color }: {
+  item: DraggableData; matched: boolean; dragging: boolean; color: string;
+}) {
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: item.id });
+  const numAsset = resolveContentAsset(item.label);
+
+  return (
+    <motion.div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      whileTap={!matched ? { scale: 0.94 } : {}}
+      style={{
+        transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
+        touchAction: 'none',
+        width: 'clamp(96px, 28vw, 120px)',
+        height: 'clamp(96px, 28vw, 120px)',
+        borderRadius: 24,
+        background: 'rgba(255,255,255,0.95)',
+        border: '3px dashed rgba(96,165,250,0.55)',
+        boxShadow: '0 10px 22px -10px rgba(30,64,175,0.45)',
+        opacity: dragging ? 0.35 : matched ? 0.45 : 1,
+      }}
+      className={`relative flex items-center justify-center select-none cursor-grab active:cursor-grabbing ${matched ? 'pointer-events-none' : ''}`}
+    >
+      {numAsset ? (
+        <img
+          src={numAsset}
+          alt={item.label}
+          className="object-contain pointer-events-none"
+          style={{ width: '68%', height: '68%' }}
+        />
+      ) : (
+        <span
+          className="pointer-events-none"
+          style={{
+            fontSize: 'clamp(3rem, 13vw, 4.25rem)',
+            fontWeight: 900,
+            color,
+            WebkitTextStroke: '3px white',
+            paintOrder: 'stroke fill',
+            fontFamily: "'Nunito', sans-serif",
+            lineHeight: 1,
+          }}
+        >
+          {item.label}
+        </span>
+      )}
+      {matched && (
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute -top-2 -right-2">
+          <CheckCircle className="w-7 h-7 text-emerald-500 fill-white drop-shadow" />
+        </motion.div>
+      )}
+    </motion.div>
+  );
+}
+
+/** Mobile object card: balanced object grid + pill label. Acts as a drop target. */
+function ObjectCard({ target, matched, tone }: {
+  target: Target; matched: boolean; tone: typeof LABEL_TONES[number];
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: target.id });
   const n = target.quantity || 0;
   const objectName = target.objectName || 'apple';
+  const cols = gridColsForQuantity(n);
+  const size = objectSizeForQuantity(n);
 
   return (
     <motion.div
       ref={setNodeRef}
       animate={isOver ? { scale: 1.02 } : { scale: 1 }}
-      className="relative rounded-3xl flex flex-col items-center justify-between"
+      className="relative w-full flex flex-col items-center justify-center"
       style={{
-        width: 260,
-        height: 260,
-        background: matched
-          ? 'linear-gradient(135deg, rgba(220,252,231,0.95), rgba(187,247,208,0.95))'
-          : 'rgba(255,255,255,0.95)',
+        borderRadius: 26,
+        background: matched ? 'linear-gradient(135deg,#DCFCE7,#BBF7D0)' : '#FBFBF7',
         border: matched
           ? '3px solid #22c55e'
           : isOver
           ? '3px dashed #38bdf8'
-          : '2px solid rgba(148,163,184,0.35)',
+          : '2px solid rgba(148,163,184,0.28)',
         boxShadow: matched
-          ? '0 0 0 6px rgba(34,197,94,0.15), 0 12px 30px -12px rgba(34,197,94,0.45)'
-          : '0 10px 25px -12px rgba(30,64,175,0.25)',
-        padding: '18px 18px 16px',
-        transition: 'background 0.25s, border-color 0.25s, box-shadow 0.25s',
+          ? '0 0 0 6px rgba(34,197,94,0.16), 0 14px 30px -14px rgba(34,197,94,0.5)'
+          : '0 12px 26px -14px rgba(30,64,175,0.35)',
+        padding: '16px 14px 14px',
+        minHeight: 170,
+        transition: 'background .25s, border-color .25s, box-shadow .25s',
       }}
     >
-      {/* Object grid */}
       <div
-        className="grid mx-auto flex-1 w-full"
+        className="grid mx-auto"
         style={{
-          gridTemplateColumns: `repeat(${cols}, 1fr)`,
-          gap: 6,
+          gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+          gap: 8,
           justifyItems: 'center',
           alignItems: 'center',
         }}
@@ -337,22 +419,21 @@ function ObjectCard({
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: i * 0.04, type: 'spring', stiffness: 220, damping: 14 }}
             className="drop-shadow-md"
-            style={{ width: 56, height: 56, objectFit: 'contain' }}
+            style={{ width: size, height: size, objectFit: 'contain' }}
             onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
           />
         ))}
       </div>
 
-      {/* Pill label below grid */}
       <div
-        className="rounded-full px-4 py-1 shadow-sm mt-2"
+        className="rounded-full px-5 py-1.5 mt-3"
         style={{
-          background: matched ? '#22c55e' : 'white',
-          color: matched ? 'white' : '#1e3a8a',
-          border: matched ? 'none' : '1.5px solid rgba(59,130,246,0.35)',
+          background: matched ? '#22c55e' : tone.bg,
+          color: matched ? 'white' : tone.text,
+          border: `1.5px solid ${matched ? 'transparent' : tone.border}`,
           fontFamily: "'Nunito', sans-serif",
           fontWeight: 800,
-          fontSize: '0.95rem',
+          fontSize: '1.05rem',
           whiteSpace: 'nowrap',
         }}
       >
@@ -371,6 +452,7 @@ function ObjectCard({
     </motion.div>
   );
 }
+
 
 
 const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }) => {
