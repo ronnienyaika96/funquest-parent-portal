@@ -5,6 +5,8 @@ import { Volume2 } from 'lucide-react';
 import { getChoiceAssetByState, TileState } from '@/lib/gameAssets';
 import { getInstructionText, resolveOptionAsset, extractLabel, choicesMatch } from '@/lib/gameHelpers';
 import { getGameAssetUrl } from '@/lib/funquest-assets';
+import { useIsMobile } from '@/hooks/use-mobile';
+
 
 interface TapIdentifyGameProps {
   step: any;
@@ -139,6 +141,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
 
   const instructionAudio = step.instruction_audio_url;
 
+  const isMobile = useIsMobile();
   const [selected, setSelected] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [reinforcement, setReinforcement] = useState<string | null>(null);
@@ -198,6 +201,235 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
   };
 
   const labelColors = ['#3B82F6', '#EC4899', '#22C55E', '#F59E0B', '#8B5CF6', '#EF4444'];
+
+  // ---------------- MOBILE LAYOUT ----------------
+  if (isMobile) {
+    const objCols =
+      !correctCount ? 1
+      : correctCount <= 3 ? correctCount
+      : correctCount === 4 ? 2
+      : correctCount <= 6 ? 3
+      : correctCount <= 9 ? 3
+      : 5;
+    const objSize = correctCount && correctCount >= 9 ? 58 : correctCount && correctCount >= 5 ? 68 : 82;
+    const answerCols = options.length === 3 ? 3 : options.length <= 4 ? 2 : 2;
+
+    return (
+      <div className="relative w-full flex flex-col items-center overflow-hidden px-3 pt-2 pb-3"
+        style={{ minHeight: 'calc(100vh - 64px)' }}>
+        <Cloud className="w-40 h-12 top-[4%] left-[-4%] blur-lg rounded-[50px]" />
+        <Cloud className="w-44 h-12 top-[2%] right-[-6%] blur-lg rounded-[50px]" />
+
+        <div className="relative z-10 flex flex-col items-center w-full gap-0">
+          {/* Title */}
+          <motion.h1
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center font-extrabold text-white mt-3"
+            style={{
+              fontSize: 'clamp(30px, 8.4vw, 34px)',
+              lineHeight: 1.1,
+              textShadow: '0 2px 6px rgba(0,0,0,0.18)',
+              fontFamily: "'Nunito', 'Comic Sans MS', cursive, sans-serif",
+            }}
+          >
+            Tap to Identify
+          </motion.h1>
+
+          {/* Instruction pill */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.08 }}
+            className="rounded-full px-4 py-2 flex items-center justify-center gap-2 mt-2.5"
+            style={{
+              background: 'rgba(255,255,255,0.78)',
+              backdropFilter: 'blur(6px)',
+              width: '84%',
+            }}
+          >
+            <p className="text-center font-bold leading-snug"
+              style={{ color: '#2C5F7C', fontSize: 'clamp(16px, 4.4vw, 18px)', fontFamily: "'Nunito', sans-serif" }}>
+              {isLetterMode && showResult && isCorrect && phonicsWord
+                ? `${currentLetter.toUpperCase()} is for ${phonicsWord}`
+                : question}
+            </p>
+            {instructionAudio && (
+              <button onClick={playAudio}
+                className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center active:scale-90"
+                style={{ background: 'rgba(173,216,240,0.7)' }}>
+                <Volume2 className="w-4 h-4" style={{ color: '#2C5F7C' }} />
+              </button>
+            )}
+          </motion.div>
+
+          {/* Object counting area */}
+          {isCountingMode && correctCount && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.94 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.12 }}
+              className="grid mt-5 rounded-3xl px-3 py-3"
+              style={{
+                gridTemplateColumns: `repeat(${objCols}, ${objSize}px)`,
+                gap: '8px',
+                justifyItems: 'center',
+                alignItems: 'center',
+                background: 'rgba(255,255,255,0.72)',
+                maxWidth: '94%',
+              }}
+            >
+              {Array.from({ length: correctCount }).map((_, i) => (
+                <motion.div key={i}
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.12 + i * 0.04 }}
+                  className="flex items-center justify-center"
+                  style={{ width: objSize, height: objSize }}>
+                  {countingImage ? (
+                    <img
+                      src={countingImage.startsWith('http') ? countingImage : getAssetUrl(countingImage)}
+                      alt={objectType || ''}
+                      className="w-full h-full object-contain drop-shadow-md"
+                      draggable={false}
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden'; }}
+                    />
+                  ) : (
+                    <span className="text-4xl">⭐</span>
+                  )}
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+
+          {/* Phonics image */}
+          {isLetterMode && phonicsImage && !hidePhonicsImage && (
+            <motion.div
+              key={currentLetter}
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ type: 'spring', stiffness: 220, damping: 16, delay: 0.12 }}
+              className="flex items-center justify-center mt-5 rounded-3xl p-3"
+              style={{ background: 'rgba(255,255,255,0.72)' }}
+            >
+              <img src={phonicsImage} alt={phonicsWord || ''}
+                style={{ width: 'clamp(130px, 42vw, 170px)', height: 'auto' }}
+                className="object-contain" draggable={false}
+                onError={() => setHidePhonicsImage(true)} />
+            </motion.div>
+          )}
+
+          {/* Prompt image */}
+          {!isCountingMode && !isLetterMode && data.image && (
+            <div className="flex items-center justify-center mt-5">
+              <img src={getAssetUrl(data.image)} alt="Question prompt"
+                className="max-w-[80%] max-h-[150px] object-contain drop-shadow-lg" />
+            </div>
+          )}
+
+          {/* Answer tiles */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.18 }}
+            className="grid mt-6 mb-3"
+            style={{
+              gridTemplateColumns: `repeat(${answerCols}, clamp(88px, 27vw, 112px))`,
+              gap: '14px',
+              justifyContent: 'center',
+            }}
+          >
+            {options.map((opt, i) => {
+              const state = getTileState(i);
+              const tileBg = tileUrls[state];
+              const isThisSelected = selected === i;
+              const isThisCorrect = showResult && isThisSelected && opt.correct;
+              const isThisWrong = showResult && isThisSelected && !opt.correct;
+              const assetUrl = opt.image ? getAssetUrl(opt.image) : resolveOptionAsset(opt.label);
+
+              return (
+                <motion.button
+                  key={i}
+                  whileTap={{ scale: 0.92 }}
+                  animate={
+                    isThisCorrect
+                      ? { scale: [1, 1.14, 1.04], transition: { duration: 0.4 } }
+                      : isThisWrong
+                      ? { x: [0, -7, 7, -4, 4, 0], transition: { duration: 0.4 } }
+                      : {}
+                  }
+                  onClick={() => handleTap(i)}
+                  className="relative focus:outline-none rounded-2xl"
+                  style={{
+                    width: 'clamp(88px, 27vw, 112px)',
+                    height: 'clamp(88px, 27vw, 112px)',
+                    flexShrink: 0,
+                    opacity: showResult && !isThisSelected ? 0.45 : 1,
+                    boxShadow: isThisCorrect ? '0 0 0 4px rgba(52,211,153,0.6)' : 'none',
+                    transition: 'opacity 0.3s ease',
+                  }}
+                >
+                  <img src={tileBg} alt="" draggable={false}
+                    className="absolute inset-0 w-full h-full object-cover pointer-events-none rounded-2xl" />
+                  <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 2 }}>
+                    {assetUrl ? (
+                      <img src={assetUrl} alt={opt.label}
+                        className="object-contain drop-shadow-md"
+                        style={{ width: '78%', height: '78%' }} />
+                    ) : (
+                      <span className="font-extrabold select-none"
+                        style={{
+                          fontSize: 'clamp(2.4rem, 13vw, 3.4rem)',
+                          color: labelColors[i % labelColors.length],
+                          fontFamily: "'Nunito', 'Comic Sans MS', cursive, sans-serif",
+                        }}>
+                        {opt.label}
+                      </span>
+                    )}
+                  </div>
+                </motion.button>
+              );
+            })}
+          </motion.div>
+
+          {/* Thin decorative strip */}
+          <div className="w-full rounded-full"
+            style={{ height: '12px', background: 'linear-gradient(180deg, #4A8DBF 0%, #3A6F9A 100%)' }} />
+
+          {/* Feedback */}
+          <AnimatePresence mode="wait">
+            {reinforcement && (
+              <motion.div
+                key={reinforcement}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="w-full flex flex-col items-center mt-3"
+              >
+                <div className="rounded-2xl px-5 py-3 text-center"
+                  style={{
+                    width: '90%',
+                    background: isCorrect
+                      ? 'linear-gradient(135deg, #34D399, #10B981)'
+                      : 'linear-gradient(135deg, #3B82F6, #2563EB)',
+                  }}>
+                  <p className="text-base font-extrabold text-white"
+                    style={{ fontFamily: "'Nunito', sans-serif" }}>{reinforcement}</p>
+                </div>
+                {showResult && !isCorrect && (
+                  <button onClick={handleRetry}
+                    className="mt-2 px-7 py-2 rounded-full bg-white/90 font-bold text-sm shadow-md active:scale-95"
+                    style={{ color: '#2C5F7C', fontFamily: "'Nunito', sans-serif" }}>
+                    Try Again
+                  </button>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
