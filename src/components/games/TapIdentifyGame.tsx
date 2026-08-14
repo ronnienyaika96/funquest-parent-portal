@@ -141,6 +141,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
 
   const instructionAudio = step.instruction_audio_url;
 
+  const isMobile = useIsMobile();
   const [selected, setSelected] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [reinforcement, setReinforcement] = useState<string | null>(null);
