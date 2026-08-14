@@ -334,7 +334,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
             transition={{ delay: 0.18 }}
             className="grid mt-6 mb-3"
             style={{
-              gridTemplateColumns: `repeat(${answerCols}, clamp(88px, 27vw, 112px))`,
+              gridTemplateColumns: `repeat(${answerCols}, 105px)`,
               gap: '14px',
               justifyContent: 'center',
             }}
@@ -361,9 +361,13 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
                   onClick={() => handleTap(i)}
                   className="relative focus:outline-none rounded-2xl"
                   style={{
-                    width: 'clamp(88px, 27vw, 112px)',
-                    height: 'clamp(88px, 27vw, 112px)',
+                    width: '105px',
+                    height: '105px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                     flexShrink: 0,
+                    aspectRatio: '1 / 1',
                     opacity: showResult && !isThisSelected ? 0.45 : 1,
                     boxShadow: isThisCorrect ? '0 0 0 4px rgba(52,211,153,0.6)' : 'none',
                     transition: 'opacity 0.3s ease',
@@ -371,13 +375,13 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
                 >
                   <img src={tileBg} alt="" draggable={false}
                     className="absolute inset-0 w-full h-full object-cover pointer-events-none rounded-2xl" />
-                  <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 2 }}>
+                  <div className="relative flex items-center justify-center" style={{ width: '78px', height: '78px', zIndex: 2 }}>
                     {assetUrl ? (
                       <img src={assetUrl} alt={opt.label}
-                        className="object-contain drop-shadow-md"
-                        style={{ width: '78%', height: '78%' }} />
+                        className="w-full h-full object-contain drop-shadow-md"
+                        draggable={false} />
                     ) : (
-                      <span className="font-extrabold select-none"
+                      <span className="font-extrabold select-none w-full h-full flex items-center justify-center"
                         style={{
                           fontSize: 'clamp(2.4rem, 13vw, 3.4rem)',
                           color: labelColors[i % labelColors.length],
@@ -391,6 +395,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
               );
             })}
           </motion.div>
+
 
           {/* Thin decorative strip */}
           <div className="w-full rounded-full"
