@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Edit2, Star, Trophy, Clock, BookOpen, Trash2 } from 'lucide-react';
 import { AddChildForm } from './forms/AddChildForm';
+import { EditChildForm } from './forms/EditChildForm';
 import { ChildSettingsForm } from './forms/ChildSettingsForm';
 import { ChildProgressModal } from './forms/ChildProgressModal';
 import { useIsMobile } from '../hooks/use-mobile';
@@ -194,6 +195,12 @@ const ChildProfiles = ({
           </p>
         </div>
       )}
+
+      <EditChildForm
+        child={editingChild}
+        open={!!editingChild}
+        onOpenChange={(open) => { if (!open) setEditingChild(null); }}
+      />
     </div>
   );
 };
