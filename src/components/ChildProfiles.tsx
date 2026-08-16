@@ -103,7 +103,11 @@ const ChildProfiles = ({
               </div>
               {!preview && (
                 <div className="flex gap-2">
-                  <button className="text-gray-400 hover:text-gray-600" title="Edit profile">
+                  <button
+                    className="text-gray-400 hover:text-gray-600"
+                    title="Edit profile"
+                    onClick={() => setEditingChild(child)}
+                  >
                     <Edit2 className="w-4 h-4" />
                   </button>
                   <button

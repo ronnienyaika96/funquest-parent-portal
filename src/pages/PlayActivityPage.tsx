@@ -391,10 +391,15 @@ const PlayActivityPage = () => {
           </div>
         </div>
 
-        {/* Stars badge */}
-        <div className="flex items-center gap-1.5 bg-funquest-warning/15 border border-funquest-warning/30 rounded-full px-3 py-1.5">
-          <Star className="w-4 h-4 text-funquest-warning fill-funquest-warning" />
-          <span className="text-sm font-bold text-funquest-warning">{starsEarned}</span>
+        <div className="flex items-center gap-2">
+          {/* Sound control */}
+          <AudioControls />
+
+          {/* Stars badge */}
+          <div className="flex items-center gap-1.5 bg-funquest-warning/15 border border-funquest-warning/30 rounded-full px-3 py-1.5">
+            <Star className="w-4 h-4 text-funquest-warning fill-funquest-warning" />
+            <span className="text-sm font-bold text-funquest-warning">{starsEarned}</span>
+          </div>
         </div>
       </header>
 
