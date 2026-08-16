@@ -38,16 +38,26 @@ export function useActivities() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [adminChecked, setAdminChecked] = useState(false);
   const { user } = useAuth();
 
   // Check admin
   useEffect(() => {
+    let cancelled = false;
     const checkAdmin = async () => {
-      if (!user) { setIsAdmin(false); return; }
+      setAdminChecked(false);
+      if (!user) {
+        if (!cancelled) { setIsAdmin(false); setAdminChecked(true); }
+        return;
+      }
       const { data, error } = await supabase.rpc('has_role', { _user_id: user.id, _role: 'admin' });
+      if (cancelled) return;
+      if (error) console.error('[useActivities] admin check failed:', error);
       setIsAdmin(!error && data === true);
+      setAdminChecked(true);
     };
     checkAdmin();
+    return () => { cancelled = true; };
   }, [user]);
 
   // Fetch activities with their steps
