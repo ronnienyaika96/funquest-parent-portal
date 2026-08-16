@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useParams, useSearchParams, useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -11,6 +11,11 @@ import TapIdentifyGame from '@/components/games/TapIdentifyGame';
 import DragDropMatchGame from '@/components/games/DragDropMatchGame';
 import StoryInteractiveGame from '@/components/games/StoryInteractiveGame';
 import GameShell from '@/components/games/GameShell';
+import AudioControls from '@/components/games/AudioControls';
+import ChildSelectGate from '@/components/kids/ChildSelectGate';
+import { useAuth } from '@/hooks/useAuth';
+import { useChildProfiles } from '@/hooks/useChildProfiles';
+import { useGameAudio } from '@/hooks/useGameAudio';
 
 const STORAGE_BUCKET = 'game assets';
 
@@ -23,9 +28,13 @@ export function getAssetUrl(path: string | null | undefined): string {
 
 const PlayActivityPage = () => {
   const { activityId } = useParams<{ activityId: string }>();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const childId = searchParams.get('childId');
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user, loading: authLoading } = useAuth();
+  const { children: childProfiles, isLoading: childrenLoading } = useChildProfiles();
+  const { play: playAudio, stop: stopAudio } = useGameAudio();
 
   const [activity, setActivity] = useState<any>(null);
   const [steps, setSteps] = useState<any[]>([]);
@@ -34,6 +43,18 @@ const PlayActivityPage = () => {
   const [loading, setLoading] = useState(true);
   const [completed, setCompleted] = useState(false);
   const [starsEarned, setStarsEarned] = useState(0);
+
+  // --- Session tracking refs ---
+  const sessionIdRef = useRef<string | null>(null);
+  const sessionStartRef = useRef<number | null>(null);
+  const sessionClosedRef = useRef(false);
+  const starsRef = useRef(0);
+  const stepIndexRef = useRef(0);
+  const progressIdRef = useRef<string | null>(null);
+
+  useEffect(() => { starsRef.current = starsEarned; }, [starsEarned]);
+  useEffect(() => { stepIndexRef.current = currentStepIndex; }, [currentStepIndex]);
+  useEffect(() => { progressIdRef.current = progress?.id ?? null; }, [progress]);
 
   useEffect(() => {
     if (!activityId) return;
@@ -87,6 +108,90 @@ const PlayActivityPage = () => {
 
   const currentStep = steps[currentStepIndex];
 
+  // --- Play the step's instruction audio whenever the step changes ---
+  useEffect(() => {
+    if (!currentStep || completed) return;
+    const url = getAssetUrl(currentStep.instruction_audio_url);
+    if (url) playAudio(url);
+    return () => stopAudio();
+  }, [currentStep?.id, completed, playAudio, stopAudio]);
+
+  // --- Open a game session once the activity is actually playable ---
+  useEffect(() => {
+    if (!activityId || !childId || steps.length === 0) return;
+    if (sessionIdRef.current) return;
+    let cancelled = false;
+
+    (async () => {
+      const { data, error } = await supabase
+        .from('game_sessions')
+        .insert({ child_id: childId, activity_id: activityId })
+        .select('id')
+        .single();
+      if (error) {
+        console.error('[PlayActivity] could not start session:', error);
+        return;
+      }
+      if (cancelled || !data) return;
+      sessionIdRef.current = data.id;
+      sessionStartRef.current = Date.now();
+      sessionClosedRef.current = false;
+    })();
+
+    return () => { cancelled = true; };
+  }, [activityId, childId, steps.length]);
+
+  // --- Close the session (records duration + result) ---
+  const closeSession = useCallback(async (didComplete: boolean) => {
+    const sessionId = sessionIdRef.current;
+    const startedAt = sessionStartRef.current;
+    if (!sessionId || !startedAt || sessionClosedRef.current) return;
+    sessionClosedRef.current = true;
+
+    const durationSeconds = Math.max(0, Math.round((Date.now() - startedAt) / 1000));
+
+    await supabase
+      .from('game_sessions')
+      .update({
+        ended_at: new Date().toISOString(),
+        duration_seconds: durationSeconds,
+        result: {
+          completed: didComplete,
+          stars_earned: starsRef.current,
+          steps_reached: stepIndexRef.current + 1,
+          total_steps: steps.length,
+        },
+      })
+      .eq('id', sessionId);
+
+    // Roll the time into the child's cumulative progress for this activity.
+    const progressId = progressIdRef.current;
+    if (progressId && durationSeconds > 0) {
+      const { data: current } = await supabase
+        .from('progress')
+        .select('time_spent_seconds')
+        .eq('id', progressId)
+        .maybeSingle();
+      await supabase
+        .from('progress')
+        .update({
+          time_spent_seconds: (current?.time_spent_seconds || 0) + durationSeconds,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', progressId);
+    }
+  }, [steps.length]);
+
+  // Close the session when leaving the page (navigation, tab close, refresh)
+  useEffect(() => {
+    const handleUnload = () => { void closeSession(false); };
+    window.addEventListener('pagehide', handleUnload);
+    return () => {
+      window.removeEventListener('pagehide', handleUnload);
+      void closeSession(false);
+    };
+  }, [closeSession]);
+
   const handleStepSuccess = useCallback(async () => {
     if (!progress || !childId || !activityId) return;
 
@@ -107,13 +212,57 @@ const PlayActivityPage = () => {
 
     setProgress((p: any) => ({ ...p, ...updateData }));
     setStarsEarned(newStars);
+    starsRef.current = newStars;
 
     if (isLastStep) {
       setCompleted(true);
+      await closeSession(true);
     } else {
       setCurrentStepIndex(i => i + 1);
     }
-  }, [progress, currentStep, currentStepIndex, steps, childId, activityId]);
+  }, [progress, currentStep, currentStepIndex, steps, childId, activityId, closeSession]);
+
+  // --- Auth guard: games require a signed-in account ---
+  if (authLoading) {
+    return (
+      <GameShell>
+        <div className="flex-1 flex items-center justify-center">
+          <Skeleton className="h-72 w-80 rounded-3xl" />
+        </div>
+      </GameShell>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace state={{ from: location.pathname + location.search }} />;
+  }
+
+  // --- Child selection gate: progress must belong to a child profile ---
+  if (!childId) {
+    if (childrenLoading) {
+      return (
+        <GameShell>
+          <div className="flex-1 flex items-center justify-center">
+            <Skeleton className="h-72 w-80 rounded-3xl" />
+          </div>
+        </GameShell>
+      );
+    }
+    const list = childProfiles || [];
+    return (
+      <ChildSelectGate
+        children={list.map((c) => ({ id: c.id, name: c.name, age: c.age, avatar: c.avatar }))}
+        onSelect={(id) => {
+          const next = new URLSearchParams(searchParams);
+          next.set('childId', id);
+          setSearchParams(next, { replace: true });
+        }}
+        onCancel={() => navigate('/activities')}
+        onAddChild={() => navigate('/parent')}
+      />
+    );
+  }
+
 
   // --- Loading ---
   if (loading) {
