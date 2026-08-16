@@ -60,6 +60,7 @@ const App = () => (
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
+      </GameAudioProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
