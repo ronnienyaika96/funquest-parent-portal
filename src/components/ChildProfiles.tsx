@@ -20,6 +20,7 @@ const ChildProfiles = ({
   const { children, isLoading, error, deleteChild } = useChildProfiles();
   const { toast } = useToast();
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [editingChild, setEditingChild] = useState<{ id: string; name: string; age: number; avatar: string | null } | null>(null);
 
   // Debug logs for dev
   console.log("ChildProfiles state:", {
