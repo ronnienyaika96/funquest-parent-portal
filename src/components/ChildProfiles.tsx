@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Edit2, Star, Trophy, Clock, BookOpen, Trash2 } from 'lucide-react';
 import { AddChildForm } from './forms/AddChildForm';
+import { EditChildForm } from './forms/EditChildForm';
 import { ChildSettingsForm } from './forms/ChildSettingsForm';
 import { ChildProgressModal } from './forms/ChildProgressModal';
 import { useIsMobile } from '../hooks/use-mobile';
@@ -20,6 +21,7 @@ const ChildProfiles = ({
   const { children, isLoading, error, deleteChild } = useChildProfiles();
   const { toast } = useToast();
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [editingChild, setEditingChild] = useState<{ id: string; name: string; age: number; avatar: string | null } | null>(null);
 
   // Debug logs for dev
   console.log("ChildProfiles state:", {
@@ -103,7 +105,11 @@ const ChildProfiles = ({
               </div>
               {!preview && (
                 <div className="flex gap-2">
-                  <button className="text-gray-400 hover:text-gray-600" title="Edit profile">
+                  <button
+                    className="text-gray-400 hover:text-gray-600"
+                    title="Edit profile"
+                    onClick={() => setEditingChild(child)}
+                  >
                     <Edit2 className="w-4 h-4" />
                   </button>
                   <button
@@ -189,6 +195,12 @@ const ChildProfiles = ({
           </p>
         </div>
       )}
+
+      <EditChildForm
+        child={editingChild}
+        open={!!editingChild}
+        onOpenChange={(open) => { if (!open) setEditingChild(null); }}
+      />
     </div>
   );
 };

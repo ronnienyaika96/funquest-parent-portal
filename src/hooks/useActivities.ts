@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
+import { validateUploadSize } from '@/lib/storageLimits';
 
 export interface ActivityStep {
   id: string;
@@ -38,16 +39,26 @@ export function useActivities() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [adminChecked, setAdminChecked] = useState(false);
   const { user } = useAuth();
 
   // Check admin
   useEffect(() => {
+    let cancelled = false;
     const checkAdmin = async () => {
-      if (!user) { setIsAdmin(false); return; }
+      setAdminChecked(false);
+      if (!user) {
+        if (!cancelled) { setIsAdmin(false); setAdminChecked(true); }
+        return;
+      }
       const { data, error } = await supabase.rpc('has_role', { _user_id: user.id, _role: 'admin' });
+      if (cancelled) return;
+      if (error) console.error('[useActivities] admin check failed:', error);
       setIsAdmin(!error && data === true);
+      setAdminChecked(true);
     };
     checkAdmin();
+    return () => { cancelled = true; };
   }, [user]);
 
   // Fetch activities with their steps
@@ -97,8 +108,15 @@ export function useActivities() {
   }, []);
 
   useEffect(() => {
-    if (isAdmin) fetchActivities();
-  }, [isAdmin, fetchActivities]);
+    if (!adminChecked) return;
+    if (isAdmin) {
+      fetchActivities();
+    } else {
+      // Non-admins must never be left on an endless spinner.
+      setActivities([]);
+      setLoading(false);
+    }
+  }, [adminChecked, isAdmin, fetchActivities]);
 
   const createActivity = async (input: CreateActivityInput) => {
     if (!user) return null;
@@ -225,6 +243,11 @@ export function useActivities() {
 
   const uploadFile = async (file: File, bucket: string = 'game assets') => {
     if (!user) return null;
+    const sizeError = validateUploadSize(file, bucket);
+    if (sizeError) {
+      toast.error(sizeError);
+      return null;
+    }
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
