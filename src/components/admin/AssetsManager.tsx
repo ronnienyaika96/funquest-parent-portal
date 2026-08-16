@@ -88,6 +88,16 @@ export function AssetsManager() {
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files;
     if (!fileList?.length) return;
+
+    const oversized = Array.from(fileList)
+      .map((f) => validateUploadSize(f, activeBucket))
+      .filter(Boolean) as string[];
+    if (oversized.length) {
+      toast({ title: 'File too large', description: oversized[0], variant: 'destructive' });
+      e.target.value = '';
+      return;
+    }
+
     setUploading(true);
     try {
       for (const file of Array.from(fileList)) {

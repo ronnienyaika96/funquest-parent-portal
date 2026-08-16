@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
+import { validateUploadSize } from '@/lib/storageLimits';
 
 export interface ActivityStep {
   id: string;
@@ -242,6 +243,11 @@ export function useActivities() {
 
   const uploadFile = async (file: File, bucket: string = 'game assets') => {
     if (!user) return null;
+    const sizeError = validateUploadSize(file, bucket);
+    if (sizeError) {
+      toast.error(sizeError);
+      return null;
+    }
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
