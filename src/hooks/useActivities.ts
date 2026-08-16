@@ -107,8 +107,15 @@ export function useActivities() {
   }, []);
 
   useEffect(() => {
-    if (isAdmin) fetchActivities();
-  }, [isAdmin, fetchActivities]);
+    if (!adminChecked) return;
+    if (isAdmin) {
+      fetchActivities();
+    } else {
+      // Non-admins must never be left on an endless spinner.
+      setActivities([]);
+      setLoading(false);
+    }
+  }, [adminChecked, isAdmin, fetchActivities]);
 
   const createActivity = async (input: CreateActivityInput) => {
     if (!user) return null;
