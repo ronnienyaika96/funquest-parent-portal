@@ -10,6 +10,8 @@ import PricingSection from '@/components/parent/PricingSection';
 import ProgressStats from '@/components/parent/ProgressStats';
 import SettingsSection from '@/components/parent/SettingsSection';
 import ChildSelector from '@/components/parent/ChildSelector';
+import ParentalGate from '@/components/kids/ParentalGate';
+import { isParentalGatePassed, setParentalGatePassed } from '@/lib/parentalGate';
 
 const ParentDashboard = () => {
   const navigate = useNavigate();
@@ -17,6 +19,7 @@ const ParentDashboard = () => {
   const { children: childProfiles, isLoading: childrenLoading } = useChildProfiles();
   const [activeTab, setActiveTab] = useState('progress');
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
+  const [gatePassed, setGatePassed] = useState(() => isParentalGatePassed());
 
   // Auto-select first child
   React.useEffect(() => {
@@ -38,6 +41,26 @@ const ParentDashboard = () => {
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
+
+  // Adults only — the math puzzle protects direct navigation to /parent too.
+  if (!gatePassed) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white">
+        <ParentalGate
+          isOpen
+          navigateTo="/parent"
+          onSuccess={() => {
+            setParentalGatePassed(true);
+            setGatePassed(true);
+          }}
+          onClose={() => {
+            if (!isParentalGatePassed()) navigate('/activities');
+          }}
+        />
+      </div>
+    );
+  }
+
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white">
