@@ -59,6 +59,30 @@ export function useChildProfiles() {
     },
   });
 
+  const updateChild = useMutation({
+    mutationFn: async (profile: { id: string; name: string; age: number; avatar?: string | null }) => {
+      if (!user?.id) throw new Error('You must be logged in to edit a child.');
+
+      const { data, error } = await supabase
+        .from('child_profiles')
+        .update({
+          name: profile.name,
+          age: profile.age,
+          avatar: profile.avatar || '🦁',
+        })
+        .eq('id', profile.id)
+        .select();
+      if (error) {
+        console.error('[useChildProfiles] update error:', error);
+        throw error;
+      }
+      return data?.[0];
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['child_profiles'] });
+    },
+  });
+
   const deleteChild = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from('child_profiles').delete().eq('id', id);
@@ -72,5 +96,5 @@ export function useChildProfiles() {
     },
   });
 
-  return { children, isLoading, error, addChild, deleteChild };
+  return { children, isLoading, error, addChild, updateChild, deleteChild };
 }
