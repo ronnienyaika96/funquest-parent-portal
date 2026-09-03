@@ -15,6 +15,7 @@ import ParentalGate from '@/components/kids/ParentalGate';
 import ChildSelector from '@/components/parent/ChildSelector';
 import GameShell from '@/components/games/GameShell';
 import { getCategoryConfig } from '@/lib/funquest-assets';
+import readListenThumb from '@/assets/read-and-listen-thumbnail.jpg';
 
 interface ActivityWithSteps {
   id: string;
@@ -244,6 +245,24 @@ const ActivitiesPage = () => {
           </div>
           <p className="mt-2 text-foreground/70 font-semibold">Play, learn and grow!</p>
         </motion.div>
+
+        {/* Reading & Stories */}
+        <div className="px-4 sm:px-6 max-w-3xl mx-auto mb-8">
+          <h2 className="flex items-center gap-2 text-lg sm:text-xl font-extrabold text-foreground mb-3">
+            <span className="text-2xl">📚</span> Reading &amp; Stories
+          </h2>
+          <div className="grid grid-cols-2 gap-4">
+            <ActivityTile
+              title="Read & Listen"
+              subtitle="Listen to stories and read along"
+              emoji="📖"
+              color="from-[hsl(142,69%,50%)] to-[hsl(142,69%,40%)]"
+              accent="bg-funquest-green"
+              thumbnail={readListenThumb}
+              onClick={() => navigate(`/read${selectedChildId ? `?childId=${selectedChildId}` : ''}`)}
+            />
+          </div>
+        </div>
 
         {/* Activities */}
         {activitiesLoading ? (
