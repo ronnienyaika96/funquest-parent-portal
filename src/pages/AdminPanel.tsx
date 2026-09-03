@@ -24,10 +24,12 @@ import {
   Users,
   CreditCard,
   BookOpen,
+  Library,
 } from 'lucide-react';
 import SubscriptionsManager from '@/components/admin/SubscriptionsManager';
 import AdminSettings from '@/components/admin/AdminSettings';
 import StoryEditor from '@/components/admin/StoryEditor';
+import BookLibraryManager from '@/components/admin/BookLibraryManager';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -160,6 +162,10 @@ export default function AdminPanel() {
               <BookOpen className="h-4 w-4" />
               Stories
             </TabsTrigger>
+            <TabsTrigger value="books" className="gap-2">
+              <Library className="h-4 w-4" />
+              Books
+            </TabsTrigger>
             <TabsTrigger value="assets" className="gap-2">
               <FolderOpen className="h-4 w-4" />
               Assets
@@ -240,6 +246,11 @@ export default function AdminPanel() {
           {/* Stories Tab */}
           <TabsContent value="stories">
             <StoryEditor />
+          </TabsContent>
+
+          {/* Book Library Tab */}
+          <TabsContent value="books">
+            <BookLibraryManager />
           </TabsContent>
 
           {/* Assets Tab */}

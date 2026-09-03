@@ -18,6 +18,8 @@ import AdminPanel from "./pages/AdminPanel";
 import AdminAuthPage from "./pages/AdminAuthPage";
 import ActivitiesPage from "./pages/ActivitiesPage";
 import PlayActivityPage from "./pages/PlayActivityPage";
+import StoryLibraryPage from "./pages/StoryLibraryPage";
+import StoryReaderPage from "./pages/StoryReaderPage";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +42,10 @@ const App = () => (
             <Route path="/activities" element={<ActivitiesPage />} />
             <Route path="/play/:activityId" element={<PlayActivityPage />} />
             
+            {/* Read & Listen */}
+            <Route path="/read" element={<StoryLibraryPage />} />
+            <Route path="/read/:bookId" element={<StoryReaderPage />} />
+
             {/* Parent Dashboard */}
             <Route path="/parent" element={<ParentDashboard />} />
             
