@@ -18,8 +18,10 @@ import { getLetterAsset } from '@/lib/letterAssets';
 import { getNumberAsset } from '@/lib/numberAssets';
 import { getGameAssetUrl } from '@/lib/funquest-assets';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, RotateCcw, ArrowRight, Volume2 } from 'lucide-react';
+import { CheckCircle, RotateCcw, ArrowRight, Volume2, ArrowDown, Lightbulb, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useGameAudio } from '@/hooks/useGameAudio';
 import FeedbackOverlay from './FeedbackOverlay';
 
 interface DraggableData {
@@ -172,6 +174,91 @@ function DraggableItem({ item, isMatched, isDragging }: {
           className="absolute -top-2 -right-2 z-20"
         >
           <CheckCircle className="w-7 h-7 text-emerald-500 drop-shadow" />
+        </motion.div>
+      )}
+    </motion.div>
+  );
+}
+
+/** Phone-only tactile letter tile. The SVG is intentionally larger than the desktop version. */
+function MobileLetterTile({ item, isMatched, isDragging }: {
+  item: DraggableData; isMatched: boolean; isDragging: boolean;
+}) {
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: item.id });
+  const contentAsset = resolveContentAsset(item.label);
+  const style: React.CSSProperties = {
+    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
+    opacity: isDragging ? 0.28 : isMatched ? 0.42 : 1,
+    touchAction: 'none',
+  };
+
+  return (
+    <motion.div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      style={style}
+      animate={isMatched ? { scale: [1, 1.08, 1] } : { scale: 1 }}
+      whileTap={!isMatched ? { scale: 1.06, y: -3 } : undefined}
+      className={`mobile-letter-tile ${isMatched ? 'pointer-events-none' : ''}`}
+    >
+      {item.image ? (
+        <img src={getAssetUrl(item.image)} alt={item.label} className="mobile-letter-art" />
+      ) : contentAsset ? (
+        <img src={contentAsset} alt={item.label} className="mobile-letter-art" />
+      ) : (
+        <span className="mobile-letter-fallback">{item.label}</span>
+      )}
+      {isMatched && (
+        <motion.div initial={{ scale: 0, rotate: -30 }} animate={{ scale: 1, rotate: 0 }} className="absolute -right-1 -top-1">
+          <CheckCircle className="h-7 w-7 fill-card text-funquest-success drop-shadow" />
+        </motion.div>
+      )}
+    </motion.div>
+  );
+}
+
+/** Phone-only picture target with a fixed image stage and label position. */
+function MobilePictureCard({ target, matched, wrong }: {
+  target: Target; matched: boolean; wrong: boolean;
+}) {
+  const { setNodeRef, isOver } = useDroppable({ id: target.id });
+  const objectName = resolveTargetObjectName(target);
+  const primarySrc = objectName ? getObjectImageUrl(objectName) : (target.image ? getAssetUrl(target.image) : '');
+
+  return (
+    <motion.div
+      ref={setNodeRef}
+      animate={wrong
+        ? { x: [0, -7, 7, -4, 4, 0] }
+        : matched
+          ? { scale: [1, 1.05, 1] }
+          : isOver ? { scale: 1.025 } : { scale: 1 }}
+      transition={wrong ? { duration: 0.42 } : { type: 'spring', stiffness: 280, damping: 16 }}
+      className={`mobile-picture-card ${matched ? 'mobile-picture-card--matched' : ''} ${isOver ? 'mobile-picture-card--over' : ''}`}
+    >
+      <div className="mobile-picture-stage">
+        {primarySrc && (
+          <img
+            src={primarySrc}
+            alt={target.label}
+            className="mobile-picture-art"
+            onError={(event) => {
+              const image = event.currentTarget;
+              if (target.image && image.src !== getAssetUrl(target.image)) image.src = getAssetUrl(target.image);
+              else image.style.display = 'none';
+            }}
+          />
+        )}
+      </div>
+      <div className="mobile-picture-label">{target.label}</div>
+      {matched && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0, rotate: -25 }}
+          animate={{ opacity: 1, scale: [0, 1.25, 1], rotate: 0 }}
+          className="absolute right-2 top-2"
+        >
+          <Sparkles className="h-7 w-7 text-funquest-warning drop-shadow" />
         </motion.div>
       )}
     </motion.div>
@@ -461,6 +548,8 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
   const rawDraggables: DraggableData[] = data.draggables || [];
   const rawTargets: Target[] = data.targets || [];
   const instructionAudio = step.instruction_audio_url;
+  const isMobile = useIsMobile();
+  const { play: playSharedAudio } = useGameAudio();
 
   // Detect "match number to objects" schema and rebuild targets with random unique objects.
   const isNumberMatch = React.useMemo(() => {
@@ -592,7 +681,7 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
 
   const speakInstruction = () => {
     if (instructionAudio) {
-      new Audio(getAssetUrl(instructionAudio)).play().catch(() => {});
+      void playSharedAudio(getAssetUrl(instructionAudio));
       return;
     }
     try {
@@ -607,7 +696,7 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
     <div
       className="flex flex-col items-center w-full min-h-screen overflow-visible pb-8"
       style={{
-        backgroundImage: cloudBgUrl ? `url(${cloudBgUrl})` : undefined,
+        backgroundImage: !isMobile && cloudBgUrl ? `url(${cloudBgUrl})` : undefined,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
@@ -617,7 +706,7 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
       <motion.h1
         initial={{ opacity: 0, y: -15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white text-center tracking-wide mt-4 mb-2"
+        className="text-[34px] sm:text-4xl md:text-5xl font-extrabold text-primary-foreground text-center mt-2 sm:mt-4 mb-2 px-2 whitespace-nowrap"
         style={{
           textShadow: '0 3px 10px rgba(30,64,175,0.35)',
           fontFamily: "'Nunito', 'Comic Sans MS', cursive, sans-serif",
@@ -631,18 +720,23 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.1 }}
-        className="rounded-full px-6 py-2.5 mb-5 mx-4 flex items-center justify-center max-w-[92vw]"
+        className="mobile-instruction-pill sm:rounded-full sm:px-6 sm:py-2.5 sm:mb-5 sm:mx-4 flex items-center justify-center sm:max-w-[92vw]"
         style={{
           background: 'rgba(255,255,255,0.9)',
           boxShadow: '0 8px 20px -10px rgba(30,64,175,0.5)',
           border: '2px solid rgba(147,197,253,0.6)',
         }}
       >
+        {!isNumberMatch && isMobile && (
+          <Button variant="ghost" size="icon" onClick={speakInstruction} aria-label="Play instruction" className="mobile-instruction-audio">
+            <Volume2 className="h-5 w-5" />
+          </Button>
+        )}
         <p
-          className="text-center text-base sm:text-lg font-extrabold"
+          className="text-center text-[15px] min-[375px]:text-base sm:text-lg font-extrabold"
           style={{ color: '#2C5F7C', fontFamily: "'Nunito', sans-serif" }}
         >
-          {instruction}
+          {!isNumberMatch && isMobile ? 'Drag each letter to the correct picture!' : instruction}
         </p>
       </motion.div>
 
@@ -748,42 +842,46 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
               At sm+ we keep the original paired-row layout for larger screens. */}
 
           {/* Mobile layout (< sm) */}
-          <div className="sm:hidden flex flex-col items-center gap-5 w-full">
-            {/* Draggables row — horizontal, scrolls if too many, min 80x80 tap targets */}
-            <div className="w-full overflow-x-auto -mx-3 px-3 pb-1">
-              <div className="flex items-center justify-center gap-3 min-w-max mx-auto">
+          <div className="sm:hidden flex flex-col items-center w-full mobile-letter-game">
+            {/* Four tactile letter choices in a no-overflow 2×2 grid. */}
+            <div className="mobile-letter-grid">
                 {draggables.map((item) => (
-                  <div
+                  <MobileLetterTile
                     key={item.id}
-                    className="flex-shrink-0"
-                    style={{ width: 96, height: 96 }}
-                  >
-                    <DraggableItem
-                      item={item}
-                      isMatched={matchedDraggableIds.has(item.id)}
-                      isDragging={activeId === item.id}
-                    />
-                  </div>
+                    item={item}
+                    isMatched={matchedDraggableIds.has(item.id)}
+                    isDragging={activeId === item.id}
+                  />
                 ))}
-              </div>
             </div>
 
-            {/* Targets — 2-column grid, equal-size cards */}
-            <div className="w-full grid grid-cols-2 gap-4">
+            <motion.div
+              animate={{ y: [0, 4, 0] }}
+              transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}
+              className="mobile-drag-guide"
+              aria-hidden="true"
+            >
+              <span className="mobile-drag-dots">•••</span>
+              <ArrowDown className="h-6 w-6" strokeWidth={3} />
+              <span>drag here</span>
+            </motion.div>
+
+            {/* Equal picture targets in a fixed two-column grid. */}
+            <div className="mobile-picture-grid">
               {targets.map((target) => (
-                <motion.div
+                <MobilePictureCard
                   key={target.id}
-                  className="w-full"
-                  style={{ minHeight: 150 }}
-                  animate={wrongTarget === target.id ? { x: [0, -6, 6, -3, 3, 0] } : {}}
-                >
-                  <DroppableTarget
-                    target={target}
-                    matchedItem={matches[target.id] ? draggables.find(d => d.id === matches[target.id]) || null : null}
-                  />
-                </motion.div>
+                  target={target}
+                  matched={!!matches[target.id]}
+                  wrong={wrongTarget === target.id}
+                />
               ))}
             </div>
+
+            <button type="button" onClick={speakInstruction} className="mobile-hint-pill">
+              <Lightbulb className="h-5 w-5 text-funquest-warning" />
+              <span>Drag the letter to its picture!</span>
+            </button>
           </div>
 
           {/* Desktop / tablet layout (>= sm) — original paired rows */}
@@ -863,7 +961,7 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
           {activeDraggable ? (
             <div
               className="relative aspect-square flex items-center justify-center"
-              style={{ width: 'clamp(100px, 18vw, 200px)' }}
+              style={{ width: isMobile ? 'clamp(90px, 29vw, 120px)' : 'clamp(100px, 18vw, 200px)' }}
             >
               <img
                 src={draggableBgUrl}
