@@ -369,17 +369,21 @@ const PlayActivityPage = () => {
 
   // --- Gameplay ---
   const progressPct = ((currentStepIndex + 1) / steps.length) * 100;
+  const isLetterMatchStep =
+    currentStep?.game_type === 'tap_identify' &&
+    currentStep?.data?.mode === 'drag_drop_match' &&
+    !String(currentStep?.data?.schema || '').includes('match_number_objects');
 
   return (
     <GameShell>
       {/* Header */}
-      <header className="bg-card/80 backdrop-blur-md border-b border-border/50 px-4 py-3 flex items-center justify-between shadow-soft">
+      <header className={`bg-card/80 backdrop-blur-md border-b border-border/50 px-4 flex items-center justify-between shadow-soft ${isLetterMatchStep ? 'py-2 sm:py-3' : 'py-3'}`}>
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate('/activities')}
-            className="rounded-full w-10 h-10 hover:bg-muted"
+            className={`rounded-full hover:bg-muted ${isLetterMatchStep ? 'w-14 h-14 sm:w-10 sm:h-10' : 'w-10 h-10'}`}
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
