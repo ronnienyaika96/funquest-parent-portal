@@ -369,23 +369,27 @@ const PlayActivityPage = () => {
 
   // --- Gameplay ---
   const progressPct = ((currentStepIndex + 1) / steps.length) * 100;
+  const isLetterMatchStep =
+    currentStep?.game_type === 'tap_identify' &&
+    currentStep?.data?.mode === 'drag_drop_match' &&
+    !String(currentStep?.data?.schema || '').includes('match_number_objects');
 
   return (
     <GameShell>
       {/* Header */}
-      <header className="bg-card/80 backdrop-blur-md border-b border-border/50 px-4 py-3 flex items-center justify-between shadow-soft">
-        <div className="flex items-center gap-3">
+      <header className={`bg-card/80 backdrop-blur-md border-b border-border/50 px-4 shadow-soft ${isLetterMatchStep ? 'grid grid-cols-[56px_minmax(0,1fr)_auto] items-center gap-2 py-1.5 sm:flex sm:justify-between sm:py-3' : 'flex items-center justify-between py-3'}`}>
+        <div className={isLetterMatchStep ? 'contents sm:flex sm:items-center sm:gap-3' : 'flex items-center gap-3'}>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate('/activities')}
-            className="rounded-full w-10 h-10 hover:bg-muted"
+            className={`rounded-full hover:bg-muted ${isLetterMatchStep ? 'w-14 h-14 sm:w-10 sm:h-10' : 'w-10 h-10'}`}
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <div>
-            <h1 className="text-sm font-bold text-foreground leading-tight">{activity.title}</h1>
-            <p className="text-xs text-muted-foreground">
+          <div className={isLetterMatchStep ? 'min-w-0 text-center sm:text-left' : ''}>
+            <h1 className={`text-sm font-bold text-foreground leading-tight ${isLetterMatchStep ? 'hidden sm:block' : ''}`}>{activity.title}</h1>
+            <p className={`text-xs text-muted-foreground ${isLetterMatchStep ? 'font-bold' : ''}`}>
               Step {currentStepIndex + 1} of {steps.length}
             </p>
           </div>

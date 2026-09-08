@@ -694,7 +694,7 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
 
   return (
     <div
-      className="flex flex-col items-center w-full min-h-screen overflow-visible pb-8"
+      className="flex flex-col items-center w-full min-h-0 sm:min-h-screen overflow-visible pb-3 sm:pb-8"
       style={{
         backgroundImage: !isMobile && cloudBgUrl ? `url(${cloudBgUrl})` : undefined,
         backgroundSize: 'cover',
@@ -878,10 +878,10 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
               ))}
             </div>
 
-            <button type="button" onClick={speakInstruction} className="mobile-hint-pill">
+            <Button type="button" variant="ghost" onClick={speakInstruction} className="mobile-hint-pill">
               <Lightbulb className="h-5 w-5 text-funquest-warning" />
               <span>Drag the letter to its picture!</span>
-            </button>
+            </Button>
           </div>
 
           {/* Desktop / tablet layout (>= sm) — original paired rows */}
