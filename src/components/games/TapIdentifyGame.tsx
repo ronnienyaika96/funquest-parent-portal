@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { getAssetUrl } from '@/pages/PlayActivityPage';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Volume2 } from 'lucide-react';
@@ -6,6 +6,7 @@ import { getChoiceAssetByState, TileState } from '@/lib/gameAssets';
 import { getInstructionText, resolveOptionAsset, extractLabel, choicesMatch } from '@/lib/gameHelpers';
 import { getGameAssetUrl } from '@/lib/funquest-assets';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useGameAudio } from '@/hooks/useGameAudio';
 
 
 interface TapIdentifyGameProps {
@@ -142,33 +143,39 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
   const instructionAudio = step.instruction_audio_url;
 
   const isMobile = useIsMobile();
+  const { play: playInstruction, playTap, playCorrect, stopEffects } = useGameAudio();
   const [selected, setSelected] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [reinforcement, setReinforcement] = useState<string | null>(null);
   const [hidePhonicsImage, setHidePhonicsImage] = useState(false);
+  const tapSequenceRef = useRef(0);
+  const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (instructionAudio) {
-      new Audio(getAssetUrl(instructionAudio)).play().catch(() => {});
-    }
-  }, [instructionAudio]);
-
-  useEffect(() => {
+    stopEffects();
+    if (successTimerRef.current) clearTimeout(successTimerRef.current);
     setSelected(null);
     setShowResult(false);
     setReinforcement(null);
     setHidePhonicsImage(false);
-  }, [step.id]);
+    return () => {
+      if (successTimerRef.current) clearTimeout(successTimerRef.current);
+      stopEffects();
+    };
+  }, [step.id, stopEffects]);
 
   const handleTap = (index: number) => {
     if (showResult) return;
+    const interactionId = `${step.id}:tap:${++tapSequenceRef.current}`;
+    playTap(interactionId);
     setSelected(index);
     setShowResult(true);
 
     const opt = options[index];
     if (opt?.correct) {
+      playCorrect(interactionId);
       setReinforcement(data.reinforcement_text || 'Great job! 🌟');
-      setTimeout(onSuccess, 1200);
+      successTimerRef.current = setTimeout(onSuccess, 1200);
     } else {
       setReinforcement('Try again! You can do it! 💪');
     }
@@ -197,7 +204,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
 
   const playAudio = () => {
     if (!instructionAudio) return;
-    new Audio(getAssetUrl(instructionAudio)).play().catch(() => {});
+    void playInstruction(getAssetUrl(instructionAudio));
   };
 
   const labelColors = ['#3B82F6', '#EC4899', '#22C55E', '#F59E0B', '#8B5CF6', '#EF4444'];
