@@ -658,12 +658,12 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
   useEffect(() => {
     if (!allMatched || completionPlayedRef.current) return;
     completionPlayedRef.current = true;
-    playPerfectMatch(`${step.id}:complete`);
+    if (targets.length === 4) playPerfectMatch(`${step.id}:complete`);
     completionTimerRef.current = setTimeout(onSuccess, 900);
     return () => {
       if (completionTimerRef.current) clearTimeout(completionTimerRef.current);
     };
-  }, [allMatched, onSuccess, playPerfectMatch, step.id]);
+  }, [allMatched, onSuccess, playPerfectMatch, step.id, targets.length]);
 
   const handleDragStart = (event: DragStartEvent) => {
     const draggableId = String(event.active.id);

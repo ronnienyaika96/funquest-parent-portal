@@ -149,12 +149,14 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
   const [reinforcement, setReinforcement] = useState<string | null>(null);
   const [hidePhonicsImage, setHidePhonicsImage] = useState(false);
   const tapSequenceRef = useRef(0);
+  const tapLockedRef = useRef(false);
   const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     stopEffects();
     if (successTimerRef.current) clearTimeout(successTimerRef.current);
     setSelected(null);
+    tapLockedRef.current = false;
     setShowResult(false);
     setReinforcement(null);
     setHidePhonicsImage(false);
@@ -165,7 +167,8 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
   }, [step.id, stopEffects]);
 
   const handleTap = (index: number) => {
-    if (showResult) return;
+    if (showResult || tapLockedRef.current) return;
+    tapLockedRef.current = true;
     const interactionId = `${step.id}:tap:${++tapSequenceRef.current}`;
     playTap(interactionId);
     setSelected(index);
@@ -182,6 +185,7 @@ const TapIdentifyGame: React.FC<TapIdentifyGameProps> = ({ step, onSuccess }) =>
   };
 
   const handleRetry = () => {
+    tapLockedRef.current = false;
     setSelected(null);
     setShowResult(false);
     setReinforcement(null);
