@@ -4,6 +4,7 @@ import {
   DragEndEvent,
   DragStartEvent,
   DragOverlay,
+  DragCancelEvent,
   useSensor,
   useSensors,
   PointerSensor,
@@ -549,7 +550,15 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
   const rawTargets: Target[] = data.targets || [];
   const instructionAudio = step.instruction_audio_url;
   const isMobile = useIsMobile();
-  const { play: playSharedAudio } = useGameAudio();
+  const {
+    play: playSharedAudio,
+    playDrop,
+    playDrag,
+    playMatch,
+    playPerfectMatch,
+    stopDrag,
+    stopEffects,
+  } = useGameAudio();
 
   // Detect "match number to objects" schema and rebuild targets with random unique objects.
   const isNumberMatch = React.useMemo(() => {
@@ -620,38 +629,51 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
   const [matches, setMatches] = useState<Record<string, string>>({});
   const [activeId, setActiveId] = useState<string | null>(null);
   const [wrongTarget, setWrongTarget] = useState<string | null>(null);
+  const interactionRef = React.useRef(0);
+  const completionPlayedRef = React.useRef(false);
+  const completionTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 100, tolerance: 5 } }),
   );
 
-  useEffect(() => {
-    if (instructionAudio) {
-      new Audio(getAssetUrl(instructionAudio)).play().catch(() => {});
-    }
-  }, [instructionAudio]);
-
   // Reset state when step (round) changes
   useEffect(() => {
+    stopEffects();
+    completionPlayedRef.current = false;
+    if (completionTimerRef.current) clearTimeout(completionTimerRef.current);
     setMatches({});
     setActiveId(null);
     setWrongTarget(null);
-  }, [step.id]);
+    return () => {
+      if (completionTimerRef.current) clearTimeout(completionTimerRef.current);
+      stopEffects();
+    };
+  }, [step.id, stopEffects]);
 
   const matchedDraggableIds = new Set(Object.values(matches));
   const allMatched = targets.length > 0 && targets.every(t => !!matches[t.id]);
 
   useEffect(() => {
-    if (allMatched) setTimeout(onSuccess, 900);
-  }, [allMatched, onSuccess]);
+    if (!allMatched || completionPlayedRef.current) return;
+    completionPlayedRef.current = true;
+    if (targets.length === 4) playPerfectMatch(`${step.id}:complete`);
+    completionTimerRef.current = setTimeout(onSuccess, 900);
+    return () => {
+      if (completionTimerRef.current) clearTimeout(completionTimerRef.current);
+    };
+  }, [allMatched, onSuccess, playPerfectMatch, step.id, targets.length]);
 
   const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(String(event.active.id));
+    const draggableId = String(event.active.id);
+    setActiveId(draggableId);
     setWrongTarget(null);
+    playDrag(`${step.id}:${draggableId}:${++interactionRef.current}`);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
+    stopDrag();
     setActiveId(null);
     const { active, over } = event;
     if (!over) return;
@@ -662,6 +684,9 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
     if (!target) return;
 
     if (target.accepts.includes(draggableId)) {
+      const matchId = `${step.id}:${draggableId}:${targetId}`;
+      playDrop(matchId);
+      playMatch(matchId);
       setMatches(m => ({ ...m, [targetId]: draggableId }));
     } else {
       setWrongTarget(targetId);
@@ -669,7 +694,15 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
     }
   };
 
+  const handleDragCancel = (_event: DragCancelEvent) => {
+    stopDrag();
+    setActiveId(null);
+  };
+
   const handleReset = () => {
+    stopEffects();
+    completionPlayedRef.current = false;
+    if (completionTimerRef.current) clearTimeout(completionTimerRef.current);
     setMatches({});
     setActiveId(null);
     setWrongTarget(null);
@@ -740,7 +773,7 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
         </p>
       </motion.div>
 
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDragCancel={handleDragCancel}>
         {isNumberMatch ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
