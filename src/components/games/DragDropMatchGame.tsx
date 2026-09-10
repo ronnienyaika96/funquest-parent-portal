@@ -907,6 +907,7 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDragCancel={handleDragCancel}>
         {isNumberMatch ? (
+          isMobile ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -963,6 +964,22 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
               })}
             </div>
 
+            {allMatched && !isLastPage && (
+              <button
+                onClick={goToNextPage}
+                className="w-full rounded-2xl font-extrabold flex items-center justify-center gap-2 text-white mt-1"
+                style={{
+                  height: 64,
+                  background: 'linear-gradient(135deg,#22C55E,#15803D)',
+                  boxShadow: '0 12px 24px -10px rgba(21,128,61,0.8)',
+                  fontFamily: "'Nunito', sans-serif",
+                  fontSize: '1.15rem',
+                }}
+              >
+                Next <ArrowRight className="w-6 h-6" />
+              </button>
+            )}
+
             {/* Bottom controls */}
             <div className="w-full grid grid-cols-2 gap-3 mt-3">
               <button
@@ -995,6 +1012,63 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
               </button>
             </div>
           </motion.div>
+          ) : (
+          /* DESKTOP / TABLET: two aligned matching rows */
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="w-full mx-auto flex flex-col items-center gap-6 px-6"
+            style={{ maxWidth: 1180 }}
+          >
+            {draggables.map((item, i) => {
+              const target = targets.find(t => t.accepts.includes(item.id));
+              if (!target) return null;
+              const matched = !!matches[target.id];
+              const tone = LABEL_TONES[(target.quantity || 0) % LABEL_TONES.length];
+              return (
+                <div key={item.id} className="w-full flex items-center justify-center gap-6 lg:gap-10">
+                  <DesktopNumberTile
+                    item={item}
+                    matched={matchedDraggableIds.has(item.id)}
+                    dragging={activeId === item.id}
+                    color={['#2563EB', '#F97316', '#7C3AED', '#DB2777'][i % 4]}
+                  />
+                  <motion.div
+                    animate={{ x: [0, 8, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}
+                    className="flex-shrink-0"
+                  >
+                    <ArrowRight className="w-10 h-10" style={{ color: 'rgba(255,255,255,0.9)' }} strokeWidth={3} />
+                  </motion.div>
+                  <DesktopObjectCard
+                    target={target}
+                    matched={matched}
+                    isWrong={wrongTarget === target.id}
+                    tone={tone}
+                  />
+                </div>
+              );
+            })}
+
+            {allMatched && !isLastPage && (
+              <button
+                onClick={goToNextPage}
+                className="rounded-2xl font-extrabold flex items-center justify-center gap-2 text-white px-10"
+                style={{
+                  height: 60,
+                  background: 'linear-gradient(135deg,#22C55E,#15803D)',
+                  boxShadow: '0 12px 24px -10px rgba(21,128,61,0.8)',
+                  fontFamily: "'Nunito', sans-serif",
+                  fontSize: '1.15rem',
+                }}
+              >
+                Next <ArrowRight className="w-6 h-6" />
+              </button>
+            )}
+          </motion.div>
+          )
+
         ) : (
 
         <motion.div
