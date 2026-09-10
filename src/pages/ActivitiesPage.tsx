@@ -194,7 +194,7 @@ const ActivitiesPage = () => {
         childName={childName || (childrenLoading ? '...' : 'Explorer')}
       />
 
-      <main className="py-6 pb-24">
+      <main className="py-6 lg:py-10 pb-24">
         {/* Child Selector */}
         {childrenLoading ? (
           <div className="px-4 sm:px-6 mb-6">
@@ -235,23 +235,23 @@ const ActivitiesPage = () => {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="mx-4 sm:mx-6 mb-6 text-center"
+          className="mx-4 sm:mx-6 mb-6 lg:mb-10 text-center"
         >
-          <div className="inline-flex items-center gap-3 bg-gradient-to-r from-funquest-purple via-funquest-pink to-funquest-orange rounded-3xl px-7 py-4 shadow-strong">
-            <Sparkles className="w-7 h-7 text-primary-foreground drop-shadow" />
-            <h1 className="text-primary-foreground text-2xl sm:text-4xl font-extrabold drop-shadow-md tracking-tight">
+          <div className="inline-flex items-center gap-3 bg-gradient-to-r from-funquest-purple via-funquest-pink to-funquest-orange rounded-3xl px-7 py-4 lg:px-12 lg:py-6 shadow-strong">
+            <Sparkles className="w-7 h-7 lg:w-9 lg:h-9 text-primary-foreground drop-shadow" />
+            <h1 className="text-primary-foreground text-2xl sm:text-4xl lg:text-5xl font-extrabold drop-shadow-md tracking-tight">
               Activities
             </h1>
           </div>
-          <p className="mt-2 text-foreground/70 font-semibold">Play, learn and grow!</p>
+          <p className="mt-2 lg:mt-4 text-foreground/70 font-semibold lg:text-lg">Play, learn and grow!</p>
         </motion.div>
 
         {/* Reading & Stories */}
-        <div className="px-4 sm:px-6 max-w-3xl mx-auto mb-8">
-          <h2 className="flex items-center gap-2 text-lg sm:text-xl font-extrabold text-foreground mb-3">
-            <span className="text-2xl">📚</span> Reading &amp; Stories
+        <div className="px-4 sm:px-6 max-w-3xl lg:max-w-6xl mx-auto mb-8 lg:mb-12">
+          <h2 className="flex items-center gap-2 text-lg sm:text-xl lg:text-2xl font-extrabold text-foreground mb-3 lg:mb-5">
+            <span className="text-2xl lg:text-3xl">📚</span> Reading &amp; Stories
           </h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 items-stretch">
             <ActivityTile
               title="Read & Listen"
               subtitle="Listen to stories and read along"
@@ -264,12 +264,13 @@ const ActivitiesPage = () => {
           </div>
         </div>
 
+
         {/* Activities */}
         {activitiesLoading ? (
           <div className="px-4 sm:px-6">
-            <div className="grid grid-cols-2 gap-4 max-w-3xl mx-auto">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 max-w-3xl lg:max-w-6xl mx-auto">
               {[1, 2, 3, 4].map(i => (
-                <Skeleton key={i} className="w-full h-[190px] rounded-3xl" />
+                <Skeleton key={i} className="w-full h-[190px] lg:h-[260px] rounded-3xl" />
               ))}
             </div>
           </div>
@@ -286,13 +287,13 @@ const ActivitiesPage = () => {
             <p className="text-muted-foreground">New learning adventures are coming soon.</p>
           </div>
         ) : (
-          <div className="px-4 sm:px-6 max-w-3xl mx-auto space-y-8">
+          <div className="px-4 sm:px-6 max-w-3xl lg:max-w-6xl mx-auto space-y-8 lg:space-y-12">
             {continuePlaying.length > 0 && (
               <section>
-                <h2 className="flex items-center gap-2 text-lg sm:text-xl font-extrabold text-foreground mb-3">
-                  <span className="text-2xl">🎮</span> Continue Playing
+                <h2 className="flex items-center gap-2 text-lg sm:text-xl lg:text-2xl font-extrabold text-foreground mb-3 lg:mb-5">
+                  <span className="text-2xl lg:text-3xl">🎮</span> Continue Playing
                 </h2>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 items-stretch">
                   {continuePlaying.map(toGameCard).map((g, i) => (
                     <ActivityTile key={g.id} {...g} index={i} onClick={() => handleGameClick(g.id)} />
                   ))}
@@ -301,11 +302,11 @@ const ActivitiesPage = () => {
             )}
             {newAdventures.length > 0 && (
               <section>
-                <h2 className="flex items-center gap-2 text-lg sm:text-xl font-extrabold text-foreground mb-3">
-                  <span className="text-2xl">✨</span>
+                <h2 className="flex items-center gap-2 text-lg sm:text-xl lg:text-2xl font-extrabold text-foreground mb-3 lg:mb-5">
+                  <span className="text-2xl lg:text-3xl">✨</span>
                   {continuePlaying.length > 0 ? 'New Adventures' : 'All Adventures'}
                 </h2>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 items-stretch">
                   {newAdventures.map(toGameCard).map((g, i) => (
                     <ActivityTile key={g.id} {...g} index={i} onClick={() => handleGameClick(g.id)} />
                   ))}
@@ -314,6 +315,7 @@ const ActivitiesPage = () => {
             )}
           </div>
         )}
+
 
       </main>
 
