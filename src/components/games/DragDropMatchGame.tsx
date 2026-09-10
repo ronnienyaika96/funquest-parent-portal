@@ -636,7 +636,6 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
     useSensor(TouchSensor, { activationConstraint: { delay: 100, tolerance: 5 } }),
   );
 
-  // Reset state when step (round) changes
   useEffect(() => {
     stopEffects();
     completionPlayedRef.current = false;
@@ -644,6 +643,7 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
     setMatches({});
     setActiveId(null);
     setWrongTarget(null);
+    setPage(0);
     return () => {
       if (completionTimerRef.current) clearTimeout(completionTimerRef.current);
       stopEffects();
@@ -656,12 +656,24 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
   useEffect(() => {
     if (!allMatched || completionPlayedRef.current) return;
     completionPlayedRef.current = true;
-    if (targets.length === 4) playPerfectMatch(`${step.id}:complete`);
+    playPerfectMatch(`${step.id}:p${page}:complete`);
+    if (!isLastPage) return; // wait for the child to press Next
     completionTimerRef.current = setTimeout(onSuccess, 900);
     return () => {
       if (completionTimerRef.current) clearTimeout(completionTimerRef.current);
     };
-  }, [allMatched, onSuccess, playPerfectMatch, step.id, targets.length]);
+  }, [allMatched, isLastPage, onSuccess, page, playPerfectMatch, step.id]);
+
+  const goToNextPage = () => {
+    stopEffects();
+    completionPlayedRef.current = false;
+    if (completionTimerRef.current) clearTimeout(completionTimerRef.current);
+    setMatches({});
+    setActiveId(null);
+    setWrongTarget(null);
+    setPage(p => p + 1);
+  };
+
 
   const handleDragStart = (event: DragStartEvent) => {
     const draggableId = String(event.active.id);
