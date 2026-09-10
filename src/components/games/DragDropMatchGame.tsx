@@ -541,6 +541,128 @@ function ObjectCard({ target, matched, tone }: {
   );
 }
 
+/** Desktop-only large square number tile (150–180px). */
+function DesktopNumberTile({ item, matched, dragging, color }: {
+  item: DraggableData; matched: boolean; dragging: boolean; color: string;
+}) {
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: item.id });
+  const numAsset = resolveContentAsset(item.label);
+
+  return (
+    <motion.div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      whileHover={!matched ? { scale: 1.05, y: -3 } : undefined}
+      whileTap={!matched ? { scale: 0.96 } : undefined}
+      style={{
+        transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
+        touchAction: 'none',
+        width: 'clamp(150px, 12vw, 180px)',
+        height: 'clamp(150px, 12vw, 180px)',
+        borderRadius: 28,
+        background: 'rgba(255,255,255,0.96)',
+        border: `4px solid ${matched ? '#22c55e' : 'rgba(147,197,253,0.85)'}`,
+        boxShadow: '0 18px 32px -18px rgba(30,64,175,0.65)',
+        opacity: dragging ? 0.35 : matched ? 0.5 : 1,
+      }}
+      className={`relative flex flex-shrink-0 items-center justify-center select-none cursor-grab active:cursor-grabbing ${matched ? 'pointer-events-none' : ''}`}
+    >
+      {numAsset ? (
+        <img src={numAsset} alt={item.label} className="pointer-events-none object-contain" style={{ width: '70%', height: '70%' }} />
+      ) : (
+        <span
+          className="pointer-events-none"
+          style={{
+            fontSize: '5rem', fontWeight: 900, color,
+            WebkitTextStroke: '3px white', paintOrder: 'stroke fill',
+            fontFamily: "'Nunito', sans-serif", lineHeight: 1,
+          }}
+        >
+          {item.label}
+        </span>
+      )}
+      {matched && (
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute -top-3 -right-3">
+          <CheckCircle className="w-9 h-9 text-emerald-500 fill-white drop-shadow" />
+        </motion.div>
+      )}
+    </motion.div>
+  );
+}
+
+/** Desktop-only fixed-size object drop card with a quantity-aware grid. */
+function DesktopObjectCard({ target, matched, isWrong, tone }: {
+  target: Target; matched: boolean; isWrong: boolean; tone: typeof LABEL_TONES[number];
+}) {
+  const { setNodeRef, isOver } = useDroppable({ id: target.id });
+  const n = target.quantity || 0;
+  const objectName = target.objectName || 'apple';
+  const cols = gridColsForQuantity(n);
+  const rows = Math.ceil(n / cols);
+  const size = rows >= 3 ? 52 : n >= 8 ? 62 : n >= 5 ? 70 : 82;
+
+  return (
+    <motion.div
+      ref={setNodeRef}
+      animate={isWrong ? { x: [0, -8, 8, -4, 4, 0] } : matched ? { scale: [1, 1.03, 1] } : isOver ? { scale: 1.02 } : { scale: 1 }}
+      transition={isWrong ? { duration: 0.4 } : { type: 'spring', stiffness: 260, damping: 18 }}
+      className="relative flex flex-col items-center justify-center flex-shrink-0"
+      style={{
+        width: 'clamp(420px, 34vw, 540px)',
+        height: 240,
+        borderRadius: 28,
+        background: matched ? 'linear-gradient(135deg,#DCFCE7,#BBF7D0)' : 'rgba(255,255,255,0.9)',
+        border: matched ? '3px solid #22c55e' : isOver ? '3px dashed #38bdf8' : '3px dashed rgba(148,163,184,0.55)',
+        boxShadow: matched
+          ? '0 0 0 6px rgba(34,197,94,0.16), 0 18px 34px -18px rgba(34,197,94,0.55)'
+          : '0 18px 34px -20px rgba(30,64,175,0.5)',
+        padding: '14px 18px',
+        transition: 'background .25s, border-color .25s, box-shadow .25s',
+      }}
+    >
+      <div className="flex-1 w-full flex items-center justify-center overflow-hidden">
+        <div
+          className="grid"
+          style={{ gridTemplateColumns: `repeat(${cols}, minmax(0,1fr))`, gap: 8, justifyItems: 'center', alignItems: 'center' }}
+        >
+          {Array.from({ length: n }).map((_, i) => (
+            <motion.img
+              key={i}
+              src={getObjectImageUrl(objectName)}
+              alt={objectName}
+              initial={{ scale: 0.6, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: i * 0.03, type: 'spring', stiffness: 220, damping: 14 }}
+              className="drop-shadow-md"
+              style={{ width: size, height: size, objectFit: 'contain' }}
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+            />
+          ))}
+        </div>
+      </div>
+      <div
+        className="rounded-full px-6 py-1.5 mt-1"
+        style={{
+          background: matched ? '#22c55e' : tone.bg,
+          color: matched ? 'white' : tone.text,
+          border: `1.5px solid ${matched ? 'transparent' : tone.border}`,
+          fontFamily: "'Nunito', sans-serif",
+          fontWeight: 800,
+          fontSize: '1.05rem',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {target.label}
+      </div>
+      {matched && (
+        <motion.div initial={{ scale: 0, rotate: -90 }} animate={{ scale: 1, rotate: 0 }} className="absolute -top-3 -right-3">
+          <CheckCircle className="w-10 h-10 text-emerald-500 drop-shadow-lg fill-white" />
+        </motion.div>
+      )}
+    </motion.div>
+  );
+}
 
 
 const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }) => {
