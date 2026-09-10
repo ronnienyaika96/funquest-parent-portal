@@ -901,7 +901,12 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
           className="text-center text-[15px] min-[375px]:text-base sm:text-lg font-extrabold"
           style={{ color: '#2C5F7C', fontFamily: "'Nunito', sans-serif" }}
         >
-          {!isNumberMatch && isMobile ? 'Drag each letter to the correct picture!' : instruction}
+          {!isNumberMatch && isMobile
+            ? 'Drag each letter to the correct picture!'
+            : isNumberMatch && !isMobile
+              ? 'Drag each number to the correct matching group'
+              : instruction}
+
         </p>
       </motion.div>
 
