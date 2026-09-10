@@ -36,7 +36,7 @@ const ActivityTile = ({
       transition={{ delay: Math.min(index * 0.06, 0.4), duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
       whileHover={{ y: -4 }}
       whileTap={{ scale: 0.97 }}
-      className="w-full text-left bg-card rounded-3xl p-3 shadow-medium border border-border/40 flex flex-col gap-3"
+      className="w-full text-left bg-card rounded-3xl p-3 shadow-medium hover:shadow-strong transition-shadow duration-300 border border-border/40 flex flex-col gap-3 h-full"
     >
       {/* Artwork */}
       <div className={`relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-gradient-to-br ${color}`}>

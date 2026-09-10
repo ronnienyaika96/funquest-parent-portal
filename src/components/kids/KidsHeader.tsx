@@ -10,24 +10,26 @@ interface KidsHeaderProps {
 
 const KidsHeader = ({ onLearningPathClick, onGrownUpsClick, childName = 'Explorer' }: KidsHeaderProps) => {
   return (
-    <header className="bg-gradient-to-r from-funquest-blue via-funquest-purple to-funquest-pink px-4 py-4 sm:px-6 shadow-medium">
-      <div className="flex items-center justify-between max-w-5xl mx-auto">
+    <header className="bg-gradient-to-r from-funquest-blue via-funquest-purple to-funquest-pink px-4 py-4 sm:px-6 lg:px-10 lg:py-5 shadow-medium">
+      <div className="flex items-center justify-between max-w-5xl lg:max-w-6xl mx-auto">
         {/* Left: Logo & Greeting */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 lg:gap-4">
           <motion.div
             animate={{ rotate: [0, 8, -8, 0] }}
             transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 4 }}
-            className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-soft"
+            className="w-12 h-12 lg:w-14 lg:h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-soft"
           >
-            <Star className="w-7 h-7 text-funquest-warning fill-funquest-warning" />
+            <Star className="w-7 h-7 lg:w-8 lg:h-8 text-funquest-warning fill-funquest-warning" />
           </motion.div>
           <div>
+            <p className="hidden lg:block text-white/75 text-xs font-extrabold tracking-[0.22em] uppercase">FunQuest</p>
             <h1 className="text-white font-bold text-xl sm:text-2xl drop-shadow-md" style={{ lineHeight: '1.2' }}>
               Hi, {childName}!
             </h1>
-            <p className="text-white/70 text-sm hidden sm:block">Ready to learn today?</p>
+            <p className="text-white/70 text-sm hidden sm:block lg:hidden">Ready to learn today?</p>
           </div>
         </div>
+
 
         {/* Right: Action Buttons */}
         <div className="flex items-center gap-2 sm:gap-3">

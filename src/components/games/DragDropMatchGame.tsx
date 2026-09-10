@@ -541,6 +541,128 @@ function ObjectCard({ target, matched, tone }: {
   );
 }
 
+/** Desktop-only large square number tile (150–180px). */
+function DesktopNumberTile({ item, matched, dragging, color }: {
+  item: DraggableData; matched: boolean; dragging: boolean; color: string;
+}) {
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: item.id });
+  const numAsset = resolveContentAsset(item.label);
+
+  return (
+    <motion.div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      whileHover={!matched ? { scale: 1.05, y: -3 } : undefined}
+      whileTap={!matched ? { scale: 0.96 } : undefined}
+      style={{
+        transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
+        touchAction: 'none',
+        width: 'clamp(150px, 12vw, 180px)',
+        height: 'clamp(150px, 12vw, 180px)',
+        borderRadius: 28,
+        background: 'rgba(255,255,255,0.96)',
+        border: `4px solid ${matched ? '#22c55e' : 'rgba(147,197,253,0.85)'}`,
+        boxShadow: '0 18px 32px -18px rgba(30,64,175,0.65)',
+        opacity: dragging ? 0.35 : matched ? 0.5 : 1,
+      }}
+      className={`relative flex flex-shrink-0 items-center justify-center select-none cursor-grab active:cursor-grabbing ${matched ? 'pointer-events-none' : ''}`}
+    >
+      {numAsset ? (
+        <img src={numAsset} alt={item.label} className="pointer-events-none object-contain" style={{ width: '70%', height: '70%' }} />
+      ) : (
+        <span
+          className="pointer-events-none"
+          style={{
+            fontSize: '5rem', fontWeight: 900, color,
+            WebkitTextStroke: '3px white', paintOrder: 'stroke fill',
+            fontFamily: "'Nunito', sans-serif", lineHeight: 1,
+          }}
+        >
+          {item.label}
+        </span>
+      )}
+      {matched && (
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute -top-3 -right-3">
+          <CheckCircle className="w-9 h-9 text-emerald-500 fill-white drop-shadow" />
+        </motion.div>
+      )}
+    </motion.div>
+  );
+}
+
+/** Desktop-only fixed-size object drop card with a quantity-aware grid. */
+function DesktopObjectCard({ target, matched, isWrong, tone }: {
+  target: Target; matched: boolean; isWrong: boolean; tone: typeof LABEL_TONES[number];
+}) {
+  const { setNodeRef, isOver } = useDroppable({ id: target.id });
+  const n = target.quantity || 0;
+  const objectName = target.objectName || 'apple';
+  const cols = gridColsForQuantity(n);
+  const rows = Math.ceil(n / cols);
+  const size = rows >= 3 ? 52 : n >= 8 ? 62 : n >= 5 ? 70 : 82;
+
+  return (
+    <motion.div
+      ref={setNodeRef}
+      animate={isWrong ? { x: [0, -8, 8, -4, 4, 0] } : matched ? { scale: [1, 1.03, 1] } : isOver ? { scale: 1.02 } : { scale: 1 }}
+      transition={isWrong ? { duration: 0.4 } : { type: 'spring', stiffness: 260, damping: 18 }}
+      className="relative flex flex-col items-center justify-center flex-shrink-0"
+      style={{
+        width: 'clamp(420px, 34vw, 540px)',
+        height: 240,
+        borderRadius: 28,
+        background: matched ? 'linear-gradient(135deg,#DCFCE7,#BBF7D0)' : 'rgba(255,255,255,0.9)',
+        border: matched ? '3px solid #22c55e' : isOver ? '3px dashed #38bdf8' : '3px dashed rgba(148,163,184,0.55)',
+        boxShadow: matched
+          ? '0 0 0 6px rgba(34,197,94,0.16), 0 18px 34px -18px rgba(34,197,94,0.55)'
+          : '0 18px 34px -20px rgba(30,64,175,0.5)',
+        padding: '14px 18px',
+        transition: 'background .25s, border-color .25s, box-shadow .25s',
+      }}
+    >
+      <div className="flex-1 w-full flex items-center justify-center overflow-hidden">
+        <div
+          className="grid"
+          style={{ gridTemplateColumns: `repeat(${cols}, minmax(0,1fr))`, gap: 8, justifyItems: 'center', alignItems: 'center' }}
+        >
+          {Array.from({ length: n }).map((_, i) => (
+            <motion.img
+              key={i}
+              src={getObjectImageUrl(objectName)}
+              alt={objectName}
+              initial={{ scale: 0.6, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: i * 0.03, type: 'spring', stiffness: 220, damping: 14 }}
+              className="drop-shadow-md"
+              style={{ width: size, height: size, objectFit: 'contain' }}
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+            />
+          ))}
+        </div>
+      </div>
+      <div
+        className="rounded-full px-6 py-1.5 mt-1"
+        style={{
+          background: matched ? '#22c55e' : tone.bg,
+          color: matched ? 'white' : tone.text,
+          border: `1.5px solid ${matched ? 'transparent' : tone.border}`,
+          fontFamily: "'Nunito', sans-serif",
+          fontWeight: 800,
+          fontSize: '1.05rem',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {target.label}
+      </div>
+      {matched && (
+        <motion.div initial={{ scale: 0, rotate: -90 }} animate={{ scale: 1, rotate: 0 }} className="absolute -top-3 -right-3">
+          <CheckCircle className="w-10 h-10 text-emerald-500 drop-shadow-lg fill-white" />
+        </motion.div>
+      )}
+    </motion.div>
+  );
+}
 
 
 const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }) => {
@@ -567,64 +689,62 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
     return rawTargets.some((t: any) => t?.type === 'quantity_image' || typeof t?.quantity === 'number');
   }, [data.schema, rawTargets]);
 
-  const { draggables, targets } = React.useMemo(() => {
-    if (!isNumberMatch) {
-      // Letters / picture-match mode: ensure each target's label matches its image,
-      // then jumble both draggables and targets so the game isn't predictable.
-      const fixedTargets: Target[] = rawTargets.map((t) => {
-        const objName = resolveTargetObjectName(t);
-        const wordLabel = objName
-          ? objName.charAt(0).toUpperCase() + objName.slice(1)
-          : t.label;
-        return { ...t, label: wordLabel };
-      });
-      return {
-        draggables: shuffleArr(rawDraggables),
-        targets: shuffleArr(fixedTargets),
-      };
-    }
+  /** Letters mode data (unchanged behaviour). */
+  const letterData = React.useMemo(() => {
+    if (isNumberMatch) return { draggables: [] as DraggableData[], targets: [] as Target[] };
+    const fixedTargets: Target[] = rawTargets.map((t) => {
+      const objName = resolveTargetObjectName(t);
+      const wordLabel = objName ? objName.charAt(0).toUpperCase() + objName.slice(1) : t.label;
+      return { ...t, label: wordLabel };
+    });
+    return { draggables: shuffleArr(rawDraggables), targets: shuffleArr(fixedTargets) };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step.id, isNumberMatch]);
 
-    // Pair each number-draggable with a unique random object from the pool
-    let numberDraggables = rawDraggables
+  /** Numbers mode: build ordered pairs, then chunk into pages of exactly 2 pairs. */
+  const numberPages = React.useMemo(() => {
+    if (!isNumberMatch) return [] as { draggables: DraggableData[]; targets: Target[] }[];
+
+    const numberDraggables = rawDraggables
       .map((d: any) => ({ ...d, _num: Number(d.value ?? d.label) }))
-      .filter((d) => !isNaN(d._num));
+      .filter((d) => !isNaN(d._num))
+      .sort((a, b) => a._num - b._num);
 
-    // FINAL STAGE: if both 9 and 10 are present among the draggables, this is the
-    // final "9 & 10" round — strip out every other number so ONLY 9 and 10 render.
-    const hasNine = numberDraggables.some((d) => d._num === 9);
-    const hasTen = numberDraggables.some((d) => d._num === 10);
-    if (hasNine && hasTen) {
-      numberDraggables = numberDraggables.filter((d) => d._num === 9 || d._num === 10);
-    }
-
-    // Pick unique random objects, one per number
+    // One unique object per number across the whole activity
     const picked = shuffleArr(OBJECT_POOL).slice(0, numberDraggables.length);
 
-    const newTargets: Target[] = numberDraggables.map((d, i) => {
-      const obj = picked[i];
+    const pairs = numberDraggables.map((d, i) => {
+      const obj = picked[i] || OBJECT_POOL[i % OBJECT_POOL.length];
       const n = d._num;
-      return {
+      const target: Target = {
         id: `target_${d.id}_${obj}`,
         label: `${n} ${pluralize(obj, n)}`,
         accepts: [d.id],
         quantity: n,
         objectName: obj,
       };
+      return { draggable: d as DraggableData, target };
     });
 
-    const shuffledDraggables = shuffleArr(numberDraggables);
-    const shuffledTargets = shuffleArr(newTargets);
-
-    // eslint-disable-next-line no-console
-    console.log('[DragDropMatchGame] Numbers round →', {
-      pairs: newTargets.map(t => ({ n: t.quantity, obj: t.objectName })),
-      shuffledNumbers: shuffledDraggables.map(d => d.label),
-      shuffledDrops: shuffledTargets.map(t => t.label),
-    });
-
-    return { draggables: shuffledDraggables as DraggableData[], targets: shuffledTargets };
+    const PAGE_SIZE = 2;
+    const pages: { draggables: DraggableData[]; targets: Target[] }[] = [];
+    for (let i = 0; i < pairs.length; i += PAGE_SIZE) {
+      const chunk = pairs.slice(i, i + PAGE_SIZE);
+      pages.push({
+        draggables: shuffleArr(chunk.map((p) => p.draggable)),
+        targets: shuffleArr(chunk.map((p) => p.target)),
+      });
+    }
+    return pages;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step.id, isNumberMatch]);
+
+  const [page, setPage] = useState(0);
+  const currentPage = numberPages[Math.min(page, Math.max(numberPages.length - 1, 0))];
+  const draggables = isNumberMatch ? (currentPage?.draggables ?? []) : letterData.draggables;
+  const targets = isNumberMatch ? (currentPage?.targets ?? []) : letterData.targets;
+  const isLastPage = !isNumberMatch || page >= numberPages.length - 1;
+
 
   const [matches, setMatches] = useState<Record<string, string>>({});
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -638,7 +758,6 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
     useSensor(TouchSensor, { activationConstraint: { delay: 100, tolerance: 5 } }),
   );
 
-  // Reset state when step (round) changes
   useEffect(() => {
     stopEffects();
     completionPlayedRef.current = false;
@@ -646,6 +765,7 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
     setMatches({});
     setActiveId(null);
     setWrongTarget(null);
+    setPage(0);
     return () => {
       if (completionTimerRef.current) clearTimeout(completionTimerRef.current);
       stopEffects();
@@ -658,12 +778,24 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
   useEffect(() => {
     if (!allMatched || completionPlayedRef.current) return;
     completionPlayedRef.current = true;
-    if (targets.length === 4) playPerfectMatch(`${step.id}:complete`);
+    playPerfectMatch(`${step.id}:p${page}:complete`);
+    if (!isLastPage) return; // wait for the child to press Next
     completionTimerRef.current = setTimeout(onSuccess, 900);
     return () => {
       if (completionTimerRef.current) clearTimeout(completionTimerRef.current);
     };
-  }, [allMatched, onSuccess, playPerfectMatch, step.id, targets.length]);
+  }, [allMatched, isLastPage, onSuccess, page, playPerfectMatch, step.id]);
+
+  const goToNextPage = () => {
+    stopEffects();
+    completionPlayedRef.current = false;
+    if (completionTimerRef.current) clearTimeout(completionTimerRef.current);
+    setMatches({});
+    setActiveId(null);
+    setWrongTarget(null);
+    setPage(p => p + 1);
+  };
+
 
   const handleDragStart = (event: DragStartEvent) => {
     const draggableId = String(event.active.id);
@@ -745,7 +877,7 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
           fontFamily: "'Nunito', 'Comic Sans MS', cursive, sans-serif",
         }}
       >
-        {isNumberMatch ? 'Number Matching' : 'Match Letters'}
+        {isNumberMatch ? (isMobile ? 'Number Matching' : 'Match the Numbers') : 'Match Letters'}
       </motion.h1>
 
       {/* Instruction pill */}
@@ -769,12 +901,18 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
           className="text-center text-[15px] min-[375px]:text-base sm:text-lg font-extrabold"
           style={{ color: '#2C5F7C', fontFamily: "'Nunito', sans-serif" }}
         >
-          {!isNumberMatch && isMobile ? 'Drag each letter to the correct picture!' : instruction}
+          {!isNumberMatch && isMobile
+            ? 'Drag each letter to the correct picture!'
+            : isNumberMatch && !isMobile
+              ? 'Drag each number to the correct matching group'
+              : instruction}
+
         </p>
       </motion.div>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDragCancel={handleDragCancel}>
         {isNumberMatch ? (
+          isMobile ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -831,6 +969,22 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
               })}
             </div>
 
+            {allMatched && !isLastPage && (
+              <button
+                onClick={goToNextPage}
+                className="w-full rounded-2xl font-extrabold flex items-center justify-center gap-2 text-white mt-1"
+                style={{
+                  height: 64,
+                  background: 'linear-gradient(135deg,#22C55E,#15803D)',
+                  boxShadow: '0 12px 24px -10px rgba(21,128,61,0.8)',
+                  fontFamily: "'Nunito', sans-serif",
+                  fontSize: '1.15rem',
+                }}
+              >
+                Next <ArrowRight className="w-6 h-6" />
+              </button>
+            )}
+
             {/* Bottom controls */}
             <div className="w-full grid grid-cols-2 gap-3 mt-3">
               <button
@@ -863,6 +1017,63 @@ const DragDropMatchGame: React.FC<DragDropMatchGameProps> = ({ step, onSuccess }
               </button>
             </div>
           </motion.div>
+          ) : (
+          /* DESKTOP / TABLET: two aligned matching rows */
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="w-full mx-auto flex flex-col items-center gap-6 px-6"
+            style={{ maxWidth: 1180 }}
+          >
+            {draggables.map((item, i) => {
+              const target = targets.find(t => t.accepts.includes(item.id));
+              if (!target) return null;
+              const matched = !!matches[target.id];
+              const tone = LABEL_TONES[(target.quantity || 0) % LABEL_TONES.length];
+              return (
+                <div key={item.id} className="w-full flex items-center justify-center gap-6 lg:gap-10">
+                  <DesktopNumberTile
+                    item={item}
+                    matched={matchedDraggableIds.has(item.id)}
+                    dragging={activeId === item.id}
+                    color={['#2563EB', '#F97316', '#7C3AED', '#DB2777'][i % 4]}
+                  />
+                  <motion.div
+                    animate={{ x: [0, 8, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}
+                    className="flex-shrink-0"
+                  >
+                    <ArrowRight className="w-10 h-10" style={{ color: 'rgba(255,255,255,0.9)' }} strokeWidth={3} />
+                  </motion.div>
+                  <DesktopObjectCard
+                    target={target}
+                    matched={matched}
+                    isWrong={wrongTarget === target.id}
+                    tone={tone}
+                  />
+                </div>
+              );
+            })}
+
+            {allMatched && !isLastPage && (
+              <button
+                onClick={goToNextPage}
+                className="rounded-2xl font-extrabold flex items-center justify-center gap-2 text-white px-10"
+                style={{
+                  height: 60,
+                  background: 'linear-gradient(135deg,#22C55E,#15803D)',
+                  boxShadow: '0 12px 24px -10px rgba(21,128,61,0.8)',
+                  fontFamily: "'Nunito', sans-serif",
+                  fontSize: '1.15rem',
+                }}
+              >
+                Next <ArrowRight className="w-6 h-6" />
+              </button>
+            )}
+          </motion.div>
+          )
+
         ) : (
 
         <motion.div
