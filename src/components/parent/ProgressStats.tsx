@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Target, Star, Clock, TrendingUp, Flame, Gamepad2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import AlphabetProgressGrid from './AlphabetProgressGrid';
+
 import AchievementsPanel from './AchievementsPanel';
 import LearningInsights from './LearningInsights';
 import ContinueLearningCard from './ContinueLearningCard';
@@ -180,9 +180,6 @@ const ProgressStats = ({ childId, childName }: ProgressStatsProps) => {
         currentStreak={currentStreak}
         childName={displayName}
       />
-
-      {/* Alphabet Progress Grid */}
-      <AlphabetProgressGrid progressData={progressData || []} />
 
       {/* Achievements */}
       <AchievementsPanel
